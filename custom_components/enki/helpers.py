@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from .const import FAN_SPEED_MAX
 
 # Home Assistant treats speed_count as the number of non-off speed steps.
@@ -21,3 +23,20 @@ def percentage_to_speed(percentage: int) -> int:
         return 0
     speed = int(round(percentage * FAN_SPEED_MAX / 100))
     return max(1, min(FAN_SPEED_MAX, speed))
+
+
+def normalize_power_state(last_reported: Any, endpoint: int) -> str:
+    """Parse check-electrical-power lastReportedValue (string or per-endpoint map)."""
+    if isinstance(last_reported, str):
+        return last_reported
+    if isinstance(last_reported, dict):
+        for key in (str(endpoint), endpoint):
+            if key in last_reported:
+                value = last_reported[key]
+                if isinstance(value, str):
+                    return value
+        if len(last_reported) == 1:
+            value = next(iter(last_reported.values()))
+            if isinstance(value, str):
+                return value
+    return "OFF"

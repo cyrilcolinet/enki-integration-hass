@@ -30,7 +30,7 @@ class EnkiEntity(CoordinatorEntity[EnkiCoordinator]):
 
     @property
     def available(self) -> bool:
-        return self._device.is_active
+        return self.coordinator.last_update_success and self._device.is_active
 
     @callback
     def _handle_coordinator_update(self) -> None:

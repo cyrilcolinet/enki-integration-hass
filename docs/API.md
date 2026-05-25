@@ -55,7 +55,8 @@ State is split across services:
 |-------|----------|-------|
 | `fan_speed` | `GET …/check-fan-speed` | `0` = off, `1–6` = speed levels |
 | `airflow_mode` | `GET …/check-airflow-mode` | `MANUAL`, `BREEZE` |
-| Light `power`, `brightness`, `colorTemperature` | `api-enki-lighting-prod` | Same payload as standard lights |
+| Light on/off (`light_power`) | `api-enki-power-prod` endpoint `2` | `check-electrical-power` / `switch-electrical-power` |
+| Light `brightness`, `colorTemperature` | `api-enki-lighting-prod` | `change-light-state` (lighting `power` field is not the relay) |
 
 Commands:
 

@@ -24,6 +24,7 @@ from .const import (
     REFERENTIEL_VERSION,
 )
 from .exceptions import EnkiAuthError, EnkiConnectionError
+from .helpers import normalize_power_state
 from .models import EnkiDevice
 
 
@@ -202,9 +203,17 @@ class EnkiAPI:
     async def _get_fan_full_state(self, home_id: str, node_id: str) -> dict[str, Any]:
         speed = await self._get_fan_speed(home_id, node_id)
         mode = await self._get_airflow_mode(home_id, node_id)
-        light_power = await self._get_power_state(home_id, node_id, LIGHT_ENDPOINT)
         light_state = await self._get_light_state(home_id, node_id)
         last_reported = light_state.get("lastReportedValue", {})
+        light_power = last_reported.get("power", "OFF")
+        try:
+            light_power = await self._get_power_state(home_id, node_id, LIGHT_ENDPOINT)
+        except EnkiConnectionError as err:
+            LOGGER.warning(
+                "Power state for fan %s unavailable, using lighting API fallback: %s",
+                node_id,
+                err,
+            )
         return {
             "fan_speed": speed,
             "airflow_mode": mode,
@@ -231,7 +240,7 @@ class EnkiAPI:
             if response.status != 200:
                 raise EnkiConnectionError(f"check-electrical-power failed: HTTP {response.status}")
             data = await response.json()
-            return data["lastReportedValue"]
+            return normalize_power_state(data.get("lastReportedValue"), endpoint)
 
     async def _get_fan_speed(self, home_id: str, node_id: str) -> int:
         session = await self._get_session()
