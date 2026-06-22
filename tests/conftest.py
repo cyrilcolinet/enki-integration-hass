@@ -26,6 +26,7 @@ _HA_STUBS = [
     "homeassistant.components.light",
     "homeassistant.components.light.const",
     "homeassistant.components.diagnostics",
+    "homeassistant.components.persistent_notification",
 ]
 
 for module_name in _HA_STUBS:

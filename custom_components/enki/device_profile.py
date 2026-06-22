@@ -5,8 +5,14 @@ from __future__ import annotations
 import hashlib
 import json
 from typing import Any
+from urllib.parse import quote
 
-from .const import DEVICE_TYPE_FANS, DEVICE_TYPE_LIGHTS
+from .const import (
+    DEVICE_TYPE_FANS,
+    DEVICE_TYPE_LIGHTS,
+    TELEMETRY_GITHUB_REPO,
+    TELEMETRY_ISSUE_LABELS,
+)
 from .models import EnkiDiscoveryRecord
 
 SUPPORTED_DEVICE_TYPES = {DEVICE_TYPE_FANS, DEVICE_TYPE_LIGHTS}
@@ -109,8 +115,9 @@ def format_github_issue_body(export_dict: dict[str, Any], fingerprint: str) -> s
     cap_lines = "\n".join(f"- `{capability}`" for capability in capabilities) or "- _(aucune)_"
 
     return (
-        "## Profil appareil Enki (télémétrie opt-in)\n\n"
-        "Rapport automatique — données anonymisées, sans identifiant de compte ou de domicile.\n\n"
+        "## Profil appareil Enki (partage opt-in)\n\n"
+        "Données anonymisées — sans identifiant de compte ou de domicile. "
+        "Issue ouverte manuellement depuis Home Assistant.\n\n"
         f"- **Type référentiel** : `{export_dict.get('device_type', 'unknown')}`\n"
         f"- **Type BFF** : `{export_dict.get('bff_device_type', '')}`\n"
         f"- **Fabricant** : {export_dict.get('manufacturer') or 'inconnu'}\n"
@@ -133,3 +140,26 @@ def format_github_issue_title(export_dict: dict[str, Any]) -> str:
     if export_dict.get("supported_by_integration"):
         return f"[telemetry] Profil {device_type} — {model}"
     return f"[telemetry] Appareil non supporté — {device_type} ({model})"
+
+
+_GITHUB_ISSUE_URL_MAX_LENGTH = 7500
+
+
+def build_github_new_issue_url(export_dict: dict[str, Any], fingerprint: str) -> str:
+    """Build a GitHub new-issue URL with title and body query parameters."""
+    title = format_github_issue_title(export_dict)
+    labels = ",".join(TELEMETRY_ISSUE_LABELS)
+    base = f"https://github.com/{TELEMETRY_GITHUB_REPO}/issues/new"
+
+    payload = dict(export_dict)
+    body = format_github_issue_body(payload, fingerprint)
+    while True:
+        url = f"{base}?title={quote(title)}&body={quote(body)}&labels={quote(labels)}"
+        if len(url) <= _GITHUB_ISSUE_URL_MAX_LENGTH:
+            return url
+        if payload.get("possible_values"):
+            payload = {**payload, "possible_values": {"_truncated": "see HA diagnostics export"}}
+            body = format_github_issue_body(payload, fingerprint)
+            continue
+        body = body[:4000] + "\n\n_(body truncated — use HA diagnostics export)_\n"
+        return f"{base}?title={quote(title)}&body={quote(body)}&labels={quote(labels)}"

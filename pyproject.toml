@@ -1,6 +1,6 @@
 [project]
 name = "enki-integration-hass"
-version = "0.1.0"
+version = "1.0.6"
 description = "Home Assistant custom integration for Enki (Leroy Merlin / Adeo)"
 readme = "README.md"
 requires-python = ">=3.12"

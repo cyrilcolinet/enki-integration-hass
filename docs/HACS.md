@@ -10,7 +10,7 @@ Les utilisateurs ajoutent le dépôt dans HACS sans passer par le store par déf
 2. Fichier [`hacs.json`](../hacs.json) à la racine avec au minimum `name`
 3. Structure `custom_components/enki/` avec `manifest.json`
 4. README d’installation
-5. Workflow [`.github/workflows/validate.yml`](../.github/workflows/validate.yml) (HACS + Hassfest) **sans erreur**
+5. Workflow [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) (lint, tests, HACS, Hassfest) **sans erreur**
 
 ### Lien d’installation rapide (my.home-assistant.io)
 

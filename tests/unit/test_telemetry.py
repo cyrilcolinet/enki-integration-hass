@@ -1,4 +1,4 @@
-"""Unit tests for opt-in telemetry reporting."""
+"""Unit tests for opt-in device profile notifications."""
 
 from __future__ import annotations
 
@@ -32,13 +32,16 @@ async def test_telemetry_skipped_when_disabled() -> None:
     entry.options = {CONF_TELEMETRY: False}
 
     reporter = EnkiTelemetryReporter(hass, entry)
-    with patch.object(reporter, "_dispatch_profiles", AsyncMock()) as dispatch:
+    with patch(
+        "enki.telemetry.persistent_notification.async_create",
+        new_callable=AsyncMock,
+    ) as notify:
         await reporter.async_report([_record()])
-        dispatch.assert_not_awaited()
+        notify.assert_not_awaited()
 
 
 @pytest.mark.asyncio
-async def test_telemetry_dispatches_new_profile() -> None:
+async def test_telemetry_notifies_new_profile() -> None:
     hass = MagicMock()
     hass.config.version = "2024.12.0"
     entry = MagicMock()
@@ -54,15 +57,17 @@ async def test_telemetry_dispatches_new_profile() -> None:
         AsyncMock(return_value="1.0.7"),
     )
     with (
-        patch("enki.telemetry.TELEMETRY_DISPATCH_TOKEN", "test-token"),
-        patch.object(reporter, "_dispatch_profiles", AsyncMock()) as dispatch,
+        patch(
+            "enki.telemetry.persistent_notification.async_create",
+            new_callable=AsyncMock,
+        ) as notify,
         version_patch,
     ):
         await reporter.async_report([_record()])
-        dispatch.assert_awaited_once()
-        profiles = dispatch.await_args.args[0]
-        assert len(profiles) == 1
-        assert profiles[0]["device_type"] == "equation_radiator"
+        notify.assert_awaited_once()
+        message = notify.await_args.kwargs["message"]
+        assert "github.com" in message
+        assert "equation_radiator" in message
 
 
 @pytest.mark.asyncio
@@ -82,10 +87,12 @@ async def test_telemetry_dedupes_fingerprint() -> None:
         AsyncMock(return_value="1.0.7"),
     )
     with (
-        patch("enki.telemetry.TELEMETRY_DISPATCH_TOKEN", "test-token"),
-        patch.object(reporter, "_dispatch_profiles", AsyncMock()) as dispatch,
+        patch(
+            "enki.telemetry.persistent_notification.async_create",
+            new_callable=AsyncMock,
+        ) as notify,
         version_patch,
     ):
         await reporter.async_report([_record()])
         await reporter.async_report([_record()])
-        dispatch.assert_awaited_once()
+        notify.assert_awaited_once()

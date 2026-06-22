@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from enki.device_profile import (
     build_discovery_record,
+    build_github_new_issue_url,
     format_github_issue_title,
     profile_fingerprint,
     profile_to_export_dict,
@@ -48,3 +49,17 @@ def test_profile_fingerprint_stable_across_versions() -> None:
 def test_format_github_issue_title_unsupported() -> None:
     export = profile_to_export_dict(_sample_record(), integration_version="1.0.7", ha_version="x")
     assert "non supporté" in format_github_issue_title(export)
+
+
+def test_build_github_new_issue_url_contains_repo_and_body() -> None:
+    export = profile_to_export_dict(
+        _sample_record(),
+        integration_version="1.0.7",
+        ha_version="2024.12",
+    )
+    fingerprint = profile_fingerprint(export)
+    url = build_github_new_issue_url(export, fingerprint)
+    assert "github.com/cyrilcolinet/enki-integration-hass/issues/new" in url
+    assert "title=" in url
+    assert "body=" in url
+    assert "equation_radiator" in url

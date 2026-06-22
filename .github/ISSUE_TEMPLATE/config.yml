@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Contributing guide
+    url: https://github.com/cyrilcolinet/enki-integration-hass/blob/main/CONTRIBUTING.md
+    about: How to report bugs, propose features, and open pull requests
   - name: Enki support (official)
     url: https://support.enki-home.com/
     about: Product help, pairing, and hardware issues

@@ -13,5 +13,7 @@ dist/
 *.egg-info/
 .DS_Store
 custom_components/enki/enki.zip
+*.zip
+.env.local
 .idea/
 .vscode/

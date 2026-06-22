@@ -1,44 +1,41 @@
-# Device telemetry (opt-in)
+# Partage de profils appareils (opt-in)
 
-Optional telemetry helps map unknown Enki hardware and improve test fixtures. It is **disabled by default**.
+Aide à supporter de nouveaux matériels Enki **sans envoi automatique** et **sans secret** dans l’intégration.
 
-## What users enable
+## Pour l’utilisateur
 
-In **Settings → Devices & services → Enki → Configure**, enable:
+### Diagnostics (sans opt-in)
 
-> Share anonymized device metadata (creates GitHub issues to improve support)
+**Paramètres** → **Appareils et services** → **Enki** → menu ⋮ → **Télécharger les diagnostics**
 
-On each poll, new device profiles (unique capability fingerprint) are sent once.
+Export JSON local : profils anonymisés (type, fabricant, capabilities). À joindre à une [issue](https://github.com/cyrilcolinet/enki-integration-hass/issues/new) si besoin.
 
-## What is sent
+### Opt-in (notification + issue pré-remplie)
 
-- Device type (referentiel + BFF)
-- Manufacturer / model / firmware (when available)
-- Capabilities and `possibleValues` schema
-- Integration and Home Assistant version
+**Enki** → **Configurer** → activer :
 
-**Never sent:** email, password, tokens, home/node IDs, room names, device labels.
+> M’avertir des nouveaux appareils (lien issue GitHub)
 
-## What is created
+Quand un **nouveau** profil est détecté (empreinte unique) :
 
-A GitHub issue labeled `device-telemetry` is opened automatically via `repository_dispatch`. Duplicates are skipped (fingerprint).
+1. Une **notification persistante** apparaît dans Home Assistant
+2. Le lien ouvre GitHub avec titre et description **pré-remplis**
+3. Vous **validez** la création de l’issue — rien n’est envoyé sans ce clic
 
-## Maintainer setup
+**Jamais inclus :** e-mail, mot de passe, homeId, nodeId, noms de pièces.
 
-1. Create a **fine-grained PAT** on GitHub with **Actions: Read and write** on this repository only.
-2. Set `TELEMETRY_DISPATCH_TOKEN` in `custom_components/enki/const.py` before release (or via a private fork overlay).
-3. Ensure workflow `.github/workflows/telemetry-report.yml` is on `main`.
+## Pour les contributeurs
 
-Without a dispatch token, opt-in users see no error — reporting is skipped (`DEBUG` log only).
-
-## Manual export (no opt-in)
+Script local (compte requis) :
 
 ```bash
 python3 scripts/discover_devices.py <email> <password> --export
 ```
 
-Writes anonymized JSON to stdout for issue templates.
+Voir [DEVELOPMENT.md](DEVELOPMENT.md) pour les tests.
 
-## Diagnostics (local)
+## Technique
 
-Home Assistant **Download diagnostics** on the config entry exports the same anonymized profiles locally — useful for support without enabling GitHub telemetry.
+- Déduplication par empreinte SHA256 (stockage local HA)
+- URL : `github.com/.../issues/new?title=...&body=...&labels=device-telemetry`
+- Aucun token, aucun `repository_dispatch`

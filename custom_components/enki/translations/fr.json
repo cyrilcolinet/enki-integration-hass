@@ -32,7 +32,7 @@
         "title": "Options Enki",
         "data": {
           "scan_interval": "Intervalle de rafraîchissement (secondes)",
-          "telemetry": "Partager des métadonnées anonymisées (issues GitHub pour améliorer le support)"
+          "telemetry": "M’avertir des nouveaux appareils (lien issue GitHub ; rien n’est envoyé sans votre clic)"
         }
       }
     }
