@@ -22,9 +22,10 @@ from .const import (
     LOGGER,
     REFERENTIEL_VERSION,
 )
+from .device_profile import SUPPORTED_DEVICE_TYPES, build_discovery_record
 from .exceptions import EnkiApiNotFoundError, EnkiAuthError, EnkiConnectionError
 from .helpers import direction_to_enki_rotation, enki_rotation_to_direction, normalize_power_state
-from .models import EnkiDevice
+from .models import EnkiDevice, EnkiDiscoveryRecord
 
 
 class EnkiAPI:
@@ -37,6 +38,7 @@ class EnkiAPI:
         self._token_type = "Bearer"
         self._token_expires_at = 0.0
         self._session: aiohttp.ClientSession | None = None
+        self._discovery_records: list[EnkiDiscoveryRecord] = []
 
     async def async_close(self) -> None:
         """Close the underlying HTTP session."""
@@ -94,9 +96,16 @@ class EnkiAPI:
         await self._ensure_token()
         homes = await self._get_homes()
         devices: list[EnkiDevice] = []
+        self._discovery_records = []
         for home_id in homes:
-            devices.extend(await self._get_devices_for_home(home_id))
+            home_devices, records = await self._get_devices_for_home(home_id)
+            devices.extend(home_devices)
+            self._discovery_records.extend(records)
         return devices
+
+    @property
+    def discovery_records(self) -> list[EnkiDiscoveryRecord]:
+        return list(self._discovery_records)
 
     async def _get_homes(self) -> list[str]:
         session = await self._get_session()
@@ -109,7 +118,10 @@ class EnkiAPI:
             data = await response.json()
             return [home["id"] for home in data["items"]]
 
-    async def _get_devices_for_home(self, home_id: str) -> list[EnkiDevice]:
+    async def _get_devices_for_home(
+        self,
+        home_id: str,
+    ) -> tuple[list[EnkiDevice], list[EnkiDiscoveryRecord]]:
         session = await self._get_session()
         async with session.get(
             (
@@ -123,6 +135,7 @@ class EnkiAPI:
             dashboard = await response.json()
 
         devices: list[EnkiDevice] = []
+        records: list[EnkiDiscoveryRecord] = []
         for section in dashboard.get("sections", []):
             for item in section.get("items", []):
                 metadata = item.get("metadata", {})
@@ -136,6 +149,28 @@ class EnkiAPI:
                 node_info = await self._get_node(home_id, node_id)
                 device_info = await self._get_device_info_safe(device_id)
                 device_type = device_info.get("type") or bff_type
+                supported = device_type in SUPPORTED_DEVICE_TYPES
+
+                manufacturer = (
+                    node_info.get("manufacturerId")
+                    or device_info.get("manufacturerId")
+                    or device_info.get("manufacturer")
+                )
+                model = node_info.get("modelNumber") or device_info.get("modelNumber")
+                firmware = node_info.get("version") or device_info.get("version")
+
+                records.append(
+                    build_discovery_record(
+                        device_type=device_type,
+                        bff_device_type=bff_type,
+                        capabilities=device_info.get("capabilities", []),
+                        possible_values=device_info.get("possibleValues", {}),
+                        manufacturer=str(manufacturer) if manufacturer else None,
+                        model=str(model) if model else None,
+                        firmware_version=str(firmware) if firmware else None,
+                        supported_by_integration=supported,
+                    )
+                )
 
                 last_reported: dict[str, Any] = {}
                 if item["isEnabled"]:
@@ -144,7 +179,7 @@ class EnkiAPI:
                     elif device_type == DEVICE_TYPE_LIGHTS:
                         last_reported = await self._get_light_state_payload(home_id, node_id)
 
-                if device_type not in {DEVICE_TYPE_FANS, DEVICE_TYPE_LIGHTS}:
+                if not supported:
                     LOGGER.debug(
                         "Skipping unsupported Enki device type %s (%s)",
                         device_type,
@@ -166,7 +201,7 @@ class EnkiAPI:
                         last_reported_value={**node_info, **last_reported},
                     )
                 )
-        return devices
+        return devices, records
 
     async def _get_node(self, home_id: str, node_id: str) -> dict[str, Any]:
         session = await self._get_session()

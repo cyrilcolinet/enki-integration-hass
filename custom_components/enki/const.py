@@ -8,6 +8,7 @@ DOMAIN = "enki"
 NAME = "Enki"
 
 CONF_SCAN_INTERVAL = "scan_interval"
+CONF_TELEMETRY = "telemetry"
 
 DEFAULT_SCAN_INTERVAL = 30
 MIN_SCAN_INTERVAL = 10
@@ -50,3 +51,7 @@ REFERENTIEL_VERSION = "2.23.0"
 FAN_SPEED_MIN = 1
 FAN_SPEED_MAX = 6
 ORDERED_FAN_SPEEDS = list(range(FAN_SPEED_MIN, FAN_SPEED_MAX + 1))
+
+# Device profile sharing (opt-in). See docs/TELEMETRY.md.
+TELEMETRY_GITHUB_REPO = "cyrilcolinet/enki-integration-hass"
+TELEMETRY_ISSUE_LABELS = ("device-telemetry", "enhancement")

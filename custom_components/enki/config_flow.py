@@ -14,6 +14,7 @@ from homeassistant.helpers import selector
 from .api import EnkiAPI
 from .const import (
     CONF_SCAN_INTERVAL,
+    CONF_TELEMETRY,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
     LOGGER,
@@ -131,17 +132,18 @@ class EnkiOptionsFlow(OptionsFlow):
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
 
-        current = self._config_entry.options.get(
+        current_interval = self._config_entry.options.get(
             CONF_SCAN_INTERVAL,
             DEFAULT_SCAN_INTERVAL,
         )
+        current_telemetry = self._config_entry.options.get(CONF_TELEMETRY, False)
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema(
                 {
                     vol.Required(
                         CONF_SCAN_INTERVAL,
-                        default=current,
+                        default=current_interval,
                     ): selector.NumberSelector(
                         selector.NumberSelectorConfig(
                             min=MIN_SCAN_INTERVAL,
@@ -151,6 +153,10 @@ class EnkiOptionsFlow(OptionsFlow):
                             mode=selector.NumberSelectorMode.BOX,
                         ),
                     ),
+                    vol.Required(
+                        CONF_TELEMETRY,
+                        default=current_telemetry,
+                    ): selector.BooleanSelector(),
                 }
             ),
         )

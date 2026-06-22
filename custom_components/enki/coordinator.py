@@ -14,6 +14,7 @@ from .api import EnkiAPI
 from .const import CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL, DOMAIN, LOGGER
 from .exceptions import EnkiAuthError, EnkiConnectionError
 from .models import EnkiDevice
+from .telemetry import EnkiTelemetryReporter
 
 
 class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
@@ -27,6 +28,7 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
             config_entry.data[CONF_USERNAME],
             config_entry.data[CONF_PASSWORD],
         )
+        self._telemetry = EnkiTelemetryReporter(hass, config_entry)
         scan_interval = config_entry.options.get(
             CONF_SCAN_INTERVAL,
             DEFAULT_SCAN_INTERVAL,
@@ -40,11 +42,14 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
 
     async def _async_update_data(self) -> list[EnkiDevice]:
         try:
-            return await self.api.async_get_devices()
+            devices = await self.api.async_get_devices()
         except EnkiAuthError as err:
             raise UpdateFailed(f"Authentication error: {err}") from err
         except EnkiConnectionError as err:
             raise UpdateFailed(f"Cannot reach Enki cloud: {err}") from err
+        else:
+            await self._telemetry.async_report(self.api.discovery_records)
+            return devices
 
     def get_device_by_node(self, node_id: str) -> EnkiDevice | None:
         if not self.data:

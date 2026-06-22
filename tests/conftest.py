@@ -20,10 +20,13 @@ _HA_STUBS = [
     "homeassistant.helpers.entity_platform",
     "homeassistant.helpers.update_coordinator",
     "homeassistant.helpers.selector",
+    "homeassistant.helpers.storage",
     "homeassistant.components",
     "homeassistant.components.fan",
     "homeassistant.components.light",
     "homeassistant.components.light.const",
+    "homeassistant.components.diagnostics",
+    "homeassistant.components.persistent_notification",
 ]
 
 for module_name in _HA_STUBS:

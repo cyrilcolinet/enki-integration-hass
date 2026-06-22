@@ -1,0 +1,32 @@
+---
+name: Device profile (telemetry)
+description: Auto-generated or manual anonymized device metadata
+labels:
+  - device-telemetry
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Issues with the `device-telemetry` label are often created automatically when a user opts in.
+        If you report manually, do **not** include home/node IDs, email, or room names.
+  - type: textarea
+    attributes:
+      label: Device type (referentiel)
+      placeholder: ceiling_fans, lights, equation_radiator, …
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Manufacturer / model
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Capabilities (JSON array or list)
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Possible values (JSON)
+    validations:
+      required: false

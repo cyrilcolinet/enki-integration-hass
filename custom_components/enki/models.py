@@ -25,3 +25,17 @@ class EnkiDevice:
     def is_active(self) -> bool:
         """Return True when the node is enabled and not deactivated."""
         return self.is_enabled and self.state != "DEACTIVATED"
+
+
+@dataclass(slots=True)
+class EnkiDiscoveryRecord:
+    """Anonymized discovery snapshot for telemetry (no PII)."""
+
+    device_type: str
+    bff_device_type: str
+    capabilities: list[str]
+    possible_values: dict[str, Any]
+    manufacturer: str | None
+    model: str | None
+    firmware_version: str | None
+    supported_by_integration: bool

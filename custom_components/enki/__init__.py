@@ -2,14 +2,24 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+from typing import TYPE_CHECKING
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 
-from .coordinator import EnkiCoordinator
 from .exceptions import EnkiAuthError, EnkiConnectionError
+
+if TYPE_CHECKING:
+    from .coordinator import EnkiCoordinator
+
+__version__ = json.loads((Path(__file__).parent / "manifest.json").read_text(encoding="utf-8"))[
+    "version"
+]
 
 PLATFORMS: list[Platform] = [Platform.FAN, Platform.LIGHT]
 
@@ -17,6 +27,8 @@ type EnkiConfigEntry = ConfigEntry[EnkiCoordinator]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: EnkiConfigEntry) -> bool:
+    from .coordinator import EnkiCoordinator
+
     coordinator = EnkiCoordinator(hass, entry)
 
     try:
