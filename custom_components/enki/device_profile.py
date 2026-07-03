@@ -16,6 +16,7 @@ def integration_supports_device(device: EnkiDevice) -> bool:
     """Return True when at least one HA platform can represent this node."""
     return device_is_supported(device)
 
+
 _SENSITIVE_STATE_KEYS = frozenset(
     {
         "homeId",

@@ -385,9 +385,7 @@ class EnkiAPI:
             if response.status == 404:
                 return {}
             if response.status != 200:
-                raise EnkiConnectionError(
-                    f"check-electrical-power failed: HTTP {response.status}"
-                )
+                raise EnkiConnectionError(f"check-electrical-power failed: HTTP {response.status}")
             return await response.json()
 
     async def async_switch_electrical_power(
@@ -400,10 +398,7 @@ class EnkiAPI:
         await self._ensure_token()
         session = await self._get_session()
         async with session.post(
-            (
-                f"{ENKI_BASE_URL}/api-enki-power-prod/v1/power/{node_id}/"
-                "switch-electrical-power"
-            ),
+            (f"{ENKI_BASE_URL}/api-enki-power-prod/v1/power/{node_id}/switch-electrical-power"),
             headers=self._auth_headers(
                 {
                     "X-Gateway-APIKey": ENKI_POWER_API_KEY,
@@ -413,9 +408,7 @@ class EnkiAPI:
             json={"value": value},
         ) as response:
             if not is_command_success_status(response.status):
-                raise EnkiConnectionError(
-                    f"switch-electrical-power failed: HTTP {response.status}"
-                )
+                raise EnkiConnectionError(f"switch-electrical-power failed: HTTP {response.status}")
 
     async def _get_fan_full_state(self, home_id: str, node_id: str) -> dict[str, Any]:
         speed = await self._get_fan_speed(home_id, node_id)
