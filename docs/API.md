@@ -42,10 +42,16 @@ sequenceDiagram
 
 ## Supported device types (this integration)
 
-| BFF / referentiel type | HA platforms | Backend services |
+Detection is **capability-based** (referentiel metadata + BFF dashboard), not limited to a fixed list of model names.
+
+| Referentiel / BFF type | HA platforms | Backend services |
 |------------------------|--------------|------------------|
-| `ceiling_fans` | `fan` + `light` | `api-enki-airflow-prod`, `api-enki-lighting-prod`, `api-enki-power-prod` |
-| `lights` | `light` | `api-enki-lighting-prod` |
+| `ceiling_fans` (+ fan capabilities) | `fan` + `light` | `api-enki-airflow-prod`, `api-enki-lighting-prod`, `api-enki-power-prod` |
+| `lights` (+ light capabilities) | `light` | `api-enki-lighting-prod` |
+| Switches / outlets (Edisio, …) | `light` (ON/OFF) | `api-enki-power-prod` (`switch-electrical-power`) |
+| `inverters` (Envertech-Lexman solar) | `sensor` (power W) | BFF dashboard `description.value` |
+
+Multi-endpoint lights (several circuits on one node) create one HA light entity per BFF `mainChangeCapability` endpoint.
 
 ### Ceiling fan (Inspire Siroco+, ESDK)
 

@@ -32,7 +32,7 @@
         "title": "Options Enki",
         "data": {
           "scan_interval": "Intervalle de rafraîchissement (secondes)",
-          "telemetry": "M’avertir des nouveaux appareils (lien issue GitHub ; rien n’est envoyé sans votre clic)"
+          "telemetry": "M’avertir des appareils nouveaux ou non supportés (anonymisé ; lien GitHub pré-rempli — rien n’est envoyé sans votre clic)"
         }
       }
     }
@@ -49,6 +49,14 @@
       },
       "light": {
         "name": "Lumière"
+      },
+      "outlet": {
+        "name": "Interrupteur"
+      }
+    },
+    "sensor": {
+      "power_production": {
+        "name": "Production"
       }
     }
   }

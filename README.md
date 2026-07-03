@@ -10,10 +10,14 @@ Mêmes identifiants que l’**application mobile Enki**. Pas de box supplémenta
 
 | Appareil | Dans Home Assistant |
 |----------|---------------------|
-| Ventilateur Inspire (Siroco+, Aruba+, etc.) | Un ventilateur + une lumière (kit LED) |
-| Luminaires Enki (Eglo, Lexman, …) | Une lumière |
+| Ventilateurs Inspire (Siroco+, Aruba+, Cadix, Radix, …) | Ventilateur + lumière kit |
+| Luminaires Enki (Eglo, Lexman, …) | Lumière (luminosité / blanc variable) |
+| Prises et interrupteurs connectés (Edisio, …) | Lumière ON/OFF (API power) |
+| Panneaux solaires Envertech-Lexman | Capteur de production (W) |
 
-**Pas encore disponible** : radiateurs, volets, prises, alarme. Vous pouvez [demander le support d’un appareil](https://github.com/cyrilcolinet/enki-integration-hass/issues/new?template=feature_request.yml) via GitHub.
+**Pas encore disponible** : radiateurs, volets, alarme. Vous pouvez [demander le support d’un appareil](https://github.com/cyrilcolinet/enki-integration-hass/issues/new?template=feature_request.yml) via GitHub.
+
+L’intégration détecte les appareils via leurs **capabilities** API (comme l’app mobile), pas seulement par modèle — les nouveaux ventilateurs Inspire ou luminaires compatibles sont pris en charge automatiquement.
 
 ### Ventilateur
 
@@ -83,7 +87,7 @@ Vous pouvez les ajouter au tableau de bord, aux automatisations et à Alexa/Goog
 Vérifiez e-mail et mot de passe sur l’app Enki. Testez une connexion sur le téléphone avant.
 
 **Aucun appareil détecté**  
-L’appareil doit être actif dans l’app Enki (même foyer). Seuls ventilateurs Inspire et luminaires sont pris en charge pour l’instant.
+L’appareil doit être actif dans l’app Enki (même foyer). Ventilateurs, luminaires, prises Edisio et onduleurs solaires Envertech sont pris en charge.
 
 **Le ventilateur ne réagit pas / erreur dans les journaux**  
 Redémarrez Home Assistant après une mise à jour HACS. Vérifiez que la box Enki est en ligne.

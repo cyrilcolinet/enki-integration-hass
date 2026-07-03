@@ -63,3 +63,26 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
             return
         device.last_reported_value[key] = value
         self.async_set_updated_data(self.data)
+
+    def update_cached_nested(self, node_id: str, parent_key: str, key: str, value: Any) -> None:
+        """Optimistically patch a nested value in cached device state."""
+        device = self.get_device_by_node(node_id)
+        if device is None or self.data is None:
+            return
+        parent = device.last_reported_value.setdefault(parent_key, {})
+        if isinstance(parent, dict):
+            parent[key] = value
+        self.async_set_updated_data(self.data)
+
+    def update_endpoint_power(self, node_id: str, endpoint_id: int, power: str) -> None:
+        """Optimistically update power for one electricalEndpoints entry."""
+        device = self.get_device_by_node(node_id)
+        if device is None or self.data is None:
+            return
+        endpoints = device.last_reported_value.get("electrical_endpoints")
+        if isinstance(endpoints, list):
+            for endpoint in endpoints:
+                if isinstance(endpoint, dict) and endpoint.get("id") == endpoint_id:
+                    endpoint["lastReportedValue"] = power
+                    break
+        self.async_set_updated_data(self.data)

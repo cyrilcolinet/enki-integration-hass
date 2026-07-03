@@ -32,7 +32,7 @@
         "title": "Enki options",
         "data": {
           "scan_interval": "Polling interval (seconds)",
-          "telemetry": "Notify me about new devices (pre-filled GitHub issue link; nothing sent without your click)"
+          "telemetry": "Notify me about new or unsupported devices (anonymized; pre-filled GitHub link only — nothing sent without your click)"
         }
       }
     }
@@ -49,6 +49,14 @@
       },
       "light": {
         "name": "Light"
+      },
+      "outlet": {
+        "name": "Switch"
+      }
+    },
+    "sensor": {
+      "power_production": {
+        "name": "Power production"
       }
     }
   }

@@ -21,7 +21,7 @@ __version__ = json.loads((Path(__file__).parent / "manifest.json").read_text(enc
     "version"
 ]
 
-PLATFORMS: list[Platform] = [Platform.FAN, Platform.LIGHT]
+PLATFORMS: list[Platform] = [Platform.FAN, Platform.LIGHT, Platform.SENSOR]
 
 type EnkiConfigEntry = ConfigEntry[EnkiCoordinator]
 

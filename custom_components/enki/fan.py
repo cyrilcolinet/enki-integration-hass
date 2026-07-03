@@ -1,4 +1,4 @@
-"""Fan platform for Enki ceiling fans (Inspire Siroco+, etc.)."""
+"""Fan platform for Enki ceiling fans (Inspire Siroco+, Cadix, Radix, …)."""
 
 from __future__ import annotations
 
@@ -18,12 +18,12 @@ from homeassistant.util.percentage import (
     percentage_to_ordered_list_item,
 )
 
-from .const import DEVICE_TYPE_FANS, DOMAIN, FAN_SPEED_MAX, ORDERED_FAN_SPEEDS
+from .capabilities import fan_max_speed, is_fan_device
+from .const import DOMAIN, FAN_SPEED_MAX
 from .coordinator import EnkiCoordinator
 from .entity import EnkiEntity
 from .fan_helpers import (
     airflow_modes_from_metadata,
-    enki_airflow_mode_to_preset,
     infer_airflow_mode_supported,
     preset_to_enki_airflow_mode,
 )
@@ -40,7 +40,7 @@ async def async_setup_entry(
     async_add_entities(
         EnkiFanEntity(coordinator, device)
         for device in coordinator.data or []
-        if device.device_type == DEVICE_TYPE_FANS
+        if is_fan_device(device)
     )
 
 
@@ -53,6 +53,11 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
         super().__init__(coordinator, device)
         self._attr_unique_id = f"{DOMAIN}-{device.node_id}-fan"
         self._preset_modes = airflow_modes_from_metadata(device)
+        self._ordered_speeds = self._build_ordered_speeds(device)
+
+    def _build_ordered_speeds(self, device: EnkiDevice) -> list[int]:
+        max_speed = fan_max_speed(device) or FAN_SPEED_MAX
+        return list(range(1, max_speed + 1))
 
     @property
     def supported_features(self) -> FanEntityFeature:
@@ -73,23 +78,32 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
     def preset_mode(self) -> str | None:
         if not self._supports_preset_mode():
             return None
-        return enki_airflow_mode_to_preset(self._device.last_reported_value.get("airflow_mode"))
+        mode = self._device.last_reported_value.get("airflow_mode")
+        if mode in self._preset_modes:
+            return mode
+        return None
 
     @property
     def is_on(self) -> bool:
-        return self._device.last_reported_value.get("fan_speed", 0) > 0
+        speed = self._device.last_reported_value.get("fan_speed")
+        if speed is not None:
+            return int(speed) > 0
+        power = self._device.last_reported_value.get("electrical_power")
+        return isinstance(power, str) and power == "ON"
 
     @property
     def percentage(self) -> int | None:
-        speed = self._device.last_reported_value.get("fan_speed", 0)
-        if speed <= 0:
+        speed = self._device.last_reported_value.get("fan_speed")
+        if speed is None:
+            return None
+        speed_value = int(speed)
+        if speed_value <= 0:
             return 0
-        return ordered_list_item_to_percentage(ORDERED_FAN_SPEEDS, speed)
+        return ordered_list_item_to_percentage(self._ordered_speeds, speed_value)
 
     @property
     def speed_count(self) -> int:
-        """Six discrete speeds; HA UI shows a stepped slider (≈17 % per step)."""
-        return FAN_SPEED_MAX
+        return len(self._ordered_speeds)
 
     @property
     def current_direction(self) -> str | None:
@@ -124,20 +138,46 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
         if preset_mode is not None and self._supports_preset_mode():
             await self.async_set_preset_mode(preset_mode)
 
+        if self._device.last_reported_value.get("fan_speed") is None:
+            if percentage is None or percentage > 0:
+                await self.coordinator.api.async_switch_electrical_power(
+                    self._device.home_id,
+                    self._device.node_id,
+                    "ON",
+                )
+                self.coordinator.update_cached_value(
+                    self._device.node_id,
+                    "electrical_power",
+                    "ON",
+                )
+            return
+
         if percentage is not None and percentage > 0:
-            speed = percentage_to_ordered_list_item(ORDERED_FAN_SPEEDS, percentage)
+            speed = percentage_to_ordered_list_item(self._ordered_speeds, percentage)
         else:
             speed = max(1, self._device.last_reported_value.get("fan_speed", 0) or 1)
         await self._set_speed(speed)
 
     async def async_turn_off(self, **kwargs: Any) -> None:
+        if self._device.last_reported_value.get("fan_speed") is None:
+            await self.coordinator.api.async_switch_electrical_power(
+                self._device.home_id,
+                self._device.node_id,
+                "OFF",
+            )
+            self.coordinator.update_cached_value(
+                self._device.node_id,
+                "electrical_power",
+                "OFF",
+            )
+            return
         await self._set_speed(0)
 
     async def async_set_percentage(self, percentage: int) -> None:
         if percentage == 0:
             await self.async_turn_off()
             return
-        await self._set_speed(percentage_to_ordered_list_item(ORDERED_FAN_SPEEDS, percentage))
+        await self._set_speed(percentage_to_ordered_list_item(self._ordered_speeds, percentage))
 
     async def _set_speed(self, speed: int) -> None:
         home_id = self._device.home_id
