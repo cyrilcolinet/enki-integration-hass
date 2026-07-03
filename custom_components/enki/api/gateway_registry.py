@@ -97,10 +97,10 @@ ENKI_MICRO_SERVICES: tuple[EnkiMicroService, ...] = (
     EnkiMicroService(
         "api-enki-consumption-prod",
         "ENKI_CONSUMPTION_API_KEY",
-        "",
+        "consumption",
         "/api-enki-consumption-prod/v1/consumption",
-        wired=False,
-        notes="",
+        wired=True,
+        notes="Edisio instant consumption (check-instant-consumption)",
     ),
     EnkiMicroService(
         "api-enki-contact-sensor-prod",
@@ -473,9 +473,9 @@ ENKI_MICRO_SERVICES: tuple[EnkiMicroService, ...] = (
     EnkiMicroService(
         "api-enki-scenario-prod",
         "ENKI_SCENARIO_API_KEY",
-        "",
-        "/api-enki-scenario-prod/v1/scenario",
-        wired=False,
+        "scenario",
+        "/api-enki-scenario-prod/v1/scenarios",
+        wired=True,
         notes="Enki scenarios (#53)",
     ),
     EnkiMicroService(

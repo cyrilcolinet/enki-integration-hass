@@ -91,6 +91,14 @@
       },
       "illuminance": {
         "name": "Illuminance"
+      },
+      "electrical_consumption": {
+        "name": "Power consumption"
+      }
+    },
+    "button": {
+      "scenario": {
+        "name": "Scenario"
       }
     },
     "binary_sensor": {

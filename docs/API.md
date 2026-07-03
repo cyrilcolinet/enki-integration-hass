@@ -143,9 +143,30 @@ Home Assistant shows **persistent notifications** (French or English) when:
 
 Notifications clear automatically after the next successful poll.
 
+## Scenarios (api-enki-scenario-prod)
+
+Base: `https://enki.api.devportal.adeo.cloud/api-enki-scenario-prod/v1/scenarios`
+
+| Method | Path | Notes |
+|--------|------|-------|
+| GET | `/scenarios?homeId={homeId}` | List (`items[]` with `id`, `label`, `enabled`, `status`) |
+| POST | `/scenarios/{scenarioId}/activate` | Run scenario (`homeId` header) |
+
+Gateway key: `ENKI_SCENARIO_API_KEY` in `gateway_keys_data.py`.
+
+## Instant consumption (api-enki-consumption-prod)
+
+Base: `https://enki.api.devportal.adeo.cloud/api-enki-consumption-prod/v1/consumption`
+
+| Method | Path | Notes |
+|--------|------|-------|
+| GET | `/{nodeId}/check-instant-consumption?homeId={homeId}` | `lastReportedValue` (W), `unit` |
+
+Used for Edisio / Equation devices with `check_electrical_consumption` in referentiel. Gateway key: `ENKI_CONSUMPTION_API_KEY`.
+
 ## Future device families
 
-The Enki app also controls alarms and Enki scenarios via other microservices (BFF scenario player, etc.). Use `scripts/discover_devices.py` to dump unknown `deviceType` values from your account before adding new platforms.
+The Enki app also controls alarms via other microservices. Use `scripts/discover_devices.py` to dump unknown `deviceType` values from your account before adding new platforms.
 
 ## References
 

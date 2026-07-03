@@ -9,7 +9,7 @@ import aiohttp
 
 from ..const import DEVICE_TYPE_LIGHTS, LOGGER
 from ..domain.capabilities import EnkiCapabilityProfile
-from ..domain.models import EnkiDevice, EnkiDiscoveryRecord
+from ..domain.models import EnkiDevice, EnkiDiscoveryRecord, EnkiScenario
 from ..domain.profile import build_discovery_record, integration_supports_device
 from ..exceptions import EnkiApiNotFoundError, EnkiConnectionError
 from ..lib.bff import parse_bff_power
@@ -44,6 +44,7 @@ class EnkiAPI:
         self._key_store = GatewayKeyStore()
         self._discovery_records: list[EnkiDiscoveryRecord] = []
         self._referentiel_cache: dict[str, dict[str, Any]] = {}
+        self._scenarios: tuple[EnkiScenario, ...] = ()
 
     async def async_close(self) -> None:
         """Close the underlying HTTP session."""
@@ -100,6 +101,46 @@ class EnkiAPI:
     @property
     def discovery_records(self) -> list[EnkiDiscoveryRecord]:
         return list(self._discovery_records)
+
+    @property
+    def scenarios(self) -> tuple[EnkiScenario, ...]:
+        return self._scenarios
+
+    async def async_refresh_scenarios(self) -> None:
+        """Load scenario list for every home on the account (best-effort, atomic)."""
+        http = await self._get_http()
+        try:
+            home_ids = await http.get_homes()
+        except EnkiConnectionError as err:
+            LOGGER.debug("Scenario list skipped — cannot list homes: %s", err)
+            return
+
+        if not home_ids:
+            self._scenarios = ()
+            return
+
+        scenarios: list[EnkiScenario] = []
+        failed = False
+
+        async def load_home(home_id: str) -> None:
+            nonlocal failed
+            try:
+                items = await http.list_scenarios(home_id)
+            except Exception as err:  # noqa: BLE001 — one home must not break the poll
+                LOGGER.debug("Scenario list skipped for home %s: %s", home_id, err)
+                failed = True
+                return
+            for item in items:
+                parsed = _parse_scenario(item, home_id)
+                if parsed is not None:
+                    scenarios.append(parsed)
+
+        await asyncio.gather(*(load_home(home_id) for home_id in sorted(home_ids)))
+
+        if failed:
+            return
+
+        self._scenarios = tuple(scenarios)
 
     async def _discover_home(
         self,
@@ -284,6 +325,17 @@ class EnkiAPI:
                     state["power"] = state["electrical_power"]
             except EnkiConnectionError as err:
                 LOGGER.debug("Electrical power skipped for node %s: %s", node_id, err)
+
+        if profile.supports_electrical_consumption:
+            try:
+                consumption = await http.get_instant_consumption(home_id, node_id)
+                if consumption:
+                    state["electrical_consumption"] = consumption.get("lastReportedValue")
+                    unit = consumption.get("unit")
+                    if isinstance(unit, str):
+                        state["electrical_consumption_unit"] = unit
+            except EnkiConnectionError as err:
+                LOGGER.debug("Electrical consumption skipped for node %s: %s", node_id, err)
 
         if profile.supports_fan_speed:
             try:
@@ -613,3 +665,24 @@ class EnkiAPI:
         http = await self._get_http()
         data = await http.get_electrical_power(home_id, node_id)
         return normalize_power_state(data.get("lastReportedValue"), endpoint)
+
+    async def async_activate_scenario(self, home_id: str, scenario_id: str) -> None:
+        """Trigger an Enki cloud scenario."""
+        http = await self._get_http()
+        await http.activate_scenario(home_id, scenario_id)
+
+
+def _parse_scenario(item: dict[str, Any], home_id: str) -> EnkiScenario | None:
+    scenario_id = item.get("id")
+    if not isinstance(scenario_id, str) or not scenario_id:
+        return None
+    label = item.get("label")
+    enabled = item.get("enabled")
+    status = item.get("status")
+    return EnkiScenario(
+        home_id=home_id,
+        scenario_id=scenario_id,
+        label=str(label) if isinstance(label, str) and label else scenario_id,
+        enabled=bool(enabled) if isinstance(enabled, bool) else True,
+        status=str(status) if isinstance(status, str) else "",
+    )

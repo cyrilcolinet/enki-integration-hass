@@ -62,6 +62,14 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
                     err,
                     exc_info=LOGGER.isEnabledFor(logging.DEBUG),
                 )
+            try:
+                await self.api.async_refresh_scenarios()
+            except Exception as err:  # noqa: BLE001 — scenarios must never break device poll
+                LOGGER.debug(
+                    "Scenario refresh skipped: %s",
+                    err,
+                    exc_info=LOGGER.isEnabledFor(logging.DEBUG),
+                )
             return devices
 
     def get_device_by_node(self, node_id: str) -> EnkiDevice | None:

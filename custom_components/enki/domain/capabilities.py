@@ -93,6 +93,15 @@ class EnkiCapabilityProfile:
         )
 
     @property
+    def supports_electrical_consumption(self) -> bool:
+        return _supports(
+            self.capabilities,
+            self.possible_values,
+            "check_electrical_consumption",
+            "total_supply_charge_consumption",
+        )
+
+    @property
     def supports_fan_speed(self) -> bool:
         return _supports(
             self.capabilities,

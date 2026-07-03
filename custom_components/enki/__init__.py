@@ -24,6 +24,7 @@ __version__ = json.loads((Path(__file__).parent / "manifest.json").read_text(enc
 
 PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
+    Platform.BUTTON,
     Platform.CLIMATE,
     Platform.COVER,
     Platform.FAN,

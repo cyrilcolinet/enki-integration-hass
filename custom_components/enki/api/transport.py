@@ -340,3 +340,46 @@ class EnkiHttpClient:
             home_id=home_id,
             json={"value": value},
         )
+
+    async def get_instant_consumption(self, home_id: str, node_id: str) -> dict[str, Any]:
+        """Instant electrical consumption (Edisio / api-enki-consumption-prod)."""
+        if not self._service_api_key("consumption"):
+            return {}
+        prefix = WIRED_PATH_PREFIXES["consumption"]
+        return await self.get_json(
+            "consumption",
+            f"{prefix}/{node_id}/check-instant-consumption",
+            params={"homeId": home_id},
+            not_found_ok=True,
+        )
+
+    async def list_scenarios(self, home_id: str) -> list[dict[str, Any]]:
+        """List Enki scenarios for one home (homeId query param, APK rnl.h)."""
+        if not self._service_api_key("scenario"):
+            return []
+        prefix = WIRED_PATH_PREFIXES["scenario"]
+        data = await self.get_json(
+            "scenario",
+            prefix,
+            params={"homeId": home_id},
+            not_found_ok=True,
+        )
+        items = data.get("items")
+        if isinstance(items, list):
+            return [item for item in items if isinstance(item, dict)]
+        return []
+
+    async def activate_scenario(self, home_id: str, scenario_id: str) -> None:
+        """Run one Enki scenario (homeId header, APK rnl.a)."""
+        if not self._service_api_key("scenario"):
+            raise EnkiConnectionError(
+                "Scenario API key is not configured. "
+                "Capture X-Gateway-APIKey from the Enki app — see docs/API.md.",
+                service="scenario",
+            )
+        prefix = WIRED_PATH_PREFIXES["scenario"]
+        await self.post_command(
+            "scenario",
+            f"{prefix}/{scenario_id}/activate",
+            home_id=home_id,
+        )

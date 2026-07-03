@@ -391,6 +391,36 @@ def apply_to_const(
     return changes
 
 
+def check_against_repo(
+    extracted: dict[str, tuple[str | None, str]],
+    *,
+    allow_unresolved: bool = False,
+) -> list[str]:
+    """Return human-readable errors when APK keys diverge from gateway_keys_data.py."""
+    const_keys = read_const_keys()
+    errors: list[str] = []
+
+    for svc in ENKI_MICRO_SERVICES:
+        apk_key, detail = extracted.get(svc.const_key, (None, "missing from APK extract"))
+        repo_key = const_keys.get(svc.const_key, "")
+
+        if svc.wired:
+            if not repo_key:
+                errors.append(f"{svc.const_key} is empty in repo (wired: {svc.slug})")
+            elif not apk_key and not allow_unresolved:
+                errors.append(f"{svc.const_key} unresolved in APK (wired: {svc.slug})")
+            elif apk_key and repo_key != apk_key:
+                errors.append(
+                    f"{svc.const_key} mismatch — repo={repo_key} apk={apk_key} ({detail})"
+                )
+            continue
+
+        if repo_key and apk_key and repo_key != apk_key:
+            errors.append(f"{svc.const_key} mismatch — repo={repo_key} apk={apk_key} ({detail})")
+
+    return errors
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("apk", type=Path, help="Path to Enki APK file")
@@ -409,6 +439,16 @@ def main() -> int:
         "--update-known",
         action="store_true",
         help="With --apply, also replace keys that differ from the APK",
+    )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Exit 1 when APK keys differ from gateway_keys_data.py (no writes)",
+    )
+    parser.add_argument(
+        "--allow-unresolved",
+        action="store_true",
+        help="With --check, do not fail when wired services are unresolved in the APK",
     )
     args = parser.parse_args()
 
@@ -469,6 +509,15 @@ def main() -> int:
                 print(f"  {change}")
         else:
             print("\n=== No changes applied ===")
+
+    if args.check:
+        errors = check_against_repo(extracted, allow_unresolved=args.allow_unresolved)
+        if errors:
+            print("\n=== APK key check FAILED ===", file=sys.stderr)
+            for err in errors:
+                print(f"  - {err}", file=sys.stderr)
+            return 1
+        print("\n=== APK key check OK ===")
 
     return 0
 

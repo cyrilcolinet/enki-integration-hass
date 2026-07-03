@@ -27,7 +27,7 @@ Détail par appareil : [SUPPORTED_DEVICES.md](SUPPORTED_DEVICES.md).
 | 🔬 Beta | Fil pilote Equation (v1.5.0+) | entité `select` (modes confort / éco / hors gel) ; clé `ENKI_HEATING_API_KEY` (APK 2.25.1) |
 | 🔬 Beta | Radiateur Noirot (v1.5.0+) | `climate` + détection fenêtre / présence ; clé `ENKI_HEATING_API_KEY` (APK 2.25.1) |
 | 🔜 Bientôt | Radiateurs ACOVA ARLAN | allowlist fabricant OK, pas de matériel de test |
-| 🔜 Bientôt | Scénarios Enki (« Ouvrir Salon », …) | — |
+| 🔬 Beta | Scénarios Enki (« Ouvrir Salon », …) | `button` (v1.6.0+) |
 | ⏳ Pas prévu | Alarme Enki | pas d’API identifiée |
 | ✅ Prérequis OK | Store HACS global | CI HACS + Hassfest vertes, releases publiées — [PR `hacs/default` à ouvrir](HACS.md#store-hacs-par-défaut) |
 

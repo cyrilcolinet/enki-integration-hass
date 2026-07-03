@@ -8,7 +8,13 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import LIGHT_LUX, PERCENTAGE, UnitOfPower, UnitOfTemperature
+from homeassistant.const import (
+    ENERGY_KILO_WATT_HOUR,
+    LIGHT_LUX,
+    PERCENTAGE,
+    UnitOfPower,
+    UnitOfTemperature,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -49,6 +55,8 @@ def _build_sensor_entities(
         entities.append(EnkiBatterySensor(coordinator, device))
     if profile.supports_illuminance_level:
         entities.append(EnkiIlluminanceSensor(coordinator, device))
+    if profile.supports_electrical_consumption:
+        entities.append(EnkiElectricalConsumptionSensor(coordinator, device))
 
     return entities
 
@@ -143,3 +151,37 @@ class EnkiIlluminanceSensor(EnkiEntity, SensorEntity):
     @property
     def native_value(self) -> float | None:
         return self._device.reported.illuminance_level
+
+
+class EnkiElectricalConsumptionSensor(EnkiEntity, SensorEntity):
+    """Instant power draw from api-enki-consumption-prod (Edisio, …)."""
+
+    _attr_translation_key = "electrical_consumption"
+
+    def __init__(self, coordinator: EnkiCoordinator, device: EnkiDevice) -> None:
+        super().__init__(coordinator, device)
+        self._attr_unique_id = f"{DOMAIN}-{device.node_id}-electrical-consumption"
+
+    @property
+    def device_class(self) -> SensorDeviceClass | None:
+        unit = self._device.reported.electrical_consumption_unit
+        if unit in {"kWh", "KWH"}:
+            return SensorDeviceClass.ENERGY
+        return SensorDeviceClass.POWER
+
+    @property
+    def state_class(self) -> SensorStateClass | None:
+        if self.device_class == SensorDeviceClass.ENERGY:
+            return SensorStateClass.TOTAL_INCREASING
+        return SensorStateClass.MEASUREMENT
+
+    @property
+    def native_unit_of_measurement(self) -> str:
+        unit = self._device.reported.electrical_consumption_unit
+        if unit in {"kWh", "KWH"}:
+            return ENERGY_KILO_WATT_HOUR
+        return UnitOfPower.WATT
+
+    @property
+    def native_value(self) -> float | None:
+        return self._device.reported.electrical_consumption

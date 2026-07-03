@@ -61,3 +61,14 @@ class EnkiDiscoveryRecord:
     model: str | None
     firmware_version: str | None
     supported_by_integration: bool
+
+
+@dataclass(frozen=True, slots=True)
+class EnkiScenario:
+    """Enki cloud scenario (home-level automation)."""
+
+    home_id: str
+    scenario_id: str
+    label: str
+    enabled: bool = True
+    status: str = ""

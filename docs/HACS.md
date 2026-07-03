@@ -30,8 +30,8 @@ Configurer sur la page **Settings** du dépôt GitHub :
 
 | Champ | Exemple |
 |-------|---------|
-| **Description** | Home Assistant integration for Enki (Leroy Merlin) — Inspire fans, lights |
-| **Topics** | `home-assistant`, `hacs`, `hacs-integration`, `enki`, `leroy-merlin`, `inspire` |
+| **Description** | Home Assistant integration for the Enki / Leroy Merlin smart home cloud — lights, fans, switches, sensors, covers, climate, scenarios, and more. |
+| **Topics** | `home-assistant`, `hacs`, `hacs-integration`, `enki`, `leroy-merlin`, `smart-home`, `home-automation`, `iot`, `lexman`, `edisio`, `equation` |
 | **Issues** | Activées |
 
 ## Releases (recommandé)
@@ -54,7 +54,7 @@ Procédure : [Include default repositories](https://www.hacs.xyz/docs/publish/in
 | Action **Hassfest** | ✅ idem |
 | `hacs.json` + `country: FR` | ✅ [`hacs.json`](../hacs.json) |
 | Au moins **une release** GitHub | ✅ [releases](https://github.com/cyrilcolinet/enki-integration-hass/releases) |
-| Brand `custom_components/enki/brand/icon.png` | ✅ (icône HA post-install ; CDN HACS = placeholder tant que le domaine n’est pas dans [home-assistant/brands](https://github.com/home-assistant/brands)) |
+| Brand `custom_components/enki/brand/` | ✅ `icon.png` (256) + `icon@2x.png` (512) — servies localement par HA **2026.3+** ([Brands Proxy API](https://developers.home-assistant.io/blog/2026/02/24/brands-proxy-api)) ; **plus besoin** de PR sur [home-assistant/brands](https://github.com/home-assistant/brands) (nouvelles intégrations custom refusées depuis fév. 2026) |
 
 **Reste à faire côté publication :** PR sur [hacs/default](https://github.com/hacs/default) (fichier `integration`), entrée **alphabétique** : `cyrilcolinet/enki-integration-hass`.
 

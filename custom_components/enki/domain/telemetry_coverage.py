@@ -39,6 +39,7 @@ _CAPABILITY_PROBES: dict[str, str] = {
     "check_current_temperature": "supports_current_temperature",
     "check_illuminance_level": "supports_illuminance_level",
     "check_electrical_power": "supports_electrical_power",
+    "check_electrical_consumption": "supports_electrical_consumption",
     "check_fan_rotation_direction": "supports_fan_rotation",
     "check_fan_speed": "supports_fan_speed",
     "check_light_state": "supports_light_state",

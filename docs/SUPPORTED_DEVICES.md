@@ -47,10 +47,21 @@ Le ventilateur et sa lumière sont **indépendants** : allumer l’un n’allume
 
 | Modèle / type | Statut |
 |---------------|--------|
-| Prises Edisio | ✅ ON/OFF |
-| Relais ON/OFF Equation ([profil](./devices/63a053851a423d4a245a877c.json)) | ✅ ON/OFF |
+| Prises Edisio | ✅ ON/OFF, ✅ conso instantanée (W) |
+| Relais ON/OFF Equation ([profil](./devices/63a053851a423d4a245a877c.json)) | ✅ ON/OFF, ✅ conso instantanée (W) |
 
-Les nœuds multi-circuits peuvent créer **une entité par circuit** (endpoint BFF). Conso (`check_electrical_consumption`) et timers : pas encore exposés.
+Les nœuds multi-circuits peuvent créer **une entité par circuit** (endpoint BFF). Timers (`switch_electrical_power_in`, …) : pas encore exposés.
+
+## Scénarios Enki (v1.6.0+)
+
+**Entités HA :** `button` (un bouton par scénario cloud)
+
+| Fonction | Détail |
+|----------|--------|
+| Lister | `GET /api-enki-scenario-prod/v1/scenarios?homeId=…` |
+| Lancer | `POST …/scenarios/{id}/activate` |
+
+Les scénarios sont rafraîchis à chaque poll du coordinateur. Ils apparaissent sous l’appareil virtuel **Enki scenarios**.
 
 ## Panneaux solaires (Envertech-Lexman)
 
@@ -147,9 +158,8 @@ Retours contributeurs réseau : [BETA_VOLETS_KEY.md](BETA_VOLETS_KEY.md).
 
 | Statut | Sujet |
 |--------|--------|
-| Beta | Volets, chauffage, fuite d’eau — clés APK 2.25.1, retours bienvenus |
+| Beta | Volets, chauffage, fuite d’eau, scénarios — clés APK 2.25.1, retours bienvenus |
 | Bientôt | Radiateurs ACOVA ARLAN (même API heating si capabilities compatibles) |
-| Bientôt | Scénarios Enki |
 | Non planifié | Alarme Enki (pas d’API identifiée) |
 | Hors périmètre | Box Enki, appairage, compte Leroy Merlin → [support Enki](https://support.enki-home.com/) |
 

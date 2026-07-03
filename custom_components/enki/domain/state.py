@@ -71,6 +71,15 @@ class EnkiDeviceState:
         return str(value) if isinstance(value, str) else None
 
     @property
+    def electrical_consumption(self) -> float | None:
+        return _as_float(self._data.get("electrical_consumption"))
+
+    @property
+    def electrical_consumption_unit(self) -> str | None:
+        value = self._data.get("electrical_consumption_unit")
+        return str(value) if isinstance(value, str) else None
+
+    @property
     def brightness(self) -> float | None:
         value = self._data.get("brightness")
         if isinstance(value, (int, float)):
