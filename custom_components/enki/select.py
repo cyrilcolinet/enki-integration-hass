@@ -11,7 +11,7 @@ from .const import DOMAIN
 from .coordinator import EnkiCoordinator
 from .domain.models import EnkiDevice
 from .entity import EnkiEntity
-from .lib.heating import pilot_wire_options
+from .lib.heating import pilot_wire_api_value, pilot_wire_option_slug, pilot_wire_options
 
 
 async def async_setup_entry(
@@ -41,14 +41,18 @@ class EnkiPilotWireSelect(EnkiEntity, SelectEntity):
     @property
     def current_option(self) -> str | None:
         value = self._device.reported.pilot_wire_state
-        if isinstance(value, str) and value in self._attr_options:
-            return value
+        if not isinstance(value, str):
+            return None
+        slug = pilot_wire_option_slug(value)
+        if slug in self._attr_options:
+            return slug
         return None
 
     async def async_select_option(self, option: str) -> None:
+        api_value = pilot_wire_api_value(option)
         await self.coordinator.api.async_set_pilot_wire_mode(
             self._device.home_id,
             self._device.node_id,
-            option,
+            api_value,
         )
-        self.coordinator.update_cached_value(self.node_id, "pilot_wire_state", option)
+        self.coordinator.update_cached_value(self.node_id, "pilot_wire_state", api_value)

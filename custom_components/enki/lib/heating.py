@@ -5,16 +5,37 @@ from __future__ import annotations
 from typing import Any
 
 
+def pilot_wire_api_value(option: str) -> str:
+    """Map HA select option slug to Enki API wire value (uppercase)."""
+    return option.upper()
+
+
+def pilot_wire_option_slug(api_value: str) -> str:
+    """Map Enki API wire value to HA select option slug (lowercase)."""
+    return api_value.lower()
+
+
 def pilot_wire_options(possible_values: dict[str, Any]) -> list[str]:
-    """Ordered pilot-wire modes from referentiel possibleValues."""
+    """Ordered pilot-wire modes as HA select slugs (lowercase, hassfest-safe)."""
     meta = possible_values.get("switch_pilot_wire_mode") or possible_values.get(
         "check_pilot_wire_state"
     )
     if isinstance(meta, dict):
         values = meta.get("values")
         if isinstance(values, list):
-            return [str(value) for value in values if isinstance(value, str)]
-    return ["COMFORT", "COMFORT_1", "COMFORT_2", "ECO", "FROST_PROTECTION", "OFF"]
+            return [
+                pilot_wire_option_slug(str(value))
+                for value in values
+                if isinstance(value, str)
+            ]
+    return [
+        "comfort",
+        "comfort_1",
+        "comfort_2",
+        "eco",
+        "frost_protection",
+        "off",
+    ]
 
 
 def thermostat_temperature_range(possible_values: dict[str, Any]) -> tuple[float, float, float]:

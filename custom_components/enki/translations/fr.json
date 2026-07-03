@@ -144,12 +144,12 @@
       "pilot_wire": {
         "name": "Mode fil pilote",
         "state": {
-          "COMFORT": "Confort",
-          "COMFORT_1": "Confort -1",
-          "COMFORT_2": "Confort -2",
-          "ECO": "Éco",
-          "FROST_PROTECTION": "Hors gel",
-          "OFF": "Arrêt"
+          "comfort": "Confort",
+          "comfort_1": "Confort -1",
+          "comfort_2": "Confort -2",
+          "eco": "Éco",
+          "frost_protection": "Hors gel",
+          "off": "Arrêt"
         }
       }
     },

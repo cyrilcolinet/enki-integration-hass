@@ -48,7 +48,7 @@ def test_pilot_wire_supported() -> None:
     )
     profile = device.profile
     assert profile.is_pilot_wire is True
-    assert pilot_wire_options(profile.possible_values) == ["COMFORT", "ECO", "OFF"]
+    assert pilot_wire_options(profile.possible_values) == ["comfort", "eco", "off"]
     assert device_is_supported(device) is True
 
 
