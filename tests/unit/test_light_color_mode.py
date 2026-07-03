@@ -6,39 +6,40 @@ from enki.lib.conversion import enki_to_hs, hs_to_enki, select_light_color_modes
 
 
 def test_color_temp_wins_over_brightness() -> None:
-    assert select_light_color_modes(
-        has_hs=False, has_color_temp=True, has_brightness=True
-    ) == {"color_temp"}
+    assert select_light_color_modes(has_hs=False, has_color_temp=True, has_brightness=True) == {
+        "color_temp"
+    }
 
 
 def test_color_temp_only() -> None:
-    assert select_light_color_modes(
-        has_hs=False, has_color_temp=True, has_brightness=False
-    ) == {"color_temp"}
+    assert select_light_color_modes(has_hs=False, has_color_temp=True, has_brightness=False) == {
+        "color_temp"
+    }
 
 
 def test_brightness_only() -> None:
-    assert select_light_color_modes(
-        has_hs=False, has_color_temp=False, has_brightness=True
-    ) == {"brightness"}
+    assert select_light_color_modes(has_hs=False, has_color_temp=False, has_brightness=True) == {
+        "brightness"
+    }
 
 
 def test_onoff_fallback() -> None:
-    assert select_light_color_modes(
-        has_hs=False, has_color_temp=False, has_brightness=False
-    ) == {"onoff"}
+    assert select_light_color_modes(has_hs=False, has_color_temp=False, has_brightness=False) == {
+        "onoff"
+    }
 
 
 def test_hs_and_color_temp_combine() -> None:
-    assert select_light_color_modes(
-        has_hs=True, has_color_temp=True, has_brightness=True
-    ) == {"hs", "color_temp"}
+    assert select_light_color_modes(has_hs=True, has_color_temp=True, has_brightness=True) == {
+        "hs",
+        "color_temp",
+    }
 
 
 def test_hs_only_drops_brightness() -> None:
-    assert select_light_color_modes(
-        has_hs=True, has_color_temp=False, has_brightness=True
-    ) == {"hs"}
+    assert select_light_color_modes(has_hs=True, has_color_temp=False, has_brightness=True) == {
+        "hs"
+    }
 
 
 def test_hs_to_enki_normalizes() -> None:
