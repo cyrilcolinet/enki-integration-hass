@@ -59,6 +59,7 @@ class EnkiLightBehaviorMixin:
                 )
             else:
                 changes["colorTemperature"] = f"T{kwargs[ATTR_COLOR_TEMP_KELVIN]}K"
+            changes["colorMode"] = "ct"
         elif restore_last_brightness and ATTR_BRIGHTNESS not in kwargs:
             last_brightness = self._device.reported.brightness
             if last_brightness is not None and last_brightness > 0:

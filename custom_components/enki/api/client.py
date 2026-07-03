@@ -510,6 +510,23 @@ class EnkiAPI:
         )
         await http.change_light_state(home_id, node_id, payload)
 
+    async def async_change_light_color(
+        self,
+        home_id: str,
+        node_id: str,
+        hue: float,
+        saturation: float,
+    ) -> None:
+        """Set an HS colour and switch the bulb into colour mode."""
+        http = await self._get_http()
+        current = await http.get_light_state(home_id, node_id)
+        payload = merge_light_state_payload(
+            current.get("lastReportedValue", {}),
+            {"colorMode": "hs", "hue": hue, "saturation": saturation},
+        )
+        payload.pop("colorTemperature", None)
+        await http.change_light_state(home_id, node_id, payload)
+
     async def async_change_light_state_field(
         self,
         home_id: str,
