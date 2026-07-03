@@ -15,10 +15,15 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "custom_components"))
+sys.path.insert(0, str(ROOT / "scripts"))
 
-from enki.api import EnkiAPI  # noqa: E402
-from enki.domain.profile import profile_fingerprint, profile_to_export_dict  # noqa: E402
+from enki_bootstrap import bootstrap_api_client, load_module  # noqa: E402
+
+client_mod = bootstrap_api_client()
+profile_mod = load_module("enki.domain.profile")
+EnkiAPI = client_mod.EnkiAPI
+profile_fingerprint = profile_mod.profile_fingerprint
+profile_to_export_dict = profile_mod.profile_to_export_dict
 
 
 async def main(username: str, password: str, export: bool) -> None:
