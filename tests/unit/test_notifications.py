@@ -5,7 +5,6 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from enki.exceptions import EnkiConnectionError
 from enki.notifications import EnkiNotifier, notify_for_connection_error
 
@@ -20,7 +19,10 @@ def notifier() -> tuple[MagicMock, EnkiNotifier]:
 
 
 @patch("enki.notifications.persistent_notification.async_create")
-def test_notify_auth_failed(mock_create: MagicMock, notifier: tuple[MagicMock, EnkiNotifier]) -> None:
+def test_notify_auth_failed(
+    mock_create: MagicMock,
+    notifier: tuple[MagicMock, EnkiNotifier],
+) -> None:
     hass, n = notifier
     n.notify_auth_failed()
     mock_create.assert_called_once()

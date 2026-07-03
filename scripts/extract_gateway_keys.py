@@ -18,9 +18,9 @@ import re
 import subprocess
 import sys
 from collections import Counter
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CONST_PY = REPO_ROOT / "custom_components" / "enki" / "const.py"
@@ -145,9 +145,7 @@ def decompile_class(apk_path: Path, class_name: str, jadx_dir: Path) -> str:
         if not path.is_file():
             return ""
         text = path.read_text(encoding="utf-8", errors="replace")
-        if any(marker in text for marker in INCOMPLETE_MARKERS) and not KEY_LITERAL.search(
-            text
-        ):
+        if any(marker in text for marker in INCOMPLETE_MARKERS) and not KEY_LITERAL.search(text):
             return ""
         return text
 
@@ -208,14 +206,12 @@ def parse_bindings(di_sources: Iterable[Path]) -> list[ServiceBinding]:
             slug = g3c.group(1)
             if slug in seen:
                 continue
-            iface_match = re.search(rf"\.f\((\w+)\.class\)", line)
+            iface_match = re.search(r"\.f\((\w+)\.class\)", line)
             if not iface_match and bindings:
                 continue
             iface = iface_match.group(1) if iface_match else ""
             wrappers = tuple(
-                name
-                for name in WRAPPER_PATTERN.findall(line)
-                if name not in SKIP_WRAPPERS
+                name for name in WRAPPER_PATTERN.findall(line) if name not in SKIP_WRAPPERS
             )
             bindings.append(ServiceBinding(slug, iface, wrappers, source.name))
             seen.add(slug)
@@ -223,9 +219,7 @@ def parse_bindings(di_sources: Iterable[Path]) -> list[ServiceBinding]:
     return bindings
 
 
-def load_wrapper_source(
-    wrapper: str, apk_path: Path, jadx_dir: Path
-) -> str:
+def load_wrapper_source(wrapper: str, apk_path: Path, jadx_dir: Path) -> str:
     path = jadx_dir / "sources" / "defpackage" / f"{wrapper}.java"
     if path.is_file():
         return path.read_text(encoding="utf-8", errors="replace")
@@ -268,7 +262,8 @@ def keys_for_iface_in_sources(sources_dir: Path, iface: str) -> Counter[str]:
         return counts
     for path in sources_dir.glob("*.java"):
         try:
-            counts.update(keys_near_iface(path.read_text(encoding="utf-8", errors="replace"), iface))
+            text = path.read_text(encoding="utf-8", errors="replace")
+            counts.update(keys_near_iface(text, iface))
         except OSError:
             continue
     return counts
@@ -365,7 +360,7 @@ def apply_to_const(
     *,
     update_known: bool = False,
 ) -> list[str]:
-    const_keys = read_const_keys()
+    read_const_keys()
     changes: list[str] = []
     lines = CONST_PY.read_text(encoding="utf-8").splitlines(keepends=True)
 
@@ -457,7 +452,7 @@ def main() -> int:
         key, detail = extracted[symbol]
         if current or not key:
             continue
-        print(f"  {symbol} = \"{key}\"  # {detail}")
+        print(f'  {symbol} = "{key}"  # {detail}')
 
     print("\n=== All services ===")
     for svc in ENKI_MICRO_SERVICES:

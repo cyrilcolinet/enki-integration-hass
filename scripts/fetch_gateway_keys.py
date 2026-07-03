@@ -71,9 +71,7 @@ async def fetch_settings(username: str, password: str) -> dict:
                     f"Non-JSON response from mobile-config: {exc}\n{body[:500]}"
                 ) from exc
             if not isinstance(payload, dict):
-                raise RuntimeError(
-                    f"Unexpected mobile-config payload type: {type(payload)!r}"
-                )
+                raise RuntimeError(f"Unexpected mobile-config payload type: {type(payload)!r}")
             return payload
 
 

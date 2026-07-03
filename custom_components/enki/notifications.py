@@ -7,12 +7,10 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
+from .exceptions import EnkiConnectionError
 
 _DOCUMENTATION_URL = "https://github.com/cyrilcolinet/enki-integration-hass"
 _ISSUE_TRACKER = f"{_DOCUMENTATION_URL}/issues"
-
-
-from .exceptions import EnkiConnectionError
 
 
 def notify_for_connection_error(notifier: EnkiNotifier, err: EnkiConnectionError) -> None:
@@ -98,15 +96,17 @@ def _auth_copy(
         title = "Enki — connexion refusée"
         if gateway_hint:
             body = (
-                "L'API Enki a rejeté la requête (HTTP 401). Vérifiez votre **email et mot de passe** "
-                "Enki, ou mettez à jour les clés gateway si l'app mobile a changé de version.\n\n"
+                "L'API Enki a rejeté la requête (HTTP 401). "
+                "Vérifiez votre **email et mot de passe** Enki, ou mettez à jour les clés "
+                "gateway si l'app mobile a changé de version.\n\n"
                 f"[Reconfigurer Enki]({configure_url}) · "
                 f"[Documentation]({_DOCUMENTATION_URL})"
             )
         else:
             body = (
-                "Identifiants Enki invalides ou session expirée. Utilisez le même **email et mot de passe** "
-                "que l'application mobile Leroy Merlin Enki.\n\n"
+                "Identifiants Enki invalides ou session expirée. "
+                "Utilisez le même **email et mot de passe** que l'application mobile "
+                "Leroy Merlin Enki.\n\n"
                 f"[Reconfigurer Enki]({configure_url})"
             )
         return title, body
@@ -133,8 +133,9 @@ def _gateway_copy(hass: HomeAssistant) -> tuple[str, str]:
         return (
             "Enki — clé API gateway refusée",
             (
-                "L'API Enki a répondu **HTTP 403** : une clé gateway (micro-service) est probablement "
-                "obsolète. Cela arrive quand l'application Enki est mise à jour.\n\n"
+                "L'API Enki a répondu **HTTP 403** : une clé gateway (micro-service) "
+                "est probablement obsolète. Cela arrive quand l'application Enki est "
+                "mise à jour.\n\n"
                 "Mettez à jour les clés via `scripts/extract_gateway_keys.py` ou consultez "
                 f"[la documentation]({_DOCUMENTATION_URL}).\n\n"
                 f"[Signaler un problème]({_ISSUE_TRACKER})"
@@ -158,7 +159,8 @@ def _connection_copy(hass: HomeAssistant) -> tuple[str, str]:
             "Enki — cloud inaccessible",
             (
                 "Impossible de joindre le cloud Enki (réseau, timeout ou erreur serveur). "
-                "Les entités ne seront pas mises à jour tant que la connexion n'est pas rétablie.\n\n"
+                "Les entités ne seront pas mises à jour tant que la connexion "
+                "n'est pas rétablie.\n\n"
                 "Vérifiez votre connexion Internet et les logs Home Assistant (`enki`)."
             ),
         )
