@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from homeassistant.components.light import ColorMode, LightEntity
+from homeassistant.components.light import ATTR_HS_COLOR, ColorMode, LightEntity
 from homeassistant.components.light.const import DEFAULT_MAX_KELVIN, DEFAULT_MIN_KELVIN
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -14,6 +14,7 @@ from .const import DOMAIN
 from .coordinator import EnkiCoordinator
 from .domain.models import EnkiDevice
 from .entity import EnkiEntity
+from .lib.conversion import enki_to_hs, hs_to_enki, select_light_color_modes
 from .platforms.light.behavior import EnkiLightBehaviorMixin
 
 
@@ -152,6 +153,9 @@ class EnkiLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
                 self._attr_min_color_temp_kelvin = DEFAULT_MIN_KELVIN
                 self._attr_max_color_temp_kelvin = DEFAULT_MAX_KELVIN
 
+        if "change_hue" in caps and "change_saturation" in caps:
+            modes.add(ColorMode.HS)
+
         if "change_brightness" in caps:
             modes.add(ColorMode.BRIGHTNESS)
             self._brightness_max = self._parse_brightness_max(possible)
@@ -159,13 +163,17 @@ class EnkiLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
         if not modes and profile.supports_electrical_power:
             modes.add(ColorMode.ONOFF)
 
-        self._attr_supported_color_modes = modes or {ColorMode.ONOFF}
-        if ColorMode.COLOR_TEMP in modes:
-            self._attr_color_mode = ColorMode.COLOR_TEMP
-        elif ColorMode.BRIGHTNESS in modes:
-            self._attr_color_mode = ColorMode.BRIGHTNESS
-        else:
-            self._attr_color_mode = ColorMode.ONOFF
+        supported = {
+            ColorMode(value)
+            for value in select_light_color_modes(
+                has_hs=ColorMode.HS in modes,
+                has_color_temp=ColorMode.COLOR_TEMP in modes,
+                has_brightness=ColorMode.BRIGHTNESS in modes,
+            )
+        }
+        self._attr_supported_color_modes = supported or {ColorMode.ONOFF}
+        if len(self._attr_supported_color_modes) == 1:
+            self._attr_color_mode = next(iter(self._attr_supported_color_modes))
 
     @property
     def is_on(self) -> bool:
@@ -191,6 +199,32 @@ class EnkiLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
         raw = self._device.reported.color_temperature
         return int(raw.strip("TK")) if raw else None
 
+    @property
+    def hs_color(self) -> tuple[float, float] | None:
+        if (
+            self._attr_supported_color_modes is None
+            or ColorMode.HS not in self._attr_supported_color_modes
+        ):
+            return None
+        reported = self._device.reported
+        return enki_to_hs(reported.hue, reported.saturation)
+
+    @property
+    def color_mode(self) -> ColorMode | None:
+        if self._attr_color_mode is not None:
+            return self._attr_color_mode
+        reported = self._device.reported
+        mode = reported.color_mode
+        if mode == "hs":
+            return ColorMode.HS
+        if mode == "ct":
+            return ColorMode.COLOR_TEMP
+        if reported.color_temperature:
+            return ColorMode.COLOR_TEMP
+        if ColorMode.HS in (self._attr_supported_color_modes or set()):
+            return ColorMode.HS
+        return None
+
     async def async_turn_on(self, **kwargs: Any) -> None:
         home_id = self._device.home_id
         node_id = self._device.node_id
@@ -205,6 +239,17 @@ class EnkiLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
             self._cache_electrical_power("ON")
             return
 
+        if ATTR_HS_COLOR in kwargs:
+            hue, saturation = hs_to_enki(*kwargs[ATTR_HS_COLOR])
+            await self.coordinator.api.async_change_light_color(home_id, node_id, hue, saturation)
+            self.coordinator.update_cached_value(node_id, "hue", hue)
+            self.coordinator.update_cached_value(node_id, "saturation", saturation)
+            self.coordinator.update_cached_value(node_id, "colorMode", "hs")
+            self.coordinator.update_cached_value(node_id, "colorTemperature", None)
+            self.coordinator.update_cached_value(node_id, "power", "ON")
+            self._update_light_endpoint_cache("ON", self._endpoint_id)
+            return
+
         await self._mixed_endpoint_workaround()
         changes = self._build_turn_on_changes(kwargs)
         await self.coordinator.api.async_change_light_state(home_id, node_id, changes)
@@ -217,6 +262,7 @@ class EnkiLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
                 "colorTemperature",
                 changes["colorTemperature"],
             )
+            self.coordinator.update_cached_value(node_id, "colorMode", "ct")
         self._update_light_endpoint_cache("ON", self._endpoint_id)
 
     async def async_turn_off(self, **kwargs: Any) -> None:

@@ -18,7 +18,7 @@ Mêmes identifiants que l’**application mobile Enki**. La box Enki doit déjà
 | Statut | Appareil | Fonctionnalités |
 |--------|----------|-------------------|
 | ✅ Supporté | Ventilateurs Inspire (Siroco+, Cadix, …) | ventilateur, lumière kit, vitesse, sens, modes |
-| ✅ Supporté | Luminaires Enki (Eglo, Lexman, …) | ON/OFF, luminosité, blanc variable |
+| ✅ Supporté | Luminaires Enki (Eglo, Lexman, …) | ON/OFF, luminosité, blanc variable, couleur RGB (HS) |
 | ✅ Supporté | Prises / interrupteurs (Edisio, …) | ON/OFF |
 | ✅ Supporté | Panneaux solaires Envertech-Lexman | production (W) |
 | ✅ Supporté | Capteurs mouvement / ouverture (Lexman, …) | binary_sensor |

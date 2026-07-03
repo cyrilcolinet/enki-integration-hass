@@ -90,6 +90,41 @@ def direction_to_enki_rotation(direction: str) -> str:
     return mapped
 
 
+def select_light_color_modes(
+    *, has_hs: bool, has_color_temp: bool, has_brightness: bool
+) -> set[str]:
+    """Pick the Home Assistant ``supported_color_modes`` set for an Enki light.
+
+    Home Assistant forbids combining ``brightness`` or ``onoff`` with any real
+    color mode (a color mode already implies brightness control), but it *does*
+    allow combining ``hs`` and ``color_temp`` (a colour bulb that also does
+    tunable white). Return the most capable valid set of ``ColorMode`` *value*
+    strings.
+    """
+    color_modes: set[str] = set()
+    if has_hs:
+        color_modes.add("hs")
+    if has_color_temp:
+        color_modes.add("color_temp")
+    if color_modes:
+        return color_modes
+    if has_brightness:
+        return {"brightness"}
+    return {"onoff"}
+
+
+def hs_to_enki(hue: float, saturation: float) -> tuple[float, float]:
+    """Convert HA HS (hue 0–360, sat 0–100) to Enki normalized 0–1 floats."""
+    return round(hue / 360, 2), round(saturation / 100, 2)
+
+
+def enki_to_hs(hue: Any, saturation: Any) -> tuple[float, float] | None:
+    """Convert Enki normalized hue/saturation to HA HS. None if either is missing."""
+    if hue is None or saturation is None:
+        return None
+    return round(float(hue) * 360, 2), round(float(saturation) * 100, 2)
+
+
 def merge_light_state_payload(
     current: dict[str, Any],
     changes: dict[str, Any],
@@ -106,6 +141,8 @@ def merge_light_state_payload(
         return payload
     payload["power"] = "ON"
     payload.update(changes)
+    if "colorTemperature" in changes:
+        payload["colorMode"] = "ct"
     return payload
 
 

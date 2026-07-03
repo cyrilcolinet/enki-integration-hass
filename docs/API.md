@@ -102,6 +102,13 @@ Gateway key: `ENKI_ACCESS_MOTORIZATION_API_KEY` in `const.py`. Capture procedure
 | On/off | `power` | `"ON"` / `"OFF"` |
 | Brightness | `brightness` | float, device-specific max (often `100`) |
 | Colour temperature | `colorTemperature` | `"T3500K"` style strings |
+| Hue (RGB bulbs) | `hue` | normalized float `0.0`–`1.0` (HA hue ÷ 360) |
+| Saturation (RGB bulbs) | `saturation` | normalized float `0.0`–`1.0` (HA sat ÷ 100) |
+
+RGB bulbs (e.g. Lexman) advertise `change_hue` + `change_saturation` and map to
+HA's `ColorMode.HS`. When the bulb also advertises `change_color_temperature`,
+the integration exposes both `hs` and `color_temp`; the reported `colorMode`
+field (`hs` vs `ct`) indicates which mode is active.
 
 ## Future device families (not implemented yet)
 
