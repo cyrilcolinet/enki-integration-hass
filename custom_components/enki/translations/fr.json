@@ -102,6 +102,15 @@
       },
       "contact": {
         "name": "Contact"
+      },
+      "water_leak": {
+        "name": "Fuite d'eau"
+      },
+      "window": {
+        "name": "Fenêtre"
+      },
+      "occupancy": {
+        "name": "Présence"
       }
     },
     "switch": {
@@ -113,6 +122,12 @@
       },
       "siren": {
         "name": "Sirène"
+      },
+      "window_open_detection_mode": {
+        "name": "Détection fenêtre ouverte"
+      },
+      "occupancy_mode": {
+        "name": "Mode présence"
       }
     },
     "number": {
@@ -123,6 +138,24 @@
     "cover": {
       "roller_shutter": {
         "name": "Volet (beta)"
+      }
+    },
+    "select": {
+      "pilot_wire": {
+        "name": "Mode fil pilote",
+        "state": {
+          "comfort": "Confort",
+          "comfort_1": "Confort -1",
+          "comfort_2": "Confort -2",
+          "eco": "Éco",
+          "frost_protection": "Hors gel",
+          "off": "Arrêt"
+        }
+      }
+    },
+    "climate": {
+      "thermostat": {
+        "name": "Thermostat"
       }
     }
   }

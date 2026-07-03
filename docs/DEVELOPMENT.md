@@ -23,6 +23,8 @@ Sans compte Enki ni matériel :
 pytest tests/unit -v
 ```
 
+(87 tests au compteur actuel sur la branche de dev.)
+
 ## Lint et format
 
 ```bash
@@ -64,18 +66,21 @@ Déclenché sur chaque push vers `main` et chaque pull request :
 | Lint | Ruff check + format |
 | Unit tests | `pytest tests/unit` |
 | Hassfest | Validation intégration HA |
-| HACS | Validation dépôt HACS |
+| HACS | Validation dépôt (éligibilité store par défaut) |
 
 Tests live : uniquement via `workflow_dispatch` avec secrets `ENKI_*` configurés sur le dépôt.
 
 ## Publier une release
 
+1. Mettre à jour `custom_components/enki/manifest.json` avec la version cible (ex. `1.5.0`)
+2. Taguer et pousser :
+
 ```bash
-git tag v1.0.6
-git push origin v1.0.6
+git tag v1.5.0
+git push origin v1.5.0
 ```
 
-Créer la release sur GitHub — le workflow `release.yml` génère le ZIP HACS et met à jour la version dans `manifest.json`.
+3. Créer la **GitHub Release** depuis le tag — le workflow [`release.yml`](../.github/workflows/release.yml) attache `enki.zip` avec la version du tag injectée dans le manifest du ZIP (sans commit automatique sur le dépôt).
 
 ## Documentation technique
 
@@ -83,40 +88,41 @@ Créer la release sur GitHub — le workflow `release.yml` génère le ZIP HACS 
 |----------|---------|
 | [API.md](API.md) | Endpoints cloud Enki (reverse engineering) |
 | [HACS.md](HACS.md) | Checklist publication HACS |
+| [SUPPORTED_DEVICES.md](SUPPORTED_DEVICES.md) | Matériel et statut réel par appareil |
 
 ## Structure du code
 
-Home Assistant exige que les plateformes (`fan.py`, `light.py`, `sensor.py`) et `config_flow.py` restent à la racine de `custom_components/enki/`. Le reste est organisé par couche :
+Home Assistant exige que les **loaders de plateforme** et `config_flow.py` restent à la racine de `custom_components/enki/`. Le reste est organisé par couche :
 
 ```
 custom_components/enki/
-├── __init__.py, manifest.json, config_flow.py
-├── coordinator.py, entity.py, diagnostics.py, const.py, exceptions.py
-├── fan.py, light.py, sensor.py          # plateformes HA (loader)
-├── strings.json, translations/, brand/
+├── __init__.py, manifest.json, config_flow.py, coordinator.py, entity.py
+├── binary_sensor.py, climate.py, cover.py, fan.py, light.py
+├── number.py, select.py, sensor.py, switch.py, diagnostics.py
+├── const.py, exceptions.py, strings.json, translations/, brand/
 │
-├── api/                                 # couche cloud
-│   ├── client.py                        # discovery + commandes REST
-│   ├── auth.py                          # OAuth Keycloak
-│   └── transport.py                     # HTTP par micro-service
+├── api/                    # couche cloud
+│   ├── client.py           # discovery + commandes REST
+│   ├── auth.py             # OAuth Keycloak
+│   └── transport.py        # HTTP par micro-service
 │
-├── domain/                              # modèle métier (sans import HA)
-│   ├── models.py, capabilities.py
-│   ├── state.py                         # champs last_reported_value
-│   └── profile.py                       # profils anonymisés (télémétrie)
+├── domain/                 # modèle métier (sans import HA)
+│   ├── models.py, capabilities.py, state.py, profile.py
 │
-├── platforms/                           # logique interne des plateformes
-│   ├── light/behavior.py                # mixin lumière partagé
-│   └── fan/airflow.py                   # presets, rotation, airflow mode
+├── platforms/              # logique interne partagée
+│   ├── light/behavior.py
+│   └── fan/airflow.py
 │
 ├── telemetry/
-│   ├── reporter.py                      # notification profil appareil
-│   └── nudge.py                         # opt-in legacy
+│   ├── reporter.py
+│   └── nudge.py
 │
-└── lib/                                 # fonctions pures (0 import HA)
-    ├── conversion.py                    # vitesses, rotation, payloads lumière
-    └── bff.py                           # parse champs dashboard BFF
+└── lib/                    # fonctions pures (0 import HA)
+    ├── conversion.py, bff.py, battery.py, capability_path.py
+    ├── heating.py, shutter.py, enki_scope.py
 ```
+
+Plateformes enregistrées dans `__init__.py` → `PLATFORMS` : `binary_sensor`, `climate`, `cover`, `fan`, `light`, `number`, `select`, `sensor`, `switch`.
 
 ### Conventions d’import
 

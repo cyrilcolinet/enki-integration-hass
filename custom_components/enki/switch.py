@@ -39,6 +39,26 @@ _SWITCH_SPECS: tuple[dict[str, str], ...] = (
         "translation_key": "siren",
         "service": "siren",
     },
+    {
+        "switch_capability": "change_window_open_detection_mode",
+        "check_capability": "check_window_open_detection_mode",
+        "state_key": "window_open_detection_mode",
+        "suffix": "window_open_detection_mode",
+        "translation_key": "window_open_detection_mode",
+        "service": "heating",
+        "on_value": "ENABLED",
+        "off_value": "DISABLED",
+    },
+    {
+        "switch_capability": "change_occupancy_mode",
+        "check_capability": "check_occupancy_mode",
+        "state_key": "occupancy_mode",
+        "suffix": "occupancy_mode",
+        "translation_key": "occupancy_mode",
+        "service": "heating",
+        "on_value": "ENABLED",
+        "off_value": "DISABLED",
+    },
 )
 
 
@@ -79,6 +99,8 @@ def _build_switch_entities(
                 suffix=spec["suffix"],
                 translation_key=spec["translation_key"],
                 service=spec["service"],
+                on_value=spec.get("on_value", "ON"),
+                off_value=spec.get("off_value", "OFF"),
             )
         )
     return entities
@@ -100,12 +122,16 @@ class EnkiConfigSwitch(EnkiEntity, SwitchEntity):
         suffix: str,
         translation_key: str,
         service: str,
+        on_value: str = "ON",
+        off_value: str = "OFF",
     ) -> None:
         super().__init__(coordinator, device)
         self._switch_capability = switch_capability
         self._check_capability = check_capability
         self._state_key = state_key
         self._service = service
+        self._on_value = on_value
+        self._off_value = off_value
         self._attr_translation_key = translation_key
         self._attr_unique_id = f"{DOMAIN}-{device.node_id}-{suffix}"
 
@@ -113,16 +139,20 @@ class EnkiConfigSwitch(EnkiEntity, SwitchEntity):
     def is_on(self) -> bool | None:
         value = self._device.last_reported_value.get(self._state_key)
         if isinstance(value, str):
-            return value.upper() == "ON"
+            normalized = value.upper()
+            if normalized == self._on_value.upper():
+                return True
+            if normalized == self._off_value.upper():
+                return False
         return None
 
     async def async_turn_on(self, **kwargs: Any) -> None:
-        await self._set_power("ON")
+        await self._set_value(self._on_value)
 
     async def async_turn_off(self, **kwargs: Any) -> None:
-        await self._set_power("OFF")
+        await self._set_value(self._off_value)
 
-    async def _set_power(self, value: str) -> None:
+    async def _set_value(self, value: str) -> None:
         await self.coordinator.api.async_set_capability_value(
             self._device.home_id,
             self._device.node_id,

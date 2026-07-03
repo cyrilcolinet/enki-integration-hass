@@ -226,6 +226,66 @@ class EnkiCapabilityProfile:
         )
 
     @property
+    def supports_water_leak(self) -> bool:
+        return _supports(
+            self.capabilities,
+            self.possible_values,
+            "check_water_sensor_state",
+        )
+
+    @property
+    def supports_pilot_wire(self) -> bool:
+        return _supports(
+            self.capabilities,
+            self.possible_values,
+            "switch_pilot_wire_mode",
+            "check_pilot_wire_state",
+        )
+
+    @property
+    def supports_thermostat(self) -> bool:
+        return _supports(
+            self.capabilities,
+            self.possible_values,
+            "change_thermostat_target_temperature",
+            "check_thermostat_target_temperature",
+        )
+
+    @property
+    def supports_window_open_detection(self) -> bool:
+        return _supports(
+            self.capabilities,
+            self.possible_values,
+            "check_window_open_detection",
+        )
+
+    @property
+    def supports_occupancy(self) -> bool:
+        return _supports(
+            self.capabilities,
+            self.possible_values,
+            "check_occupancy",
+        )
+
+    @property
+    def supports_window_open_detection_mode(self) -> bool:
+        return _supports(
+            self.capabilities,
+            self.possible_values,
+            "change_window_open_detection_mode",
+            "check_window_open_detection_mode",
+        )
+
+    @property
+    def supports_occupancy_mode(self) -> bool:
+        return _supports(
+            self.capabilities,
+            self.possible_values,
+            "change_occupancy_mode",
+            "check_occupancy_mode",
+        )
+
+    @property
     def supports_color_temperature(self) -> bool:
         return _supports(
             self.capabilities,
@@ -282,7 +342,9 @@ class EnkiCapabilityProfile:
 
     @property
     def is_environment_sensor(self) -> bool:
-        """Temperature, humidity, or battery level sensors."""
+        """Temperature, humidity, or battery level sensors (not thermostats)."""
+        if self.supports_thermostat:
+            return self.supports_current_humidity or self.supports_battery_health
         return (
             self.supports_current_temperature
             or self.supports_current_humidity
@@ -291,20 +353,35 @@ class EnkiCapabilityProfile:
 
     @property
     def is_binary_sensor(self) -> bool:
-        """Motion, contact, or vibration detectors."""
+        """Motion, contact, vibration, water leak, window, or occupancy detectors."""
         return (
             self.supports_motion_detection
             or self.supports_contact_sensor
             or self.supports_vibration_detection
+            or self.supports_water_leak
+            or self.supports_window_open_detection
+            or self.supports_occupancy
         )
 
     @property
+    def is_climate(self) -> bool:
+        """Radiators and thermostats with a target temperature setpoint."""
+        return self.supports_thermostat
+
+    @property
+    def is_pilot_wire(self) -> bool:
+        """Fil pilote controllers (Confort / Éco / Off)."""
+        return self.supports_pilot_wire
+
+    @property
     def is_config_switch(self) -> bool:
-        """Detection activation toggles and sirens (not power outlets)."""
+        """Detection activation toggles, sirens, and heating feature modes."""
         return (
             self.supports_vibration_detection_activation
             or self.supports_contact_detection_activation
             or self.supports_siren
+            or self.supports_window_open_detection_mode
+            or self.supports_occupancy_mode
         )
 
     @property
@@ -317,6 +394,8 @@ class EnkiCapabilityProfile:
             or self.is_environment_sensor
             or self.is_binary_sensor
             or self.is_config_switch
+            or self.is_climate
+            or self.is_pilot_wire
             or self.supports_vibration_sensibility
         )
 

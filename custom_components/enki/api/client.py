@@ -18,6 +18,7 @@ from ..lib.conversion import (
     merge_light_state_payload,
     normalize_power_state,
 )
+from ..lib.enki_scope import device_in_enki_scope
 from ..lib.shutter import normalize_shutter_position
 from .auth import EnkiAuthSession
 from .transport import EnkiHttpClient
@@ -46,6 +47,18 @@ _SENSOR_CAPABILITY_READS: tuple[tuple[str, str, str], ...] = (
         "vibration_sensibility_level",
     ),
     ("siren", "check_siren_global_state", "siren_global_state"),
+    ("water_sensor", "check_water_sensor_state", "water_sensor_state"),
+)
+
+_HEATING_CAPABILITY_READS: tuple[tuple[str, str], ...] = (
+    ("check_pilot_wire_state", "pilot_wire_state"),
+    ("check_thermostat_target_temperature", "thermostat_target_temperature"),
+    ("check_thermostat_running_state", "thermostat_running_state"),
+    ("check_current_temperature", "current_temperature"),
+    ("check_window_open_detection", "window_open_detection"),
+    ("check_window_open_detection_mode", "window_open_detection_mode"),
+    ("check_occupancy", "occupancy"),
+    ("check_occupancy_mode", "occupancy_mode"),
 )
 
 
@@ -168,13 +181,24 @@ class EnkiAPI:
             main_change_capability_endpoints=main_change_endpoints,
             power_production=power_production,
         )
-        supported = integration_supports_device(skeleton)
-
         manufacturer = (
             node_info.get("manufacturerId")
             or device_info.get("manufacturerId")
             or device_info.get("manufacturer")
         )
+        manufacturer_str = str(manufacturer) if manufacturer else None
+
+        if not device_in_enki_scope(manufacturer=manufacturer_str, device_type=device_type):
+            LOGGER.debug(
+                "Skipping non-Enki device %s (manufacturer=%s, type=%s) — "
+                "third-party Zigbee belongs in Zigbee2MQTT or ZHA",
+                device_name,
+                manufacturer_str or "unknown",
+                device_type,
+            )
+            supported = False
+        else:
+            supported = integration_supports_device(skeleton)
         model = node_info.get("modelNumber") or device_info.get("modelNumber")
         firmware = node_info.get("version") or device_info.get("version")
 
@@ -183,7 +207,7 @@ class EnkiAPI:
             bff_device_type=bff_type,
             capabilities=capabilities,
             possible_values=possible_values,
-            manufacturer=str(manufacturer) if manufacturer else None,
+            manufacturer=manufacturer_str,
             model=str(model) if model else None,
             firmware_version=str(firmware) if firmware else None,
             supported_by_integration=supported,
@@ -277,7 +301,35 @@ class EnkiAPI:
             state["power_production"] = device.power_production
 
         await self._append_sensor_capability_states(http, home_id, node_id, profile, state)
+        await self._append_heating_capability_states(http, home_id, node_id, profile, state)
         return state
+
+    async def _append_heating_capability_states(
+        self,
+        http: EnkiHttpClient,
+        home_id: str,
+        node_id: str,
+        profile: EnkiCapabilityProfile,
+        state: dict[str, Any],
+    ) -> None:
+        """Best-effort reads for heating micro-service (pilot wire, thermostats)."""
+        caps = profile.capabilities
+        for capability, state_key in _HEATING_CAPABILITY_READS:
+            if capability not in caps:
+                continue
+            if capability == "check_current_temperature" and not profile.supports_thermostat:
+                continue
+            try:
+                data = await http.capability_get("heating", home_id, node_id, capability)
+                if data and "lastReportedValue" in data:
+                    state[state_key] = data["lastReportedValue"]
+            except EnkiConnectionError as err:
+                LOGGER.debug(
+                    "Heating capability %s skipped for node %s: %s",
+                    capability,
+                    node_id,
+                    err,
+                )
 
     async def _append_sensor_capability_states(
         self,
@@ -291,6 +343,8 @@ class EnkiAPI:
         caps = profile.capabilities
         for service, capability, state_key in _SENSOR_CAPABILITY_READS:
             if capability not in caps:
+                continue
+            if capability == "check_current_temperature" and profile.supports_thermostat:
                 continue
             try:
                 data = await http.capability_get(service, home_id, node_id, capability)
@@ -483,9 +537,39 @@ class EnkiAPI:
         capability: str,
         value: Any,
     ) -> None:
-        """POST a change/switch/activate capability on a sensor micro-service."""
+        """POST a change/switch/activate capability on a sensor or heating micro-service."""
         http = await self._get_http()
         await http.capability_post(service, home_id, node_id, capability, value)
+
+    async def async_set_pilot_wire_mode(
+        self,
+        home_id: str,
+        node_id: str,
+        mode: str,
+    ) -> None:
+        """Set fil pilote mode (COMFORT, ECO, OFF, …)."""
+        await self.async_set_capability_value(
+            home_id,
+            node_id,
+            "heating",
+            "switch_pilot_wire_mode",
+            mode,
+        )
+
+    async def async_set_thermostat_target_temperature(
+        self,
+        home_id: str,
+        node_id: str,
+        temperature: float,
+    ) -> None:
+        """Set radiator / thermostat target temperature (°C)."""
+        await self.async_set_capability_value(
+            home_id,
+            node_id,
+            "heating",
+            "change_thermostat_target_temperature",
+            temperature,
+        )
 
     async def async_set_light_power(self, home_id: str, node_id: str, on: bool) -> None:
         """Turn the ESDK fan light kit on or off (lighting API)."""

@@ -33,6 +33,13 @@ ENKI_PRESENCE_DETECTOR_API_KEY = "bHEwVewJI2aNUiDX6KXt9ErzazfkarYp"
 ENKI_CONTACT_SENSOR_API_KEY = "B2K2xlXnpVGEPylKq0Xn79LRuBG60w30"
 ENKI_SIREN_API_KEY = "9jDuso0Im0tTAvj6Ecf0B1HWENeOykZa"
 
+# api-enki-heating-prod (fil pilote, radiateurs Noirot/ACOVA, …).
+# Capture X-Gateway-APIKey when controlling heating in the Enki app — see docs/API.md.
+ENKI_HEATING_API_KEY = ""
+
+# api-enki-water-sensor-prod (détecteurs de fuite Lexman, …).
+ENKI_WATER_SENSOR_API_KEY = ""
+
 FAN_ENDPOINT = 1
 LIGHT_ENDPOINT = 2
 

@@ -161,6 +161,45 @@ class EnkiDeviceState:
         return str(value) if isinstance(value, str) else None
 
     @property
+    def water_sensor_state(self) -> str | None:
+        value = self._data.get("water_sensor_state")
+        return str(value) if isinstance(value, str) else None
+
+    @property
+    def pilot_wire_state(self) -> str | None:
+        value = self._data.get("pilot_wire_state")
+        return str(value) if isinstance(value, str) else None
+
+    @property
+    def thermostat_target_temperature(self) -> float | None:
+        return _as_float(self._data.get("thermostat_target_temperature"))
+
+    @property
+    def thermostat_running_state(self) -> str | None:
+        value = self._data.get("thermostat_running_state")
+        return str(value) if isinstance(value, str) else None
+
+    @property
+    def window_open_detection(self) -> str | None:
+        value = self._data.get("window_open_detection")
+        return str(value) if isinstance(value, str) else None
+
+    @property
+    def window_open_detection_mode(self) -> str | None:
+        value = self._data.get("window_open_detection_mode")
+        return str(value) if isinstance(value, str) else None
+
+    @property
+    def occupancy(self) -> str | None:
+        value = self._data.get("occupancy")
+        return str(value) if isinstance(value, str) else None
+
+    @property
+    def occupancy_mode(self) -> str | None:
+        value = self._data.get("occupancy_mode")
+        return str(value) if isinstance(value, str) else None
+
+    @property
     def electrical_endpoints(self) -> list[dict[str, Any]]:
         endpoints = self._data.get("electrical_endpoints")
         if isinstance(endpoints, list):

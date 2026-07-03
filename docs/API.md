@@ -50,8 +50,10 @@ Detection is **capability-based** (referentiel metadata + BFF dashboard), not li
 | `lights` (+ light capabilities) | `light` | `api-enki-lighting-prod` |
 | Switches / outlets (Edisio, …) | `light` (ON/OFF) | `api-enki-power-prod` (`switch-electrical-power`) |
 | `inverters` (Envertech-Lexman solar) | `sensor` (power W) | BFF dashboard `description.value` |
-| `access_and_motorizations` (Evology, Nodon, …) | `cover` (beta) | `api-enki-access-and-motorizations-prod` |
-| `sensors` (motion, contact, temperature, …) | `binary_sensor`, `sensor`, `switch`, `number` | `api-enki-presence-detector-prod`, `api-enki-contact-sensor-prod`, `api-enki-temperature-humidity-sensor-prod`, `api-enki-battery-health-prod`, `api-enki-siren-prod` |
+| `access_and_motorizations` (Evology, Nodon, …) | `cover` (beta) | `api-enki-access-and-motorizations-prod` — **skipped** if `ENKI_ACCESS_MOTORIZATION_API_KEY` is empty |
+| `sensors` (motion, contact, temperature, …) | `binary_sensor`, `sensor`, `switch`, `number` | presence, contact, temperature-humidity, battery-health, siren micro-services |
+| Heating / pilot wire / thermostat | `select`, `climate`, `switch`, `binary_sensor` | `api-enki-heating-prod` — reads skipped / writes fail if `ENKI_HEATING_API_KEY` is empty |
+| Water leak sensors | `binary_sensor`, `sensor` (battery) | `api-enki-water-sensor-prod` + `api-enki-battery-health-prod` — leak read skipped if `ENKI_WATER_SENSOR_API_KEY` is empty |
 
 Sensor capability paths follow the same pattern as [StephaneBranly/ha-enki](https://github.com/StephaneBranly/ha-enki): `GET/POST …/v1/sensors/{node_id}/{kebab-case-capability}` (siren uses `/v1/siren/`).
 
@@ -74,8 +76,7 @@ Commands:
 - `POST …/change-fan-speed` — body `{"value": <0-6>}`, expect `202`
 - `POST …/change-airflow-mode` — body `{"value": "MANUAL"|"BREEZE"}`, expect `202` or `204` (mode brise)
 - `POST …/change-fan-rotation-direction` — body `{"value": "CLOCKWISE"|"COUNTERCLOCKWISE"}`, expect `202` or `204` (Inspire; enables `fan.set_direction` in HA)
-- `POST …/change-light-state` — full `lastReportedValue` object, expect `202`
-- `POST …/change-light-state` — body is the full lighting state object; `power` ON/OFF for the fan light kit
+- `POST …/change-light-state` — full `lastReportedValue` object; `power` ON/OFF for the fan light kit
 - `POST …/switch-electrical-power?endpoints=1|2` — fan motor only in practice; light kit uses lighting `power`
 
 Fan motor and light kit are **independent** (turning the fan on does not switch the light on).
@@ -93,7 +94,7 @@ Commands:
 
 - `POST …/change-shutter-position` — body `{"value": <0-100>}`, expect `202` or `204`
 
-Gateway key: `ENKI_ACCESS_MOTORIZATION_API_KEY` in `const.py`. Capture procedure: [BETA_VOLETS_KEY.md](BETA_VOLETS_KEY.md). End-user testing (no proxy): [SUPPORTED_DEVICES.md](SUPPORTED_DEVICES.md#pour-les-testeurs).
+Gateway key: `ENKI_ACCESS_MOTORIZATION_API_KEY` in `const.py` (currently **empty** — nodes are not imported until set). Capture procedure: [BETA_VOLETS_KEY.md](BETA_VOLETS_KEY.md).
 
 ### Standard lights (Eglo V-Link, Lexman, etc.)
 
@@ -110,9 +111,31 @@ HA's `ColorMode.HS`. When the bulb also advertises `change_color_temperature`,
 the integration exposes both `hs` and `color_temp`; the reported `colorMode`
 field (`hs` vs `ct`) indicates which mode is active.
 
-## Future device families (not implemented yet)
+## Heating and water sensors (manifest ≥ 1.5.0)
 
-The Enki app also controls heating, alarms, and Enki scenarios via other microservices (`api-enki-heating-prod`, BFF scenario player, etc.). Use `scripts/discover_devices.py` to dump unknown `deviceType` values from your account before adding new platforms.
+**Released on GitHub:** not yet at v1.5.0 (latest tag: [v1.3.3](https://github.com/cyrilcolinet/enki-integration-hass/releases/latest)). Code present on branch `feat/heating-water-devices` (not merged to `main` yet).
+
+**Heating base URL:** `https://enki.api.devportal.adeo.cloud/api-enki-heating-prod/v1/heating/{nodeId}/`
+
+| Capability | Platform | Notes |
+|------------|----------|-------|
+| `check_pilot_wire_state` / `switch_pilot_wire_mode` | `select` | COMFORT, ECO, OFF, … |
+| `check_thermostat_target_temperature` / `change_thermostat_target_temperature` | `climate` | °C setpoint |
+| `check_thermostat_running_state` | `climate` | HEAT / IDLE → `hvac_action` |
+| `check_window_open_detection` | `binary_sensor` | WINDOW_OPEN / NO_WINDOW_OPEN |
+| `check_occupancy` | `binary_sensor` | OCCUPIED / UNOCCUPIED |
+
+**Water leak base URL:** `https://enki.api.devportal.adeo.cloud/api-enki-water-sensor-prod/v1/sensors/{nodeId}/`
+
+| Capability | Platform |
+|------------|----------|
+| `check_water_sensor_state` | `binary_sensor` (moisture) |
+
+Gateway keys: `ENKI_HEATING_API_KEY` and `ENKI_WATER_SENSOR_API_KEY` in `const.py`. Capture `X-Gateway-APIKey` from the Enki mobile app when controlling a radiator or reading a leak sensor (same mitmproxy workflow as [BETA_VOLETS_KEY.md](BETA_VOLETS_KEY.md)). Reads are skipped silently when a key is missing; writes raise a clear error.
+
+## Future device families
+
+The Enki app also controls alarms and Enki scenarios via other microservices (BFF scenario player, etc.). Use `scripts/discover_devices.py` to dump unknown `deviceType` values from your account before adding new platforms.
 
 ## References
 

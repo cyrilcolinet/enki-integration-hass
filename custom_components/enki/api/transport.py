@@ -13,6 +13,7 @@ from ..const import (
     ENKI_BATTERY_HEALTH_API_KEY,
     ENKI_BFF_API_KEY,
     ENKI_CONTACT_SENSOR_API_KEY,
+    ENKI_HEATING_API_KEY,
     ENKI_HOME_API_KEY,
     ENKI_LIGHTS_API_KEY,
     ENKI_NODE_API_KEY,
@@ -21,6 +22,8 @@ from ..const import (
     ENKI_REFERENTIEL_API_KEY,
     ENKI_SIREN_API_KEY,
     ENKI_TEMPERATURE_HUMIDITY_API_KEY,
+    ENKI_WATER_SENSOR_API_KEY,
+    LOGGER,
     REFERENTIEL_VERSION,
 )
 from ..exceptions import EnkiApiNotFoundError, EnkiConnectionError
@@ -50,6 +53,8 @@ class EnkiHttpClient:
         "presence_detector": ENKI_PRESENCE_DETECTOR_API_KEY,
         "contact_sensor": ENKI_CONTACT_SENSOR_API_KEY,
         "siren": ENKI_SIREN_API_KEY,
+        "heating": ENKI_HEATING_API_KEY,
+        "water_sensor": ENKI_WATER_SENSOR_API_KEY,
     }
 
     _SERVICE_PATH_PREFIX = {
@@ -58,7 +63,11 @@ class EnkiHttpClient:
         "presence_detector": "/api-enki-presence-detector-prod/v1/sensors",
         "contact_sensor": "/api-enki-contact-sensor-prod/v1/sensors",
         "siren": "/api-enki-siren-prod/v1/siren",
+        "heating": "/api-enki-heating-prod/v1/heating",
+        "water_sensor": "/api-enki-water-sensor-prod/v1/sensors",
     }
+
+    _OPTIONAL_API_KEY_SERVICES = frozenset({"heating", "water_sensor"})
 
     def __init__(self, auth: EnkiAuthSession, session: aiohttp.ClientSession) -> None:
         self._auth = auth
@@ -71,8 +80,19 @@ class EnkiHttpClient:
     async def ensure_token(self) -> None:
         await self._auth.ensure_valid(self._session)
 
+    def _service_api_key(self, service: str) -> str | None:
+        api_key = self._API_KEYS.get(service, "")
+        if api_key:
+            return api_key
+        if service in self._OPTIONAL_API_KEY_SERVICES:
+            return None
+        return api_key
+
     def _headers(self, service: str, home_id: str | None = None) -> dict[str, str]:
-        extra: dict[str, str] = {"X-Gateway-APIKey": self._API_KEYS[service]}
+        extra: dict[str, str] = {}
+        api_key = self._service_api_key(service)
+        if api_key:
+            extra["X-Gateway-APIKey"] = api_key
         if home_id is not None:
             extra["homeId"] = home_id
         return self._auth.auth_headers(extra)
@@ -275,7 +295,14 @@ class EnkiHttpClient:
         node_id: str,
         capability: str,
     ) -> dict[str, Any]:
-        """GET a check_* capability on a sensor micro-service."""
+        """GET a check_* capability on a sensor or heating micro-service."""
+        if not self._service_api_key(service):
+            LOGGER.debug(
+                "Skipping %s read for node %s — API key not configured (see docs/API.md)",
+                capability,
+                node_id,
+            )
+            return {}
         prefix = self._SERVICE_PATH_PREFIX[service]
         action = capability_to_path_segment(capability)
         return await self.get_json(
@@ -294,6 +321,11 @@ class EnkiHttpClient:
         value: Any,
     ) -> None:
         """POST a change_*/switch_*/activate_* capability."""
+        if not self._service_api_key(service):
+            raise EnkiConnectionError(
+                f"Heating/water API key is not configured for {capability}. "
+                "Capture X-Gateway-APIKey from the Enki app — see docs/API.md."
+            )
         prefix = self._SERVICE_PATH_PREFIX[service]
         action = capability_to_path_segment(capability)
         await self.post_command(

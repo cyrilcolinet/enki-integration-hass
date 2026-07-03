@@ -11,31 +11,48 @@ Contrôlez vos appareils **Enki** (Leroy Merlin) depuis Home Assistant.
 
 Mêmes identifiants que l’**application mobile Enki**. La box Enki doit déjà fonctionner avec l’app — rien à configurer de plus côté HA.
 
-**Liens rapides :** [Installation HACS](#installation-avec-hacs) · [Appareils supportés](docs/SUPPORTED_DEVICES.md) · [Dernière release](https://github.com/cyrilcolinet/enki-integration-hass/releases/latest) · [Signaler un bug](https://github.com/cyrilcolinet/enki-integration-hass/issues/new?template=bug.yml) · [Contribuer](CONTRIBUTING.md)
+**Liens rapides :** [Installation HACS](#installation-avec-hacs) · [Appareils supportés](docs/SUPPORTED_DEVICES.md) · [Feuille de route (tableau)](docs/ROADMAP.md) · [Dernière release](https://github.com/cyrilcolinet/enki-integration-hass/releases/latest) · [Signaler un bug](https://github.com/cyrilcolinet/enki-integration-hass/issues/new?template=bug.yml) · [Contribuer](CONTRIBUTING.md)
 
 ## Feuille de route
 
-| Statut | Appareil | Fonctionnalités |
-|--------|----------|-------------------|
-| ✅ Supporté | Ventilateurs Inspire (Siroco+, Cadix, …) | ventilateur, lumière kit, vitesse, sens, modes |
-| ✅ Supporté | Luminaires Enki (Eglo, Lexman, …) | ON/OFF, luminosité, blanc variable, couleur RGB (HS) |
-| ✅ Supporté | Prises / interrupteurs (Edisio, …) | ON/OFF |
-| ✅ Supporté | Panneaux solaires Envertech-Lexman | production (W) |
-| ✅ Supporté | Capteurs mouvement / ouverture (Lexman, …) | binary_sensor |
-| ✅ Supporté | Thermomètres connectés (Sedea, …) | température, humidité, batterie |
-| ✅ Supporté | Sirènes Lexman | ON/OFF |
-| 🔬 Beta | Volets roulants (Evology, …) | ouverture, fermeture, position 0–100 % |
-| ✅ Supporté | Relais ON/OFF Equation | ON/OFF (comme prises Edisio) |
-| ✅ Supporté | Thermomètre Sonoff (écran) | température, humidité, batterie |
-| 🔜 Bientôt | Détecteur fuite Lexman | fuite d'eau + batterie |
-| 🔜 Bientôt | Fil pilote Equation | modes Confort / Éco / Hors-gel |
-| 🔜 Bientôt | Radiateur Noirot | climate (consigne, occupancy, fenêtre) |
-| 🔜 Bientôt | Radiateurs ACOVA ARLAN | — |
-| 🔜 Bientôt | Scénarios Enki (« Ouvrir Salon », …) | — |
-| ⏳ Pas prévu | Alarme Enki | — |
-| ⏳ Pas prévu | Store HACS global | dépôt custom pour l’instant |
+Dernière release GitHub : **[v1.3.3](https://github.com/cyrilcolinet/enki-integration-hass/releases/latest)** — version du dépôt (`manifest.json`) : **1.5.0** (prochaine release).
 
-Détail complet par appareil : [docs/SUPPORTED_DEVICES.md](docs/SUPPORTED_DEVICES.md)
+**Non publié dans v1.3.3 :** couleur RGB (HS) — sur `main` (1.4.1). Chauffage / fuite / filtre fabricant Enki — sur cette branche (1.5.0).
+
+### ✅ Supporté
+
+- **Ventilateurs Inspire** (Siroco+, Cadix, …) — ventilateur, lumière kit, vitesse, sens, modes (selon référentiel)
+- **Luminaires Enki** (Eglo, Lexman, …) — ON/OFF, luminosité, blanc variable, couleur RGB (HS) si `change_hue` + `change_saturation`
+- **Prises / interrupteurs** (Edisio, Equation, …) — ON/OFF via `switch-electrical-power`
+- **Panneaux solaires Envertech-Lexman** — production (W) via dashboard BFF
+- **Capteurs mouvement / ouverture / vibration** (Lexman, …) — `binary_sensor`
+- **Thermomètres Enki** (Sedea, …) — température, humidité, batterie
+- **Sirènes Lexman** — `switch` ON/OFF
+- **Relais ON/OFF Equation** — ON/OFF (comme prises Edisio)
+
+### 🔬 Beta
+
+- **Volets roulants** (Evology, Nodon, …) — code `cover` présent ; **aucune entité** tant que `ENKI_ACCESS_MOTORIZATION_API_KEY` est vide dans `const.py`
+- **Détecteur fuite Lexman** (v1.5.0+) — entités créées ; **batterie OK**, état fuite inactif sans `ENKI_WATER_SENSOR_API_KEY`
+- **Fil pilote Equation** (v1.5.0+) — entité `select` ; inactive sans `ENKI_HEATING_API_KEY`
+- **Radiateur Noirot** (v1.5.0+) — `climate` + fenêtre / présence ; inactive sans `ENKI_HEATING_API_KEY`
+
+### 🔜 Bientôt
+
+- **Radiateurs ACOVA ARLAN** — allowlist fabricant OK, pas de matériel de test
+- **Scénarios Enki** (« Ouvrir Salon », …)
+
+### ⏳ Pas prévu
+
+- **Alarme Enki** — pas d’API identifiée
+
+### Publication
+
+- **Store HACS global** — prérequis OK (CI HACS + Hassfest, releases) ; [PR `hacs/default` à ouvrir](docs/HACS.md#store-hacs-par-défaut)
+
+Détail par appareil : [docs/SUPPORTED_DEVICES.md](docs/SUPPORTED_DEVICES.md) · Vue tableau : [docs/ROADMAP.md](docs/ROADMAP.md)
+
+**Hors périmètre :** Zigbee tiers appairé sur la box (Sonoff, Tuya, Aqara, IKEA, …) → [Zigbee2MQTT](https://www.zigbee2mqtt.io/) ou ZHA. Seules les marques **Enki / Leroy Merlin** listées dans [`lib/enki_scope.py`](custom_components/enki/lib/enki_scope.py) sont importées.
 
 ## Prérequis
 
@@ -45,6 +62,11 @@ Détail complet par appareil : [docs/SUPPORTED_DEVICES.md](docs/SUPPORTED_DEVICE
 - Box Enki configurée et appareils visibles dans l’app mobile
 
 ## Installation avec HACS
+
+**Aujourd’hui :** dépôt custom (ci-dessous) ou badge **Open in HACS** en haut de page.  
+**Store HACS par défaut :** le dépôt remplit les prérequis (CI HACS + Hassfest, `hacs.json`, releases) — voir [docs/HACS.md](docs/HACS.md#store-hacs-par-défaut).
+
+### Dépôt custom (méthode actuelle)
 
 1. Ouvrez **HACS** → **Intégrations**
 2. Menu **⋮** (en haut à droite) → **Dépôts personnalisés**
@@ -68,10 +90,8 @@ Vous pouvez aussi cliquer sur le badge **Open in HACS** en haut de cette page.
 
 **Paramètres** → **Appareils et services** → **Enki** → **Configurer**
 
-| Option | Description |
-|--------|-------------|
-| Intervalle de rafraîchissement | Fréquence de mise à jour depuis le cloud (défaut : 30 s) |
-| Télémétrie (opt-in) | Notification pour appareils inconnus ; lien GitHub pré-rempli, rien n’est envoyé sans votre clic |
+- **Intervalle de rafraîchissement** — fréquence de mise à jour depuis le cloud (défaut : 30 s)
+- **Télémétrie (opt-in)** — notification pour appareils inconnus ; lien GitHub pré-rempli, rien n’est envoyé sans votre clic
 
 Pour **changer le mot de passe** : même menu → **Reconfigurer**.
 
@@ -94,18 +114,17 @@ Bug : [ouvrir une issue](https://github.com/cyrilcolinet/enki-integration-hass/i
 
 ## Aide et ressources
 
-| | Sujet | Lien |
-|---|-------|------|
-| 📋 | Appareils supportés (détail) | [docs/SUPPORTED_DEVICES.md](docs/SUPPORTED_DEVICES.md) |
-| 🔬 | Volets beta — guide testeur | [SUPPORTED_DEVICES.md § testeurs](docs/SUPPORTED_DEVICES.md#pour-les-testeurs) |
-| 📦 | Releases et changelog | [GitHub Releases](https://github.com/cyrilcolinet/enki-integration-hass/releases) |
-| 🐛 | Signaler un bug | [Nouvelle issue](https://github.com/cyrilcolinet/enki-integration-hass/issues/new?template=bug.yml) |
-| 💡 | Demander un appareil | [Feature request](https://github.com/cyrilcolinet/enki-integration-hass/issues/new?template=feature_request.yml) |
-| 🤝 | Contribuer | [CONTRIBUTING.md](CONTRIBUTING.md) |
-| 🛠️ | Développement local | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) |
-| 📡 | Télémétrie opt-in | [docs/TELEMETRY.md](docs/TELEMETRY.md) |
-| 🏠 | Support produit Enki | [support.enki-home.com](https://support.enki-home.com/) |
-| 🔗 | Projet d’origine | [CyrilP/hass-enki-component](https://github.com/CyrilP/hass-enki-component) |
+- 📋 [Appareils supportés (détail)](docs/SUPPORTED_DEVICES.md)
+- 🗺️ [Feuille de route (tableau)](docs/ROADMAP.md)
+- 🔬 [Volets beta — guide testeur](docs/SUPPORTED_DEVICES.md#volets-roulants--beta-evology-nodon-)
+- 📦 [Releases et changelog](https://github.com/cyrilcolinet/enki-integration-hass/releases)
+- 🐛 [Signaler un bug](https://github.com/cyrilcolinet/enki-integration-hass/issues/new?template=bug.yml)
+- 💡 [Demander un appareil](https://github.com/cyrilcolinet/enki-integration-hass/issues/new?template=feature_request.yml)
+- 🤝 [Contribuer](CONTRIBUTING.md)
+- 🛠️ [Développement local](docs/DEVELOPMENT.md)
+- 📡 [Télémétrie opt-in](docs/TELEMETRY.md)
+- 🏠 [Support produit Enki](https://support.enki-home.com/)
+- 🔗 [Projet d’origine — CyrilP/hass-enki-component](https://github.com/CyrilP/hass-enki-component)
 
 ## Avertissement
 

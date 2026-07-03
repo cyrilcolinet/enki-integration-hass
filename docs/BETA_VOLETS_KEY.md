@@ -6,7 +6,7 @@ Ce document s’adresse aux **personnes à l’aise avec le réseau / le déboga
 
 L’app mobile Enki envoie, avec chaque requête cloud, un en-tête **`X-Gateway-APIKey`** propre au micro-service (ventilateurs, lumières, volets, etc.). L’intégration Home Assistant embarque ces clés dans `custom_components/enki/const.py`.
 
-Pour les **volets** (`api-enki-access-and-motorizations-prod`), la clé **`ENKI_ACCESS_MOTORIZATION_API_KEY`** n’est pas encore connue publiquement. Sans elle, les entités « Volet (beta) » peuvent apparaître mais les commandes et l’état live échouent.
+Pour les **volets** (`api-enki-access-and-motorizations-prod`), la clé **`ENKI_ACCESS_MOTORIZATION_API_KEY`** n’est pas encore connue publiquement. Tant qu’elle est vide dans `const.py`, l’intégration **n’importe pas** les volets (`is_cover` retourne false) : aucune entité « Volet (beta) » dans Home Assistant.
 
 **Ce n’est pas :**
 

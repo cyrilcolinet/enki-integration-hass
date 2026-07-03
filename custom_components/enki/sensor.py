@@ -41,7 +41,7 @@ def _build_sensor_entities(
 
     if _has_power_production_sensor(device):
         entities.append(EnkiPowerProductionSensor(coordinator, device))
-    if profile.supports_current_temperature:
+    if profile.supports_current_temperature and not profile.is_climate:
         entities.append(EnkiTemperatureSensor(coordinator, device))
     if profile.supports_current_humidity:
         entities.append(EnkiHumiditySensor(coordinator, device))

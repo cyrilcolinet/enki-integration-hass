@@ -28,7 +28,7 @@ La CI fait la même chose + Hassfest + HACS.
 - **`lib/`** — conversion et parsing purs, testables sans HA
 - **`platforms/`** — logique partagée des plateformes (pas les fichiers loader HA)
 - **`telemetry/`** — opt-in profils appareils et nudge legacy
-- **Racine** — `fan.py`, `light.py`, `sensor.py`, `config_flow.py` (exigé par HA)
+- **Racine** — loaders plateforme HA (`fan.py`, `light.py`, `sensor.py`, `binary_sensor.py`, `climate.py`, `cover.py`, `number.py`, `select.py`, `switch.py`) + `config_flow.py` — liste complète dans `__init__.py` → `PLATFORMS`
 
 Imports publics via les `__init__.py` de chaque package (`from enki.api import EnkiAPI`, etc.).
 

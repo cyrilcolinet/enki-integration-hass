@@ -22,6 +22,16 @@ _ENUM_TO_BOOL = {
     "NO_VIBRATION_DETECTED": False,
     "OPENED": True,
     "CLOSED": False,
+    "WATER_DETECTED": True,
+    "NO_WATER_DETECTED": False,
+    "WET": True,
+    "DRY": False,
+    "LEAK": True,
+    "NO_LEAK": False,
+    "WINDOW_OPEN": True,
+    "NO_WINDOW_OPEN": False,
+    "OCCUPIED": True,
+    "UNOCCUPIED": False,
 }
 
 _BINARY_SENSOR_SPECS: tuple[dict[str, str | BinarySensorDeviceClass], ...] = (
@@ -52,6 +62,27 @@ _BINARY_SENSOR_SPECS: tuple[dict[str, str | BinarySensorDeviceClass], ...] = (
         "suffix": "contact",
         "translation_key": "contact",
         "device_class": BinarySensorDeviceClass.OPENING,
+    },
+    {
+        "capability": "check_water_sensor_state",
+        "state_key": "water_sensor_state",
+        "suffix": "water_leak",
+        "translation_key": "water_leak",
+        "device_class": BinarySensorDeviceClass.MOISTURE,
+    },
+    {
+        "capability": "check_window_open_detection",
+        "state_key": "window_open_detection",
+        "suffix": "window",
+        "translation_key": "window",
+        "device_class": BinarySensorDeviceClass.WINDOW,
+    },
+    {
+        "capability": "check_occupancy",
+        "state_key": "occupancy",
+        "suffix": "occupancy",
+        "translation_key": "occupancy",
+        "device_class": BinarySensorDeviceClass.OCCUPANCY,
     },
 )
 
@@ -128,6 +159,12 @@ class EnkiBinarySensor(EnkiEntity, BinarySensorEntity):
             raw = self._device.reported.vibration_detection
         elif raw is None and self._state_key == "contact_sensor_state":
             raw = self._device.reported.contact_sensor_state
+        elif raw is None and self._state_key == "water_sensor_state":
+            raw = self._device.reported.water_sensor_state
+        elif raw is None and self._state_key == "window_open_detection":
+            raw = self._device.reported.window_open_detection
+        elif raw is None and self._state_key == "occupancy":
+            raw = self._device.reported.occupancy
 
         if isinstance(raw, str):
             mapped = _ENUM_TO_BOOL.get(raw.upper())
