@@ -87,3 +87,19 @@ def test_fan_max_speed_from_metadata() -> None:
         possible_values={"change_fan_speed": {"range": {"min": 0, "max": 5}}},
     )
     assert fan_max_speed(device) == 5
+
+
+def test_controls_fan_speed_via_airflow_requires_change_capability_and_range() -> None:
+    read_only = _device(
+        capabilities=["check_fan_speed", "switch_electrical_power"],
+        possible_values={"check_fan_speed": {"range": {"min": 0, "max": 6}}},
+    )
+    assert read_only.profile.can_change_fan_speed is False
+    assert read_only.profile.controls_fan_speed_via_airflow is False
+
+    writable = _device(
+        capabilities=["change_fan_speed", "check_fan_speed"],
+        possible_values={"change_fan_speed": {"range": {"min": 0, "max": 6}}},
+    )
+    assert writable.profile.can_change_fan_speed is True
+    assert writable.profile.controls_fan_speed_via_airflow is True

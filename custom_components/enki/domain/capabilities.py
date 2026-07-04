@@ -35,6 +35,11 @@ def _supports(capabilities: set[str], possible_values: dict[str, Any], *names: s
     return any(name in capabilities or name in possible_values for name in names)
 
 
+def _can_change(capabilities: set[str], possible_values: dict[str, Any], name: str) -> bool:
+    """True when a change_* / switch_* capability is advertised for writes."""
+    return name in capabilities or name in possible_values
+
+
 @dataclass(frozen=True, slots=True)
 class EnkiCapabilityProfile:
     """Read-only view of what a physical Enki node can do.
@@ -109,6 +114,16 @@ class EnkiCapabilityProfile:
             "change_fan_speed",
             "check_fan_speed",
         )
+
+    @property
+    def can_change_fan_speed(self) -> bool:
+        """True when the node accepts POST change-fan-speed (not read-only check)."""
+        return _can_change(self.capabilities, self.possible_values, "change_fan_speed")
+
+    @property
+    def controls_fan_speed_via_airflow(self) -> bool:
+        """True when speed writes should use api-enki-airflow-prod."""
+        return self.can_change_fan_speed and self.fan_max_speed is not None
 
     @property
     def supports_fan_rotation(self) -> bool:
