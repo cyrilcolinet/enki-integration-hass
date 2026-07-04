@@ -21,17 +21,13 @@ def test_override_end_time_iso_is_utc_z() -> None:
 
 
 def test_command_override_gateway_wired() -> None:
-    assert WIRED_PATH_PREFIXES["command_override"] == (
-        "/api-enki-command-override-prod/v1"
-    )
+    assert WIRED_PATH_PREFIXES["command_override"] == ("/api-enki-command-override-prod/v1")
 
 
 def test_command_override_api_key_from_apk() -> None:
     import enki.gateway_keys_data as keys_module
 
-    assert keys_module.ENKI_COMMAND_OVERRIDE_API_KEY == (
-        "1E4MjXFFSuKKULDytsNnGC3bKX4RV3Wc"
-    )
+    assert keys_module.ENKI_COMMAND_OVERRIDE_API_KEY == ("1E4MjXFFSuKKULDytsNnGC3bKX4RV3Wc")
 
 
 @pytest.mark.asyncio
@@ -89,8 +85,7 @@ async def test_client_setpoint_falls_back_to_thermostat_post_on_404() -> None:
     thermostat_prefix = WIRED_PATH_PREFIXES["thermostat"]
     override_url = f"{ENKI_BASE}{override_prefix}/override-commands"
     fallback_url = (
-        f"{ENKI_BASE}{thermostat_prefix}/node-noirot/"
-        "change-thermostat-target-temperature"
+        f"{ENKI_BASE}{thermostat_prefix}/node-noirot/change-thermostat-target-temperature"
     )
 
     with aioresponses() as mocked:
