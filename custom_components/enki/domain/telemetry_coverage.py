@@ -198,9 +198,7 @@ def api_read_errors_need_telemetry(
         if not _poll_state_has_key(poll_state, state_key):
             return True
 
-    if saw_unknown_error and not poll_state:
-        return True
-    return False
+    return bool(saw_unknown_error and not poll_state)
 
 
 def discovery_record_needs_telemetry(
@@ -223,11 +221,11 @@ def discovery_record_needs_telemetry(
         if not capability_is_covered(capability, profile):
             return True
 
-    if api_read_errors and api_read_errors_need_telemetry(
-        record,
-        api_read_errors,
-        poll_state,
-    ):
-        return True
-
-    return False
+    return bool(
+        api_read_errors
+        and api_read_errors_need_telemetry(
+            record,
+            api_read_errors,
+            poll_state,
+        )
+    )

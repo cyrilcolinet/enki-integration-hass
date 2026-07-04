@@ -179,11 +179,6 @@ async def test_telemetry_notifies_when_api_errors_block_primary_poll() -> None:
     reporter._store.async_load = AsyncMock(return_value={"fingerprints": []})  # type: ignore[method-assign]
     reporter._store.async_save = AsyncMock()  # type: ignore[method-assign]
 
-    from enki.domain.profile import profile_fingerprint, profile_to_export_dict
-
-    export = profile_to_export_dict(record, integration_version="1.6.6", ha_version="2025.1")
-    fingerprint = profile_fingerprint(export)
-
     entry.runtime_data.api.read_errors_for_fingerprint.return_value = {
         "thermostat/check_thermostat_target_temperature": "HTTP 500",
     }
