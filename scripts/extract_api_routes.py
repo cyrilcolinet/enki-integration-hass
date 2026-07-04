@@ -35,7 +35,7 @@ HTTP_METHODS = {
     "kbi": "PATCH",
 }
 ROUTE_PATTERN = re.compile(
-    r'@(' + "|".join(HTTP_METHODS) + r')\("([^"]+)"\)',
+    r"@(" + "|".join(HTTP_METHODS) + r')\("([^"]+)"\)',
 )
 
 
@@ -94,7 +94,7 @@ def extract_routes(apk_path: Path, jadx_dir: Path) -> list[ApiRoute]:
     routes: list[ApiRoute] = []
     for binding in bindings:
         base_match = re.search(
-            rf'https://enki\.api\.devportal\.adeo\.cloud/{re.escape(binding.slug)}/v1/',
+            rf"https://enki\.api\.devportal\.adeo\.cloud/{re.escape(binding.slug)}/v1/",
             "\n".join(
                 line
                 for source in di_files
@@ -117,7 +117,9 @@ def integration_routes() -> list[IntegrationRoute]:
     routing = load_module("enki.api.capability_routing")
 
     by_transport = {
-        svc.transport_id: svc for svc in registry.ENKI_MICRO_SERVICES if svc.wired and svc.transport_id
+        svc.transport_id: svc
+        for svc in registry.ENKI_MICRO_SERVICES
+        if svc.wired and svc.transport_id
     }
     routes: list[IntegrationRoute] = []
     for read in routing.CAPABILITY_READS:

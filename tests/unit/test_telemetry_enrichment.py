@@ -52,7 +52,8 @@ def test_enrich_export_includes_platforms_and_api_errors() -> None:
     )
     assert "climate" in enriched["ha_platforms"]
     assert enriched["telemetry_reason"] == "api_read_errors"
-    assert "HTTP 500" in enriched["api_read_errors"]["thermostat/check_thermostat_target_temperature"]
+    errors = enriched["api_read_errors"]
+    assert "HTTP 500" in errors["thermostat/check_thermostat_target_temperature"]
     assert enriched["last_poll_state"]["thermostat_target_temperature"] == 21.0
 
 
