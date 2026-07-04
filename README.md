@@ -33,33 +33,34 @@
 
 ---
 
-## Why this integration?
-
 The **Enki** app controls hundreds of products (Lexman, Equation, Inspire, Edisio, Evology, Noirot, Envertech, …) through the **Leroy Merlin cloud**. This integration exposes those devices in Home Assistant using Enki **API capabilities** from the referentiel — like the mobile app — rather than a fixed model list.
 
-| | |
-|---|---|
-| **Connection** | Enki email + password (OAuth Keycloak) |
-| **Requirements** | Working Enki hub, devices visible in the app |
-| **Architecture** | Cloud hub (`iot_class: cloud_polling`), Enki micro-services |
-| **Detection** | Capability-first: new API-compatible devices without forced updates |
+## Why this integration?
+
+- **Connection** — Enki email + password (OAuth Keycloak)
+- **Requirements** — Working Enki hub, devices visible in the app
+- **Architecture** — Cloud hub (`iot_class: cloud_polling`), Enki micro-services
+- **Detection** — Capability-first: new API-compatible devices without forced updates
 
 > **Out of scope:** third-party Zigbee paired on the hub (Sonoff, Tuya, Aqara, …) → use [Zigbee2MQTT](https://www.zigbee2mqtt.io/) or ZHA. Only Enki / Leroy Merlin brands listed in [`lib/enki_scope.py`](custom_components/enki/lib/enki_scope.py) are imported.
 
 ## Features
 
-| Domain | Example hardware | HA entities |
-|---------|----------------------|------------|
-| Ventilation | Inspire Siroco+, Cadix, Radix, … | `fan`, `light` (LED kit) |
-| Lighting | Eglo, Lexman, dimmables, RGB | `light` |
-| Outlets & relays | Edisio, Equation ON/OFF | `light` / ON-OFF power |
-| Solar | Envertech-Lexman | `sensor` (production W) |
-| Sensors | Lexman, Sedea, Sonoff (Enki) | `binary_sensor`, `sensor` |
-| Siren | Lexman | `switch` |
-| **Beta** Covers | Evology, Nodon, … | `cover` |
-| **Beta** Heating | Noirot, Equation pilot wire | `climate`, `select` |
-| **Beta** Water leak | Lexman | `binary_sensor`, `sensor` |
-| **Beta** Scenarios | Enki cloud scenarios | `button` |
+### Supported
+
+- **Ventilation** (Inspire Siroco+, Cadix, Radix, …) — `fan`, `light` (LED kit)
+- **Lighting** (Eglo, Lexman, dimmables, RGB) — `light`
+- **Outlets & relays** (Edisio, Equation ON/OFF) — `light` / ON-OFF power
+- **Solar** (Envertech-Lexman) — `sensor` (production W)
+- **Sensors** (Lexman, Sedea, …) — `binary_sensor`, `sensor`
+- **Siren** (Lexman) — `switch`
+
+### Beta
+
+- **Covers** (Evology, Nodon, …) — `cover`
+- **Heating** (Noirot, Equation pilot wire) — `climate`, `select`
+- **Water leak** (Lexman) — `binary_sensor`, `sensor`
+- **Scenarios** (Enki cloud) — `button`
 
 Per-device detail: [docs/SUPPORTED_DEVICES.md](docs/SUPPORTED_DEVICES.md) · History: [docs/ROADMAP.md](docs/ROADMAP.md)
 
@@ -94,31 +95,25 @@ Download a [release](https://github.com/cyrilcolinet/enki-integration-hass/relea
 
 **Settings** → **Devices & services** → **Enki** → **Configure**
 
-| Option | Description |
-|--------|-------------|
-| Refresh interval | Cloud poll frequency (default 30 s) |
-| Telemetry (opt-in) | Notification + pre-filled GitHub link for unknown devices; nothing is sent without a click |
-| Reconfigure | Change email / password |
+- **Refresh interval** — Cloud poll frequency (default 30 s)
+- **Telemetry (opt-in)** — Notification + pre-filled GitHub link for unknown devices; nothing is sent without a click
+- **Reconfigure** — Change email / password
 
 ## Troubleshooting
 
-| Symptom | Hint |
-|----------|-------|
-| Invalid credentials | Verify email/password in the Enki app; reconfigure the integration |
-| HTTP 403 | Outdated gateway key after Enki app update → [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) |
-| No devices | Device active in the app, same home |
-| Bug | [Issue](https://github.com/cyrilcolinet/enki-integration-hass/issues/new?template=bug.yml) + `enki` logs |
+- **Invalid credentials** — Verify email/password in the Enki app; reconfigure the integration
+- **HTTP 403** — Outdated gateway key after Enki app update → [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
+- **No devices** — Device active in the app, same home
+- **Bug** — [Issue](https://github.com/cyrilcolinet/enki-integration-hass/issues/new?template=bug.yml) + `enki` logs
 
 ## Resources
 
-| | |
-|---|---|
-| 📋 | [Supported devices](docs/SUPPORTED_DEVICES.md) |
-| 🗺️ | [Roadmap](docs/ROADMAP.md) |
-| 🛠️ | [Development & APK keys](docs/DEVELOPMENT.md) |
-| 📡 | [Opt-in telemetry](docs/TELEMETRY.md) |
-| 🏠 | [Enki support](https://support.enki-home.com/) |
-| 🔗 | [Original project — CyrilP/hass-enki-component](https://github.com/CyrilP/hass-enki-component) |
+- 📋 [Supported devices](docs/SUPPORTED_DEVICES.md)
+- 🗺️ [Roadmap](docs/ROADMAP.md)
+- 🛠️ [Development & APK keys](docs/DEVELOPMENT.md)
+- 📡 [Opt-in telemetry](docs/TELEMETRY.md)
+- 🏠 [Enki support](https://support.enki-home.com/)
+- 🔗 [Original project — CyrilP/hass-enki-component](https://github.com/CyrilP/hass-enki-component)
 
 ## Credits & license
 
