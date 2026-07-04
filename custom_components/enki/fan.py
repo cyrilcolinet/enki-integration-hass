@@ -106,10 +106,8 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
         if profile.supports_fan_speed_control:
             return False
         if profile.supports_electrical_power:
-            if (motor_endpoint := profile.fan_motor_endpoint) is not None:
-                power = reported.endpoint_power(motor_endpoint)
-                if power is not None:
-                    return power == "ON"
+            if reported.global_power is not None:
+                return reported.global_power == "ON"
             if reported.electrical_power is not None:
                 return reported.electrical_power == "ON"
         return False
@@ -194,18 +192,13 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
         self.coordinator.update_cached_value(node_id, "fan_speed", speed)
 
     async def _set_motor_power(self, power: str) -> None:
-        profile = self._device.profile
+        """ON/OFF fans without speed range — global power API (CyrilP/hass-enki-component)."""
         node_id = self._device.node_id
-        endpoint = profile.fan_motor_endpoint
         await self.coordinator.api.async_switch_electrical_power(
             self._device.home_id,
             node_id,
             power,
-            endpoint=endpoint,
         )
-        if endpoint is not None:
-            self.coordinator.update_endpoint_power(node_id, endpoint, power)
-            return
         self.coordinator.update_cached_value(node_id, "electrical_power", power)
         self.coordinator.update_cached_value(node_id, "power", power)
 

@@ -112,10 +112,8 @@ class EnkiCapabilityProfile:
 
     @property
     def supports_fan_speed_control(self) -> bool:
-        """Writable fan speed (change_fan_speed + range in referentiel metadata)."""
-        if not _supports(self.capabilities, self.possible_values, "change_fan_speed"):
-            return False
-        return self.fan_max_speed is not None
+        """True when referentiel defines a fan speed range (CyrilP/hass-enki-component)."""
+        return self.supports_fan_speed and self.fan_max_speed is not None
 
     @property
     def supports_fan_rotation(self) -> bool:
