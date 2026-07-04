@@ -74,10 +74,12 @@ class EnkiTelemetryReporter:
             needs_telemetry = discovery_record_needs_telemetry(
                 record,
                 api_read_errors=api_errors,
+                poll_state=poll_state,
             )
 
-            # Re-notify when API read errors appear on a profile seen earlier.
-            if fingerprint in reported and not (needs_telemetry and api_errors):
+            if fingerprint in reported:
+                if not needs_telemetry:
+                    self._dismiss_profile_notification(fingerprint)
                 continue
 
             if fingerprint not in reported:
@@ -96,6 +98,12 @@ class EnkiTelemetryReporter:
         LOGGER.info(
             "Notified about %s new Enki device profile(s) (opt-in telemetry)",
             new_count,
+        )
+
+    def _dismiss_profile_notification(self, fingerprint: str) -> None:
+        persistent_notification.async_dismiss(
+            self._hass,
+            notification_id=f"{DOMAIN}_profile_{fingerprint[:16]}",
         )
 
     def _notify_new_profile(self, export_dict: dict[str, Any], fingerprint: str) -> None:

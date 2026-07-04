@@ -8,6 +8,7 @@ from .capabilities import EnkiCapabilityProfile
 from .models import EnkiDiscoveryRecord
 from .telemetry_coverage import (
     NOT_PLANNED_CAPABILITIES,
+    api_read_errors_need_telemetry,
     capability_is_covered,
     discovery_record_eligible_for_telemetry,
     profile_from_record,
@@ -59,16 +60,21 @@ def telemetry_notification_reason(
     record: EnkiDiscoveryRecord,
     *,
     api_read_errors: dict[str, str] | None = None,
+    poll_state: dict[str, Any] | None = None,
 ) -> str | None:
     """Short English reason why a telemetry notification would fire."""
     if not discovery_record_eligible_for_telemetry(record):
         return None
-    if api_read_errors:
-        return "api_read_errors"
     if not record.supported_by_integration:
         return "unsupported_device"
     if uncovered_capabilities(record):
         return "uncovered_capabilities"
+    if api_read_errors and api_read_errors_need_telemetry(
+        record,
+        api_read_errors,
+        poll_state,
+    ):
+        return "api_read_errors"
     return None
 
 
@@ -96,7 +102,11 @@ def enrich_telemetry_export(
     if api_read_errors:
         enriched["api_read_errors"] = dict(sorted(api_read_errors.items()))
 
-    reason = telemetry_notification_reason(record, api_read_errors=api_read_errors)
+    reason = telemetry_notification_reason(
+        record,
+        api_read_errors=api_read_errors,
+        poll_state=last_poll_state,
+    )
     if reason:
         enriched["telemetry_reason"] = reason
 

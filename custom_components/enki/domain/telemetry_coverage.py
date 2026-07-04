@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from typing import Any
+
+from ..api.capability_routing import CAPABILITY_READS
 from ..lib.enki_scope import device_in_enki_scope
 from .capabilities import EnkiCapabilityProfile
 from .models import EnkiDiscoveryRecord
@@ -91,6 +94,29 @@ _GATEWAY_CAPABILITY_MARKERS = frozenset(
     }
 )
 
+# Poll keys for optional sensors — API read failures alone should not nag the user.
+_OPTIONAL_POLL_STATE_KEYS = frozenset(
+    {
+        "electrical_consumption",
+        "electrical_consumption_unit",
+    }
+)
+
+_CAPABILITY_TO_POLL_STATE_KEY: dict[str, str] = {
+    read.capability: read.state_key for read in CAPABILITY_READS
+}
+_CAPABILITY_TO_POLL_STATE_KEY.update(
+    {
+        "check_electrical_power": "electrical_power",
+        "check_electrical_consumption": "electrical_consumption",
+    }
+)
+
+_ALTERNATE_POLL_STATE_KEYS: dict[str, tuple[str, ...]] = {
+    "electrical_power": ("power",),
+    "power": ("electrical_power",),
+}
+
 
 def profile_from_record(record: EnkiDiscoveryRecord) -> EnkiCapabilityProfile:
     return EnkiCapabilityProfile(
@@ -134,17 +160,56 @@ def discovery_record_eligible_for_telemetry(record: EnkiDiscoveryRecord) -> bool
     return not (caps and any(cap in _GATEWAY_CAPABILITY_MARKERS for cap in caps))
 
 
+def _poll_state_has_key(poll_state: dict[str, Any], state_key: str) -> bool:
+    if state_key in poll_state:
+        return True
+    for alternate in _ALTERNATE_POLL_STATE_KEYS.get(state_key, ()):
+        if alternate in poll_state:
+            return True
+    return False
+
+
+def api_read_errors_need_telemetry(
+    record: EnkiDiscoveryRecord,
+    api_read_errors: dict[str, str],
+    poll_state: dict[str, Any] | None,
+) -> bool:
+    """Return True when API read failures likely mean broken primary entities."""
+    if not api_read_errors:
+        return False
+
+    poll_state = poll_state or {}
+    profile = profile_from_record(record)
+    saw_unknown_error = False
+
+    for error_key in api_read_errors:
+        capability = error_key.split("/", 1)[-1]
+        if capability in NOT_PLANNED_CAPABILITIES:
+            continue
+        if not capability_is_covered(capability, profile):
+            continue
+
+        state_key = _CAPABILITY_TO_POLL_STATE_KEY.get(capability)
+        if state_key is None:
+            saw_unknown_error = True
+            continue
+        if state_key in _OPTIONAL_POLL_STATE_KEYS:
+            continue
+        if not _poll_state_has_key(poll_state, state_key):
+            return True
+
+    return bool(saw_unknown_error and not poll_state)
+
+
 def discovery_record_needs_telemetry(
     record: EnkiDiscoveryRecord,
     *,
     api_read_errors: dict[str, str] | None = None,
+    poll_state: dict[str, Any] | None = None,
 ) -> bool:
     """Return True when the user should be nudged to open a GitHub issue."""
     if not discovery_record_eligible_for_telemetry(record):
         return False
-
-    if api_read_errors:
-        return True
 
     if not record.supported_by_integration:
         return True
@@ -155,4 +220,12 @@ def discovery_record_needs_telemetry(
             continue
         if not capability_is_covered(capability, profile):
             return True
-    return False
+
+    return bool(
+        api_read_errors
+        and api_read_errors_need_telemetry(
+            record,
+            api_read_errors,
+            poll_state,
+        )
+    )

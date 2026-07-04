@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from enki.domain.profile import build_discovery_record
 from enki.domain.telemetry_coverage import (
+    api_read_errors_need_telemetry,
     capability_is_covered,
     discovery_record_needs_telemetry,
     profile_from_record,
@@ -114,3 +115,46 @@ def test_gateway_profile_not_eligible_for_telemetry() -> None:
         supported_by_integration=False,
     )
     assert discovery_record_needs_telemetry(record) is False
+
+
+def test_noirot_consumption_error_does_not_need_telemetry_when_primary_poll_ok() -> None:
+    record = build_discovery_record(
+        device_type="heaters_and_pilot_wires",
+        bff_device_type="heaters_and_pilot_wires",
+        capabilities=[
+            "change_thermostat_target_temperature",
+            "check_thermostat_target_temperature",
+            "check_electrical_consumption",
+        ],
+        possible_values={},
+        manufacturer="Noirot",
+        model="radiator",
+        firmware_version="2.15.0",
+        supported_by_integration=True,
+    )
+    errors = {"consumption/check_electrical_consumption": "HTTP 403"}
+    poll_state = {"thermostat_target_temperature": 21.0}
+    assert api_read_errors_need_telemetry(record, errors, poll_state) is False
+    assert (
+        discovery_record_needs_telemetry(
+            record,
+            api_read_errors=errors,
+            poll_state=poll_state,
+        )
+        is False
+    )
+
+
+def test_module_power_error_needs_telemetry_without_poll_state() -> None:
+    record = build_discovery_record(
+        device_type="modules",
+        bff_device_type="modules",
+        capabilities=["switch_electrical_power", "check_electrical_power"],
+        possible_values={},
+        manufacturer="Equation",
+        model="relay",
+        firmware_version="1.0.0",
+        supported_by_integration=True,
+    )
+    errors = {"power/check_electrical_power": "HTTP 403"}
+    assert api_read_errors_need_telemetry(record, errors, {}) is True
