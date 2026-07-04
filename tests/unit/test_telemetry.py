@@ -29,6 +29,7 @@ def _entry_with_coordinator(*, telemetry: bool) -> MagicMock:
     entry.options = {CONF_TELEMETRY: telemetry}
     entry.runtime_data = MagicMock()
     entry.runtime_data.api.read_errors_for_fingerprint.return_value = {}
+    entry.runtime_data.api.poll_state_for_fingerprint.return_value = {}
     return entry
 
 

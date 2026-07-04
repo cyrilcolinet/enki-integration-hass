@@ -15,6 +15,7 @@ from ..domain.profile import (
     integration_supports_device,
     profile_fingerprint,
     profile_to_export_dict,
+    sanitize_poll_state,
 )
 from ..exceptions import EnkiApiNotFoundError, EnkiConnectionError
 from ..lib.bff import parse_bff_power
@@ -52,6 +53,7 @@ class EnkiAPI:
         self._scenarios: tuple[EnkiScenario, ...] = ()
         self._node_fingerprints: dict[str, str] = {}
         self._profile_read_errors: dict[str, dict[str, str]] = {}
+        self._profile_poll_state: dict[str, dict[str, Any]] = {}
 
     async def async_close(self) -> None:
         """Close the underlying HTTP session."""
@@ -101,6 +103,7 @@ class EnkiAPI:
         self._discovery_records = []
         self._node_fingerprints.clear()
         self._profile_read_errors.clear()
+        self._profile_poll_state.clear()
         for home_id in homes:
             home_devices, records = await self._discover_home(http, home_id)
             devices.extend(home_devices)
@@ -115,9 +118,21 @@ class EnkiAPI:
         """Anonymized API read failures from the last poll (no node or home ids)."""
         return dict(self._profile_read_errors.get(fingerprint, {}))
 
+    def poll_state_for_fingerprint(self, fingerprint: str) -> dict[str, Any]:
+        """Anonymized state values merged from the last poll (no node or home ids)."""
+        return dict(self._profile_poll_state.get(fingerprint, {}))
+
     def _register_node_profile(self, node_id: str, record: EnkiDiscoveryRecord) -> None:
         export = profile_to_export_dict(record, integration_version="", ha_version="")
         self._node_fingerprints[node_id] = profile_fingerprint(export)
+
+    def _register_poll_state(self, node_id: str, state: dict[str, Any]) -> None:
+        fingerprint = self._node_fingerprints.get(node_id)
+        if not fingerprint:
+            return
+        sanitized = sanitize_poll_state(state)
+        if sanitized:
+            self._profile_poll_state[fingerprint] = sanitized
 
     def _note_read_error(
         self,
@@ -293,6 +308,8 @@ class EnkiAPI:
         last_reported: dict[str, Any] = {}
         if item.get("isEnabled", True):
             last_reported = await self._refresh_device_state(http, skeleton, node_info)
+
+        self._register_poll_state(node_id, {**node_info, **last_reported})
 
         if not supported:
             LOGGER.debug(

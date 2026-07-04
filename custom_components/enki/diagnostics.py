@@ -37,6 +37,7 @@ async def async_get_config_entry_diagnostics(
                 export,
                 record,
                 api_read_errors=coordinator.api.read_errors_for_fingerprint(fingerprint) or None,
+                last_poll_state=coordinator.api.poll_state_for_fingerprint(fingerprint) or None,
             )
         )
 

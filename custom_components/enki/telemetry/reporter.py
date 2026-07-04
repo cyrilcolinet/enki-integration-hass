@@ -56,10 +56,12 @@ class EnkiTelemetryReporter:
                 )
                 fingerprint = profile_fingerprint(export_dict)
                 api_errors = coordinator.api.read_errors_for_fingerprint(fingerprint)
+                poll_state = coordinator.api.poll_state_for_fingerprint(fingerprint)
                 export_dict = enrich_telemetry_export(
                     export_dict,
                     record,
                     api_read_errors=api_errors or None,
+                    last_poll_state=poll_state or None,
                 )
             except (TypeError, ValueError) as err:
                 LOGGER.warning(

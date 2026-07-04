@@ -48,10 +48,12 @@ def test_enrich_export_includes_platforms_and_api_errors() -> None:
         export,
         record,
         api_read_errors={"heating/check_thermostat_target_temperature": "HTTP 500"},
+        last_poll_state={"thermostat_target_temperature": 21.0},
     )
     assert "climate" in enriched["ha_platforms"]
     assert enriched["telemetry_reason"] == "api_read_errors"
     assert "HTTP 500" in enriched["api_read_errors"]["heating/check_thermostat_target_temperature"]
+    assert enriched["last_poll_state"]["thermostat_target_temperature"] == 21.0
 
 
 def test_github_issue_body_is_english_and_includes_api_errors() -> None:
@@ -60,9 +62,12 @@ def test_github_issue_body_is_english_and_includes_api_errors() -> None:
         profile_to_export_dict(record, integration_version="1.6.5", ha_version="2025.1"),
         record,
         api_read_errors={"heating/check_thermostat_target_temperature": "HTTP 500"},
+        last_poll_state={"thermostat_target_temperature": 21.0},
     )
     body = format_github_issue_body(export, "abc123")
     assert "Referentiel type:" in body
+    assert "Last poll state (anonymized)" in body
+    assert "thermostat_target_temperature" in body
     assert "API read errors (last poll)" in body
     assert "HTTP 500" in body
     assert "Profil appareil" not in body

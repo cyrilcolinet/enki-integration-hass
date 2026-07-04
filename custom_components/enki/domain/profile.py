@@ -33,6 +33,89 @@ _SENSITIVE_STATE_KEYS = frozenset(
     }
 )
 
+# Integration state keys safe to export in telemetry (no account/home/node ids).
+_POLL_STATE_EXPORT_KEYS = frozenset(
+    {
+        "fan_speed",
+        "airflow_mode",
+        "airflow_rotation",
+        "airflow_rotation_supported",
+        "light_power",
+        "power",
+        "electrical_power",
+        "electrical_consumption",
+        "electrical_consumption_unit",
+        "brightness",
+        "colorTemperature",
+        "hue",
+        "saturation",
+        "colorMode",
+        "power_production",
+        "shutter_position",
+        "shutter_opening",
+        "current_temperature",
+        "current_humidity",
+        "illuminance_level",
+        "battery_health",
+        "motion_detection",
+        "motion_detector_state",
+        "vibration_detection",
+        "contact_sensor_state",
+        "vibration_detection_activation",
+        "contact_detection_activation",
+        "vibration_sensibility_level",
+        "siren_global_state",
+        "water_sensor_state",
+        "pilot_wire_state",
+        "thermostat_target_temperature",
+        "thermostat_running_state",
+        "window_open_detection",
+        "window_open_detection_mode",
+        "occupancy",
+        "occupancy_mode",
+        "electrical_endpoints",
+    }
+)
+
+
+def _sanitize_endpoint(endpoint: dict[str, Any]) -> dict[str, Any] | None:
+    endpoint_id = endpoint.get("id")
+    if endpoint_id is None:
+        return None
+    last_reported = endpoint.get("lastReportedValue")
+    if isinstance(last_reported, str):
+        return {"id": endpoint_id, "power": last_reported}
+    if isinstance(last_reported, dict):
+        allowed = {"power", "brightness", "colorTemperature", "hue", "saturation"}
+        filtered = {
+            key: value
+            for key, value in last_reported.items()
+            if key in allowed and isinstance(value, (str, int, float))
+        }
+        if filtered:
+            return {"id": endpoint_id, **filtered}
+    return {"id": endpoint_id}
+
+
+def sanitize_poll_state(raw: dict[str, Any] | None) -> dict[str, Any]:
+    """Return anonymized last-poll values for diagnostics and GitHub prefill."""
+    if not isinstance(raw, dict):
+        return {}
+    sanitized: dict[str, Any] = {}
+    for key in _POLL_STATE_EXPORT_KEYS:
+        if key not in raw:
+            continue
+        value = raw[key]
+        if key == "electrical_endpoints" and isinstance(value, list):
+            endpoints = [_sanitize_endpoint(item) for item in value if isinstance(item, dict)]
+            endpoints = [item for item in endpoints if item]
+            if endpoints:
+                sanitized[key] = endpoints
+            continue
+        if isinstance(value, (str, int, float, bool)):
+            sanitized[key] = value
+    return sanitized
+
 
 def _sanitize_possible_values(values: dict[str, Any]) -> dict[str, Any]:
     sanitized: dict[str, Any] = {}
@@ -147,6 +230,12 @@ def format_github_issue_body(export_dict: dict[str, Any], fingerprint: str) -> s
     if uncovered := export_dict.get("uncovered_capabilities"):
         uncovered_lines = "\n".join(f"- `{capability}`" for capability in uncovered)
         body += f"\n### Uncovered capabilities\n{uncovered_lines}\n"
+
+    if poll_state := export_dict.get("last_poll_state"):
+        body += (
+            "\n### Last poll state (anonymized)\n"
+            f"```json\n{json.dumps(poll_state, indent=2, sort_keys=True)}\n```\n"
+        )
 
     if api_errors := export_dict.get("api_read_errors"):
         error_lines = "\n".join(

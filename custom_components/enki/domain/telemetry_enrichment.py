@@ -77,6 +77,7 @@ def enrich_telemetry_export(
     record: EnkiDiscoveryRecord,
     *,
     api_read_errors: dict[str, str] | None = None,
+    last_poll_state: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Add non-fingerprint fields for diagnostics and GitHub prefill."""
     profile = profile_from_record(record)
@@ -88,6 +89,9 @@ def enrich_telemetry_export(
     missing = uncovered_capabilities(record)
     if missing:
         enriched["uncovered_capabilities"] = missing
+
+    if last_poll_state:
+        enriched["last_poll_state"] = dict(sorted(last_poll_state.items()))
 
     if api_read_errors:
         enriched["api_read_errors"] = dict(sorted(api_read_errors.items()))
