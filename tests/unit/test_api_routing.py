@@ -133,7 +133,6 @@ async def test_fan_turn_on_uses_power_when_only_check_fan_speed() -> None:
     coordinator.api.async_set_fan_speed = AsyncMock()
     coordinator.api.async_switch_electrical_power = AsyncMock()
     coordinator.update_cached_value = MagicMock()
-    coordinator.update_endpoint_power = MagicMock()
     entity = EnkiFanEntity(coordinator, device)
 
     await entity.async_turn_on()
@@ -142,7 +141,6 @@ async def test_fan_turn_on_uses_power_when_only_check_fan_speed() -> None:
         "home-1",
         "6a1468f4045591224e5f1686",
         "ON",
-        endpoint=1,
     )
     coordinator.api.async_set_fan_speed.assert_not_called()
 
@@ -176,6 +174,5 @@ async def test_fan_turn_on_falls_back_to_power_without_fan_speed_capability() ->
         "home-1",
         "node-1",
         "ON",
-        endpoint=None,
     )
     coordinator.api.async_set_fan_speed.assert_not_called()

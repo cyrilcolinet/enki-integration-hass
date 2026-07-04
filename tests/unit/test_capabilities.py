@@ -101,4 +101,3 @@ def test_supports_fan_speed_control_requires_change_and_range() -> None:
     )
     assert with_change.profile.supports_fan_speed_control is True
     assert check_only.profile.supports_fan_speed_control is False
-    assert check_only.profile.fan_motor_endpoint == 1
