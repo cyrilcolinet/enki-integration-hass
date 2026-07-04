@@ -122,6 +122,9 @@ class EnkiFanLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
 
         await self._mixed_endpoint_workaround()
         changes = self._build_turn_on_changes(kwargs, restore_last_brightness=True)
+        if changes.get("power") == "OFF":
+            await self.async_turn_off(**kwargs)
+            return
         await self.coordinator.api.async_change_light_state(
             self._device.home_id,
             self._device.node_id,
@@ -299,6 +302,9 @@ class EnkiLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
 
         await self._mixed_endpoint_workaround()
         changes = self._build_turn_on_changes(kwargs)
+        if changes.get("power") == "OFF":
+            await self.async_turn_off(**kwargs)
+            return
         await self.coordinator.api.async_change_light_state(home_id, node_id, changes)
         self.coordinator.update_cached_value(node_id, "power", "ON")
         if "brightness" in changes:

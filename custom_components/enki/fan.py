@@ -54,11 +54,12 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
         super().__init__(coordinator, device)
         self._attr_unique_id = f"{DOMAIN}-{device.node_id}-fan"
         self._preset_modes = airflow_modes_from_metadata(device)
-        self._ordered_speeds = self._build_ordered_speeds(device)
-
-    def _build_ordered_speeds(self, device: EnkiDevice) -> list[int]:
         max_speed = device.profile.fan_max_speed or FAN_SPEED_MAX
-        return list(range(1, max_speed + 1))
+        self._ordered_speeds = list(range(1, max_speed + 1))
+
+    @property
+    def _max_fan_speed(self) -> int:
+        return self._ordered_speeds[-1] if self._ordered_speeds else FAN_SPEED_MAX
 
     @property
     def supported_features(self) -> FanEntityFeature:
@@ -125,6 +126,7 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
 
     @property
     def speed_count(self) -> int:
+        """HA discrete speed steps (1…max); UI shows ~17 % steps for 6 speeds, not 0–100 smooth."""
         return len(self._ordered_speeds)
 
     @property
@@ -161,10 +163,14 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
             await self.async_set_preset_mode(preset_mode)
 
         if self._device.profile.supports_fan_speed_control:
-            if percentage is not None and percentage > 0:
+            if percentage is not None:
+                if percentage <= 0:
+                    await self.async_turn_off(**kwargs)
+                    return
                 speed = percentage_to_ordered_list_item(self._ordered_speeds, percentage)
-            else:
-                speed = max(1, self._device.reported.fan_speed or 1)
+                await self._set_speed(speed)
+                return
+            speed = max(1, self._device.reported.fan_speed or 1)
             await self._set_speed(speed)
             return
 
@@ -180,10 +186,11 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
     async def async_set_percentage(self, percentage: int) -> None:
         if not self._device.profile.supports_fan_speed_control:
             return
-        if percentage == 0:
+        if percentage <= 0:
             await self.async_turn_off()
             return
-        await self._set_speed(percentage_to_ordered_list_item(self._ordered_speeds, percentage))
+        speed = percentage_to_ordered_list_item(self._ordered_speeds, percentage)
+        await self._set_speed(speed)
 
     async def _set_speed(self, speed: int) -> None:
         home_id = self._device.home_id

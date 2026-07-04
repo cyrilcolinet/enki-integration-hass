@@ -74,10 +74,14 @@ class EnkiLightBehaviorMixin:
         """Build a single change-light-state payload from HA service kwargs."""
         changes: dict[str, Any] = {"power": "ON"}
         if ATTR_BRIGHTNESS in kwargs:
-            changes["brightness"] = round(
-                kwargs[ATTR_BRIGHTNESS] * self._brightness_max / 255,
-                2,
-            )
+            ha_brightness = int(kwargs[ATTR_BRIGHTNESS])
+            if ha_brightness <= 0:
+                return {"power": "OFF"}
+            enki_brightness = round(ha_brightness * self._brightness_max / 255, 2)
+            min_brightness = self._parse_brightness_min(self._device.profile.possible_values)
+            if enki_brightness < min_brightness:
+                return {"power": "OFF"}
+            changes["brightness"] = enki_brightness
         if ATTR_COLOR_TEMP_KELVIN in kwargs:
             if self._color_temp_values:
                 changes["colorTemperature"] = self._closest_color_temp(
@@ -122,3 +126,11 @@ class EnkiLightBehaviorMixin:
     def _parse_brightness_max(possible_values: dict[str, Any], default: int = 100) -> int:
         brightness_range = possible_values.get("change_brightness", {}).get("range", {})
         return int(brightness_range.get("max", default))
+
+    @staticmethod
+    def _parse_brightness_min(possible_values: dict[str, Any], *, default: float = 1.0) -> float:
+        brightness_range = possible_values.get("change_brightness", {}).get("range", {})
+        raw_min = brightness_range.get("min")
+        if isinstance(raw_min, (int, float)):
+            return float(raw_min)
+        return default
