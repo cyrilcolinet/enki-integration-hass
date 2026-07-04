@@ -13,15 +13,12 @@ from homeassistant.components.fan import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.util.percentage import (
-    ordered_list_item_to_percentage,
-    percentage_to_ordered_list_item,
-)
 
 from .const import DOMAIN, FAN_SPEED_MAX
 from .coordinator import EnkiCoordinator
 from .domain.models import EnkiDevice
 from .entity import EnkiEntity
+from .lib.conversion import fan_speed_to_percentage, percentage_to_fan_speed
 from .platforms.fan.airflow import (
     airflow_modes_from_metadata,
     device_supports_fan_rotation,
@@ -54,11 +51,11 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
         super().__init__(coordinator, device)
         self._attr_unique_id = f"{DOMAIN}-{device.node_id}-fan"
         self._preset_modes = airflow_modes_from_metadata(device)
-        self._ordered_speeds = self._build_ordered_speeds(device)
+        self._fan_max_speed = device.profile.fan_max_speed or FAN_SPEED_MAX
 
-    def _build_ordered_speeds(self, device: EnkiDevice) -> list[int]:
-        max_speed = device.profile.fan_max_speed or FAN_SPEED_MAX
-        return list(range(1, max_speed + 1))
+    @property
+    def _max_fan_speed(self) -> int:
+        return self._fan_max_speed
 
     @property
     def supported_features(self) -> FanEntityFeature:
@@ -121,11 +118,11 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
             return None
         if speed <= 0:
             return 0
-        return ordered_list_item_to_percentage(self._ordered_speeds, speed)
+        return fan_speed_to_percentage(speed, self._max_fan_speed)
 
     @property
     def speed_count(self) -> int:
-        return len(self._ordered_speeds)
+        return self._max_fan_speed
 
     @property
     def current_direction(self) -> str | None:
@@ -161,10 +158,17 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
             await self.async_set_preset_mode(preset_mode)
 
         if self._device.profile.supports_fan_speed_control:
-            if percentage is not None and percentage > 0:
-                speed = percentage_to_ordered_list_item(self._ordered_speeds, percentage)
-            else:
-                speed = max(1, self._device.reported.fan_speed or 1)
+            if percentage is not None:
+                if percentage <= 0:
+                    await self.async_turn_off(**kwargs)
+                    return
+                speed = percentage_to_fan_speed(percentage, self._max_fan_speed)
+                if speed <= 0:
+                    await self.async_turn_off(**kwargs)
+                    return
+                await self._set_speed(speed)
+                return
+            speed = max(1, self._device.reported.fan_speed or 1)
             await self._set_speed(speed)
             return
 
@@ -180,10 +184,11 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
     async def async_set_percentage(self, percentage: int) -> None:
         if not self._device.profile.supports_fan_speed_control:
             return
-        if percentage == 0:
+        speed = percentage_to_fan_speed(percentage, self._max_fan_speed)
+        if speed <= 0:
             await self.async_turn_off()
             return
-        await self._set_speed(percentage_to_ordered_list_item(self._ordered_speeds, percentage))
+        await self._set_speed(speed)
 
     async def _set_speed(self, speed: int) -> None:
         home_id = self._device.home_id

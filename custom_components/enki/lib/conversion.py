@@ -48,6 +48,20 @@ def percentage_to_speed(percentage: int) -> int:
     return max(1, min(FAN_SPEED_MAX, speed))
 
 
+def percentage_to_fan_speed(percentage: int, max_speed: int) -> int:
+    """Map HA percentage to a fan speed level using the device max (0 = off)."""
+    if percentage <= 0 or max_speed <= 0:
+        return 0
+    return max(0, min(max_speed, round(percentage * max_speed / 100)))
+
+
+def fan_speed_to_percentage(speed: int, max_speed: int) -> int:
+    """Map Enki fan speed to HA percentage (linear, matches CyrilP/hass-enki-component)."""
+    if speed <= 0 or max_speed <= 0:
+        return 0
+    return int(round(speed * 100 / max_speed))
+
+
 def normalize_power_state(last_reported: Any, endpoint: int) -> str:
     """Parse check-electrical-power lastReportedValue (string or per-endpoint map)."""
     if isinstance(last_reported, str):
@@ -138,6 +152,12 @@ def merge_light_state_payload(
     payload = dict(current)
     if changes.get("power") == "OFF":
         payload.update(changes)
+        return payload
+    brightness = changes.get("brightness")
+    if brightness is not None and float(brightness) <= 0:
+        payload = dict(current)
+        payload.update(changes)
+        payload["power"] = "OFF"
         return payload
     payload["power"] = "ON"
     payload.update(changes)

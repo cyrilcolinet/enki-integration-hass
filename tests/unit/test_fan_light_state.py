@@ -26,6 +26,13 @@ def test_merge_light_state_payload_brightness_update_keeps_on() -> None:
     assert payload["brightness"] == 0.8
 
 
+def test_merge_light_state_payload_zero_brightness_forces_off() -> None:
+    current = {"power": "ON", "brightness": 50.0}
+    payload = merge_light_state_payload(current, {"brightness": 0})
+    assert payload["power"] == "OFF"
+    assert payload["brightness"] == 0
+
+
 def test_merge_light_state_payload_color_temp_sets_ct_mode() -> None:
     current = {"power": "ON", "colorMode": "hs", "hue": 0.5, "saturation": 0.8}
     payload = merge_light_state_payload(current, {"colorTemperature": "T3500K"})
