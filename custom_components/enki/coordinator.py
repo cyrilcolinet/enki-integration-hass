@@ -31,7 +31,7 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
             config_entry.data[CONF_PASSWORD],
         )
         self._notifier = EnkiNotifier(hass, config_entry)
-        self._telemetry = EnkiTelemetryReporter(hass, config_entry)
+        self._telemetry = EnkiTelemetryReporter(hass, config_entry, self)
         scan_interval = config_entry.options.get(
             CONF_SCAN_INTERVAL,
             DEFAULT_SCAN_INTERVAL,

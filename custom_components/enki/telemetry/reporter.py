@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.components import persistent_notification
 from homeassistant.config_entries import ConfigEntry
@@ -19,15 +19,24 @@ from ..domain.profile import (
 from ..domain.telemetry_coverage import discovery_record_needs_telemetry
 from ..domain.telemetry_enrichment import enrich_telemetry_export
 
+if TYPE_CHECKING:
+    from ..coordinator import EnkiCoordinator
+
 STORAGE_VERSION = 1
 
 
 class EnkiTelemetryReporter:
     """Notify once per new anonymized device profile (manual GitHub issue)."""
 
-    def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        entry: ConfigEntry,
+        coordinator: EnkiCoordinator,
+    ) -> None:
         self._hass = hass
         self._entry = entry
+        self._coordinator = coordinator
         self._store = Store[dict[str, Any]](
             hass,
             STORAGE_VERSION,
@@ -44,7 +53,7 @@ class EnkiTelemetryReporter:
         reported = await self._load_reported()
         integration_version = _integration_version()
         ha_version = _ha_version(self._hass)
-        coordinator = self._entry.runtime_data
+        coordinator = self._coordinator
 
         new_count = 0
         for record in records:

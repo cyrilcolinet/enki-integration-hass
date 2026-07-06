@@ -57,8 +57,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: EnkiConfigEntry) -> bool
     if mobile_settings.get("maintenance") is True:
         notifier.notify_maintenance_mode()
 
-    await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
+    await coordinator.async_config_entry_first_refresh()
 
     from .telemetry import async_handle_telemetry_nudge
 

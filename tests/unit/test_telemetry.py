@@ -39,7 +39,7 @@ async def test_telemetry_skipped_when_disabled() -> None:
     hass.config.version = "2024.12.0"
     entry = _entry_with_coordinator(telemetry=False)
 
-    reporter = EnkiTelemetryReporter(hass, entry)
+    reporter = EnkiTelemetryReporter(hass, entry, entry.runtime_data)
     with patch(
         "enki.telemetry.reporter.persistent_notification.async_create",
         new_callable=MagicMock,
@@ -54,7 +54,7 @@ async def test_telemetry_notifies_new_profile() -> None:
     hass.config.version = "2024.12.0"
     entry = _entry_with_coordinator(telemetry=True)
 
-    reporter = EnkiTelemetryReporter(hass, entry)
+    reporter = EnkiTelemetryReporter(hass, entry, entry.runtime_data)
     reporter._store.async_load = AsyncMock(return_value={"fingerprints": []})  # type: ignore[method-assign]
     reporter._store.async_save = AsyncMock()  # type: ignore[method-assign]
 
@@ -76,7 +76,7 @@ async def test_telemetry_dedupes_fingerprint() -> None:
     hass.config.version = "2024.12.0"
     entry = _entry_with_coordinator(telemetry=True)
 
-    reporter = EnkiTelemetryReporter(hass, entry)
+    reporter = EnkiTelemetryReporter(hass, entry, entry.runtime_data)
     reporter._store.async_load = AsyncMock(return_value={"fingerprints": []})  # type: ignore[method-assign]
     reporter._store.async_save = AsyncMock()  # type: ignore[method-assign]
 
@@ -113,7 +113,7 @@ async def test_telemetry_skips_fully_supported_profile() -> None:
         supported_by_integration=True,
     )
 
-    reporter = EnkiTelemetryReporter(hass, entry)
+    reporter = EnkiTelemetryReporter(hass, entry, entry.runtime_data)
     reporter._store.async_load = AsyncMock(return_value={"fingerprints": []})  # type: ignore[method-assign]
     reporter._store.async_save = AsyncMock()  # type: ignore[method-assign]
 
@@ -143,7 +143,7 @@ async def test_telemetry_skips_out_of_scope_sonoff() -> None:
         supported_by_integration=False,
     )
 
-    reporter = EnkiTelemetryReporter(hass, entry)
+    reporter = EnkiTelemetryReporter(hass, entry, entry.runtime_data)
     reporter._store.async_load = AsyncMock(return_value={"fingerprints": []})  # type: ignore[method-assign]
     reporter._store.async_save = AsyncMock()  # type: ignore[method-assign]
 
@@ -175,7 +175,7 @@ async def test_telemetry_notifies_when_api_errors_block_primary_poll() -> None:
         supported_by_integration=True,
     )
 
-    reporter = EnkiTelemetryReporter(hass, entry)
+    reporter = EnkiTelemetryReporter(hass, entry, entry.runtime_data)
     reporter._store.async_load = AsyncMock(return_value={"fingerprints": []})  # type: ignore[method-assign]
     reporter._store.async_save = AsyncMock()  # type: ignore[method-assign]
 
@@ -212,7 +212,7 @@ async def test_telemetry_does_not_renotify_reported_fingerprint() -> None:
         supported_by_integration=True,
     )
 
-    reporter = EnkiTelemetryReporter(hass, entry)
+    reporter = EnkiTelemetryReporter(hass, entry, entry.runtime_data)
     reporter._store.async_save = AsyncMock()  # type: ignore[method-assign]
 
     from enki.domain.profile import profile_fingerprint, profile_to_export_dict
@@ -255,7 +255,7 @@ async def test_telemetry_dismisses_notification_when_profile_is_healthy() -> Non
         supported_by_integration=True,
     )
 
-    reporter = EnkiTelemetryReporter(hass, entry)
+    reporter = EnkiTelemetryReporter(hass, entry, entry.runtime_data)
     reporter._store.async_save = AsyncMock()  # type: ignore[method-assign]
 
     from enki.domain.profile import profile_fingerprint, profile_to_export_dict
@@ -287,7 +287,7 @@ async def test_telemetry_tolerates_corrupt_storage() -> None:
     hass.config.language = "en"
     entry = _entry_with_coordinator(telemetry=True)
 
-    reporter = EnkiTelemetryReporter(hass, entry)
+    reporter = EnkiTelemetryReporter(hass, entry, entry.runtime_data)
     reporter._store.async_load = AsyncMock(return_value={"fingerprints": None})  # type: ignore[method-assign]
     reporter._store.async_save = AsyncMock()  # type: ignore[method-assign]
 
