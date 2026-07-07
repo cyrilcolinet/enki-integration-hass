@@ -99,6 +99,9 @@
     "button": {
       "scenario": {
         "name": "Scenario"
+      },
+      "shutter_preset": {
+        "name": "{preset}"
       }
     },
     "binary_sensor": {
@@ -161,6 +164,13 @@
           "eco": "Eco",
           "frost_protection": "Frost protection",
           "off": "Off"
+        }
+      },
+      "roller_shutter_mode": {
+        "name": "Wiring direction",
+        "state": {
+          "normal": "Normal",
+          "inverted": "Inverted"
         }
       }
     },

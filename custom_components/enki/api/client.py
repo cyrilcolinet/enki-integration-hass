@@ -648,6 +648,34 @@ class EnkiAPI:
             except EnkiConnectionError as err:
                 LOGGER.debug("Shutter opening skipped for node %s: %s", node_id, err)
 
+        if profile.supports_roller_shutter_state:
+            try:
+                roller_state_data = await http.motorization_get(
+                    home_id,
+                    node_id,
+                    "check-roller-shutter-state",
+                )
+                if roller_state_data:
+                    roller_state = roller_state_data.get("lastReportedValue")
+                    if isinstance(roller_state, str):
+                        state["roller_shutter_state"] = roller_state.upper()
+            except EnkiConnectionError as err:
+                LOGGER.debug("Roller shutter state skipped for node %s: %s", node_id, err)
+
+        if profile.supports_roller_shutter_mode:
+            try:
+                mode_data = await http.motorization_get(
+                    home_id,
+                    node_id,
+                    "check-roller-shutter-mode",
+                )
+                if mode_data:
+                    mode = mode_data.get("lastReportedValue")
+                    if isinstance(mode, str):
+                        state["roller_shutter_mode"] = mode.upper()
+            except EnkiConnectionError as err:
+                LOGGER.debug("Roller shutter mode skipped for node %s: %s", node_id, err)
+
         await self._append_capability_states(
             http,
             home_id,
@@ -705,6 +733,46 @@ class EnkiAPI:
             node_id,
             "change-shutter-position",
             max(0, min(100, position)),
+        )
+
+    async def async_stop_shutter(self, home_id: str, node_id: str) -> None:
+        """Stop an in-progress shutter movement."""
+        http = await self._get_http()
+        await http.motorization_post(
+            home_id,
+            node_id,
+            "stop-change-shutter-position",
+            with_value=False,
+        )
+
+    async def async_set_roller_shutter_mode(
+        self,
+        home_id: str,
+        node_id: str,
+        mode: str,
+    ) -> None:
+        """Set roller shutter wiring direction (NORMAL / INVERTED)."""
+        http = await self._get_http()
+        await http.motorization_post(
+            home_id,
+            node_id,
+            "change-roller-shutter-mode",
+            mode.upper(),
+        )
+
+    async def async_execute_shutter_preset(
+        self,
+        home_id: str,
+        node_id: str,
+        preset: str,
+    ) -> None:
+        """Run a stored roller shutter preset from the referentiel."""
+        http = await self._get_http()
+        await http.motorization_post(
+            home_id,
+            node_id,
+            "execute-preset",
+            preset,
         )
 
     async def async_set_capability_value(

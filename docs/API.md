@@ -89,10 +89,15 @@ Fan motor and light kit are **independent** (turning the fan on does not switch 
 |-------|----------|-------|
 | `shutter_position` | `GET …/check-shutter-position` | `0–100` (% open) |
 | `shutter_opening` | `GET …/check-shutter-opening` | `OPEN` / `CLOSED` |
+| `roller_shutter_state` | `GET …/check-roller-shutter-state` | e.g. `OPENING` / `CLOSING` / `STOPPED` |
+| `roller_shutter_mode` | `GET …/check-roller-shutter-mode` | `NORMAL` / `INVERTED` |
 
 Commands:
 
 - `POST …/change-shutter-position` — body `{"value": <0-100>}`, expect `202` or `204`
+- `POST …/stop-change-shutter-position` — stop mid-travel (no body)
+- `POST …/change-roller-shutter-mode` — body `{"value": "NORMAL"|"INVERTED"}`
+- `POST …/execute-preset` — body `{"value": "<preset>"}` when referentiel lists presets
 
 Gateway key: `ENKI_ACCESS_MOTORIZATION_API_KEY` in `const.py` (filled from APK 2.25.1). Legacy path `api-enki-access-and-motorizations-prod` is obsolete. See [BETA_VOLETS_KEY.md](BETA_VOLETS_KEY.md) for validation with mitmproxy.
 

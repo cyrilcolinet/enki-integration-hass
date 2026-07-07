@@ -11,7 +11,9 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .coordinator import EnkiCoordinator
-from .domain.models import EnkiScenario
+from .domain.models import EnkiDevice, EnkiScenario
+from .entity import EnkiEntity
+from .lib.shutter import shutter_preset_options
 
 
 def _scenario_key(home_id: str, scenario_id: str) -> str:
@@ -54,6 +56,13 @@ async def async_setup_entry(
     _sync_scenarios()
     remove_listener = coordinator.async_add_listener(_sync_scenarios)
     entry.async_on_unload(remove_listener)
+
+    shutter_entities: list[EnkiShutterPresetButton] = []
+    for device in coordinator.data or []:
+        for preset in shutter_preset_options(device.profile.possible_values):
+            shutter_entities.append(EnkiShutterPresetButton(coordinator, device, preset))
+    if shutter_entities:
+        async_add_entities(shutter_entities)
 
 
 class EnkiScenarioButton(CoordinatorEntity[EnkiCoordinator], ButtonEntity):
@@ -105,3 +114,28 @@ class EnkiScenarioButton(CoordinatorEntity[EnkiCoordinator], ButtonEntity):
 
     async def async_press(self) -> None:
         await self.coordinator.api.async_activate_scenario(self._home_id, self._scenario_id)
+
+
+class EnkiShutterPresetButton(EnkiEntity, ButtonEntity):
+    """Runs one Enki roller shutter preset."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "shutter_preset"
+
+    def __init__(
+        self,
+        coordinator: EnkiCoordinator,
+        device: EnkiDevice,
+        preset: str,
+    ) -> None:
+        super().__init__(coordinator, device)
+        self._preset = preset
+        self._attr_unique_id = f"{DOMAIN}-{device.node_id}-preset-{preset.lower()}"
+        self._attr_translation_placeholders = {"preset": preset.replace("_", " ").title()}
+
+    async def async_press(self) -> None:
+        await self.coordinator.api.async_execute_shutter_preset(
+            self._device.home_id,
+            self._device.node_id,
+            self._preset,
+        )

@@ -155,6 +155,27 @@ class EnkiCapabilityProfile:
         )
 
     @property
+    def supports_shutter_stop(self) -> bool:
+        return "stop_change_shutter_position" in self.capabilities
+
+    @property
+    def supports_roller_shutter_state(self) -> bool:
+        return "check_roller_shutter_state" in self.capabilities
+
+    @property
+    def supports_roller_shutter_mode(self) -> bool:
+        return _supports(
+            self.capabilities,
+            self.possible_values,
+            "change_roller_shutter_mode",
+            "check_roller_shutter_mode",
+        )
+
+    @property
+    def supports_shutter_preset(self) -> bool:
+        return "execute_preset" in self.capabilities
+
+    @property
     def supports_current_temperature(self) -> bool:
         return _supports(
             self.capabilities,
@@ -404,6 +425,11 @@ class EnkiCapabilityProfile:
     def is_pilot_wire(self) -> bool:
         """Pilot wire controllers (Comfort / Eco / Off)."""
         return self.supports_pilot_wire
+
+    @property
+    def is_roller_shutter_mode(self) -> bool:
+        """Roller shutter wiring direction (normal / inverted)."""
+        return self.is_cover and self.supports_roller_shutter_mode
 
     @property
     def is_config_switch(self) -> bool:

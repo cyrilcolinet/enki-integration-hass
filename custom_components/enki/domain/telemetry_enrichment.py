@@ -32,6 +32,8 @@ def ha_platforms_for_profile(profile: EnkiCapabilityProfile) -> list[str]:
         platforms.append("climate")
     if profile.is_pilot_wire:
         platforms.append("select")
+    if profile.is_roller_shutter_mode:
+        platforms.append("select")
     if profile.is_binary_sensor:
         platforms.append("binary_sensor")
     if profile.is_environment_sensor:

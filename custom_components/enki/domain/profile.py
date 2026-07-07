@@ -53,6 +53,8 @@ _POLL_STATE_EXPORT_KEYS = frozenset(
         "power_production",
         "shutter_position",
         "shutter_opening",
+        "roller_shutter_state",
+        "roller_shutter_mode",
         "current_temperature",
         "current_humidity",
         "illuminance_level",

@@ -158,3 +158,39 @@ def test_module_power_error_needs_telemetry_without_poll_state() -> None:
     )
     errors = {"power/check_electrical_power": "HTTP 403"}
     assert api_read_errors_need_telemetry(record, errors, {}) is True
+
+
+def _lexman_shutter_record():
+    """Issue #55 — Lexman roller shutter with extended motorization capabilities."""
+    return build_discovery_record(
+        device_type="access_and_motorizations",
+        bff_device_type="access_and_motorizations",
+        capabilities=[
+            "change_roller_shutter_mode",
+            "change_shutter_position",
+            "check_roller_shutter_state",
+            "check_shutter_position",
+            "execute_preset",
+            "stop_change_shutter_position",
+        ],
+        possible_values={
+            "change_roller_shutter_mode": {"values": ["NORMAL", "INVERTED"]},
+        },
+        manufacturer="Lexman",
+        model="unknown",
+        firmware_version="2.0.0",
+        supported_by_integration=True,
+    )
+
+
+def test_lexman_shutter_profile_does_not_need_telemetry() -> None:
+    record = _lexman_shutter_record()
+    assert discovery_record_needs_telemetry(record) is False
+
+
+def test_lexman_shutter_capabilities_are_covered() -> None:
+    profile = profile_from_record(_lexman_shutter_record())
+    assert capability_is_covered("stop_change_shutter_position", profile) is True
+    assert capability_is_covered("check_roller_shutter_state", profile) is True
+    assert capability_is_covered("change_roller_shutter_mode", profile) is True
+    assert capability_is_covered("execute_preset", profile) is True

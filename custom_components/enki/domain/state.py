@@ -123,6 +123,16 @@ class EnkiDeviceState:
         return str(value).upper() if isinstance(value, str) else None
 
     @property
+    def roller_shutter_state(self) -> str | None:
+        value = self._data.get("roller_shutter_state")
+        return str(value).upper() if isinstance(value, str) else None
+
+    @property
+    def roller_shutter_mode(self) -> str | None:
+        value = self._data.get("roller_shutter_mode")
+        return str(value).upper() if isinstance(value, str) else None
+
+    @property
     def current_temperature(self) -> float | None:
         return _as_float(self._data.get("current_temperature"))
 

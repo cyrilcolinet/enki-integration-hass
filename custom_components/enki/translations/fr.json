@@ -99,6 +99,9 @@
     "button": {
       "scenario": {
         "name": "Scénario"
+      },
+      "shutter_preset": {
+        "name": "{preset}"
       }
     },
     "binary_sensor": {
@@ -167,6 +170,13 @@
           "eco": "Éco",
           "frost_protection": "Hors gel",
           "off": "Arrêt"
+        }
+      },
+      "roller_shutter_mode": {
+        "name": "Sens de câblage",
+        "state": {
+          "normal": "Normal",
+          "inverted": "Inversé"
         }
       }
     },

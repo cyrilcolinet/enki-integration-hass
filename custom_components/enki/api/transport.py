@@ -320,7 +320,9 @@ class EnkiHttpClient:
         home_id: str,
         node_id: str,
         action: str,
-        value: Any,
+        value: Any | None = None,
+        *,
+        with_value: bool = True,
     ) -> None:
         if not self._service_api_key("motorization"):
             raise EnkiConnectionError(
@@ -328,11 +330,12 @@ class EnkiHttpClient:
                 "Capture X-Gateway-APIKey from the Enki app — see docs/API.md.",
                 service="motorization",
             )
+        payload = {"value": value} if with_value else None
         await self.post_command(
             "motorization",
             f"{self._ROLLING_PATH_PREFIX}/{node_id}/{action}",
             home_id=home_id,
-            json={"value": value},
+            json=payload,
         )
 
     async def capability_get(

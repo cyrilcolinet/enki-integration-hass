@@ -137,6 +137,9 @@ API detail: [API.md](API.md#heating-and-water-sensors-manifest--150)
 |----------|--------|
 | Open / close | HA cover commands |
 | Position | 0–100 % via `change-shutter-position` |
+| Stop | Mid-travel stop via `stop-change-shutter-position` (Lexman, …) |
+| Wiring direction | `select` entity — `NORMAL` / `INVERTED` |
+| Presets | `button` per referentiel preset when `execute_preset` lists values |
 
 **Current state:** `ENKI_ACCESS_MOTORIZATION_API_KEY` included (APK 2.25.1). Micro-service: `api-enki-rolling-prod` (not `access-and-motorizations`). **“Shutter (beta)”** entity if the shutter is active in the Enki app.
 

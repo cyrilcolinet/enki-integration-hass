@@ -5,7 +5,14 @@ from __future__ import annotations
 from enki.domain.capabilities import is_cover_device
 from enki.domain.models import EnkiDevice
 from enki.domain.state import EnkiDeviceState
-from enki.lib.shutter import normalize_shutter_position, shutter_opening_is_closed
+from enki.lib.shutter import (
+    normalize_shutter_position,
+    roller_shutter_mode_options,
+    roller_shutter_state_is_closing,
+    roller_shutter_state_is_opening,
+    shutter_opening_is_closed,
+    shutter_preset_options,
+)
 
 _COVER_DEVICE_KWARGS = {
     "home_id": "h",
@@ -41,7 +48,29 @@ def test_device_state_shutter_fields() -> None:
         {
             "shutter_position": 42,
             "shutter_opening": "OPEN",
+            "roller_shutter_state": "OPENING",
+            "roller_shutter_mode": "NORMAL",
         }
     )
     assert state.shutter_position == 42
     assert state.shutter_opening == "OPEN"
+    assert state.roller_shutter_state == "OPENING"
+    assert state.roller_shutter_mode == "NORMAL"
+
+
+def test_roller_shutter_state_motion_flags() -> None:
+    assert roller_shutter_state_is_opening("OPENING") is True
+    assert roller_shutter_state_is_closing("CLOSING") is True
+    assert roller_shutter_state_is_opening("CLOSED") is False
+    assert roller_shutter_state_is_closing("OPEN") is False
+
+
+def test_roller_shutter_mode_options_from_referentiel() -> None:
+    options = roller_shutter_mode_options(
+        {"change_roller_shutter_mode": {"values": ["NORMAL", "INVERTED"]}}
+    )
+    assert options == ["normal", "inverted"]
+
+
+def test_shutter_preset_options_empty_without_metadata() -> None:
+    assert shutter_preset_options({}) == []
