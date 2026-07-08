@@ -22,8 +22,8 @@ jobs:
           days-before-pr-stale: 45
           days-before-issue-close: -1
           days-before-pr-close: -1
-          exempt-issue-labels: blocked,next-release,release-blocker,device-telemetry
-          exempt-pr-labels: blocked,next-release,release-blocker
+          exempt-issue-labels: blocked,next release,release blocker,device telemetry
+          exempt-pr-labels: blocked,next release,release blocker
           stale-issue-message: >
             This issue has had no activity for 60 days. It has been marked stale.
             Comment or remove the `stale` label to keep it open.
