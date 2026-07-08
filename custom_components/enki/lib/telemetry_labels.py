@@ -7,8 +7,8 @@ from typing import Any
 _MISSING = "—"
 
 _REASON_GITHUB_LABELS: dict[str, str] = {
-    "api_read_errors": "api-error",
-    "uncovered_capabilities": "capability-gap",
+    "api_read_errors": "api error",
+    "uncovered_capabilities": "capability gap",
     "unsupported_device": "unsupported",
 }
 
@@ -23,14 +23,14 @@ _DEVICE_FAMILY_GITHUB_LABELS: dict[str, str] = {
     "sensors": "sensor",
 }
 
-_TELEMETRY_BASE_LABEL = "device-telemetry"
+_TELEMETRY_BASE_LABEL = "device telemetry"
 
 # Labels synced by scripts/sync_github_labels.sh (base + reason + coarse device family).
 TELEMETRY_GITHUB_LABEL_DEFINITIONS: tuple[tuple[str, str, str], ...] = (
-    ("device-telemetry", "6f42c1", "Opt-in anonymized device profile from Home Assistant"),
+    ("device telemetry", "6f42c1", "Opt-in anonymized device profile from Home Assistant"),
     ("unsupported", "d73a4a", "Device type not supported yet (telemetry)"),
-    ("capability-gap", "fbca04", "Supported device with missing capabilities (telemetry)"),
-    ("api-error", "b60205", "Cloud API read failures on supported device (telemetry)"),
+    ("capability gap", "fbca04", "Supported device with missing capabilities (telemetry)"),
+    ("api error", "b60205", "Cloud API read failures on supported device (telemetry)"),
     ("motorization", "1d76db", "Shutters, covers, and motorizations (telemetry)"),
     ("climate", "b60205", "Heating, pilot wire, ceiling fans (telemetry)"),
     ("lighting", "fef2c0", "Lights and dimmers (telemetry)"),
@@ -41,6 +41,9 @@ TELEMETRY_GITHUB_LABEL_DEFINITIONS: tuple[tuple[str, str, str], ...] = (
 
 # Removed from prefill; delete from repo via scripts/sync_github_labels.sh.
 TELEMETRY_GITHUB_ORPHAN_LABELS: tuple[str, ...] = (
+    "device-telemetry",
+    "capability-gap",
+    "api-error",
     "telemetry-unsupported",
     "telemetry-capability-gap",
     "telemetry-api-error",

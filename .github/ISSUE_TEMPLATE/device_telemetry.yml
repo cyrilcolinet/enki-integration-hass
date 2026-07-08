@@ -3,12 +3,12 @@ name: Device profile (telemetry)
 description: Anonymized Enki hardware profile for support prioritization
 title: "[telemetry] Manufacturer device kind · detail — reason"
 labels:
-  - device-telemetry
+  - device telemetry
 body:
   - type: markdown
     attributes:
       value: |
-        Issues with the `device-telemetry` label are often created from a **pre-filled GitHub link**
+        Issues with the `device telemetry` label are often created from a **pre-filled GitHub link**
         in Home Assistant (opt-in telemetry). Nothing is sent automatically.
 
         Do **not** include home/node IDs, email, passwords, or room names.
@@ -16,8 +16,8 @@ body:
         Prefer the HA notification link — titles, labels, and fields are filled from the
         anonymized profile (manufacturer, referentiel device ID, device kind, reason).
 
-        **Labels:** `device-telemetry` + reason (`unsupported`, `capability-gap`, or
-        `api-error`) + device family (`motorization`, `climate`, `lighting`, …).
+        **Labels:** `device telemetry` + reason (`unsupported`, `capability gap`, or
+        `api error`) + device family (`motorization`, `climate`, `lighting`, …).
         Brand and model stay in the title/body.
   - type: input
     attributes:

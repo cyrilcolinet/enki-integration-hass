@@ -63,7 +63,7 @@ def test_github_labels_for_unsupported_remote() -> None:
 
     labels = telemetry_github_labels(_lexman_remote_export())
     assert labels == (
-        "device-telemetry",
+        "device telemetry",
         "unsupported",
         "control",
     )
@@ -77,8 +77,8 @@ def test_github_labels_for_capability_gap_cover() -> None:
     export["telemetry_reason"] = "uncovered_capabilities"
     labels = telemetry_github_labels(export)
     assert labels == (
-        "device-telemetry",
-        "capability-gap",
+        "device telemetry",
+        "capability gap",
         "motorization",
     )
 
