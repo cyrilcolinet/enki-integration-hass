@@ -13,7 +13,11 @@ Summary: [ROADMAP.md](ROADMAP.md)
 
 This integration covers **only the Enki / Leroy Merlin ecosystem**: Lexman, Equation, Inspire, Noirot, Edisio, Eglo, Sedea, Evology, Nodon, ACOVA, Envertech, etc. (exact list: [`lib/enki_scope.py`](../custom_components/enki/lib/enki_scope.py)).
 
-**Important:** many of these devices use **Zigbee radio** via the Enki hub — that is expected and in scope. However, any **third-party Zigbee** on the hub (Sonoff, Tuya, Aqara, IKEA, …) or any node **without a known Enki manufacturer** is **skipped** at discovery: integrate them via **Zigbee2MQTT** or **ZHA**, not this repo.
+**In scope:** anything **visible and working in the Enki app** — Wi‑Fi devices (no hub required) and Zigbee devices paired on the Enki hub.
+
+**Setup order:** pair and configure devices in the **Enki app first**, then add this integration in Home Assistant. HA does not replace Enki pairing or device configuration.
+
+**Skipped at discovery:** **third-party Zigbee** on the hub (Sonoff, Tuya, Aqara, IKEA, …) or any node **without a known Enki manufacturer** — integrate them via **Zigbee2MQTT** or **ZHA**, not this repo.
 
 ## Inspire ceiling fans (Siroco+, Aruba+, Cadix, Radix, …)
 
@@ -179,6 +183,6 @@ Reads are best-effort (404 skipped) and driven by referentiel capabilities, not 
 | 🔬 Beta | Covers, Lexman water leak (on-site test), scenarios — feedback welcome |
 | Soon | ACOVA ARLAN radiators (same heating API if capabilities match) |
 | Not planned | Enki alarm (no API identified) |
-| Out of scope | Enki hub, pairing, Leroy Merlin account → [Enki support](https://support.enki-home.com/) |
+| Out of scope | Enki pairing and device setup, Leroy Merlin account management → [Enki support](https://support.enki-home.com/) (configure devices in the app before HA) |
 
 API documentation: [API.md](API.md)

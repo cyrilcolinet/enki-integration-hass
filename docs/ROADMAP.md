@@ -28,4 +28,6 @@ Short version: [README](../README.md) · detailed view below.
 | ⏳ Not planned | Enki alarm | no API identified |
 | ✅ Prerequisite OK | Default HACS store | CI HACS + Hassfest green, releases published — [PR to `hacs/default`](HACS.md#default-hacs-store) |
 
+**In scope:** devices visible in the Enki app (Wi‑Fi or via the Enki hub). **Setup:** configure them in the Enki app before adding this integration in Home Assistant.
+
 **Out of scope:** third-party Zigbee on the hub (Sonoff, Tuya, Aqara, IKEA, …) → [Zigbee2MQTT](https://www.zigbee2mqtt.io/) or ZHA. Only **Enki / Leroy Merlin** brands in [`lib/enki_scope.py`](../custom_components/enki/lib/enki_scope.py) are imported.
