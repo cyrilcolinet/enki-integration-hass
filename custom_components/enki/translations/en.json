@@ -105,6 +105,9 @@
       },
       "shutter_preset": {
         "name": "{preset}"
+      },
+      "impulse_relay": {
+        "name": "Trigger"
       }
     },
     "binary_sensor": {

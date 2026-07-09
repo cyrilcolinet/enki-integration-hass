@@ -130,3 +130,14 @@ def test_ha_platforms_include_button_for_shutter_presets() -> None:
     )
 
     assert ha_platforms_for_profile(profile) == ["button", "cover"]
+
+
+def test_ha_platforms_include_button_for_impulse_relay() -> None:
+    profile = EnkiCapabilityProfile(
+        device_type="access_and_motorizations",
+        capabilities=frozenset(["power_on_with_timer"]),
+        possible_values={},
+        bff_device_type="access_and_motorizations",
+    )
+
+    assert ha_platforms_for_profile(profile) == ["button"]

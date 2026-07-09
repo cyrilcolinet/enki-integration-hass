@@ -190,6 +190,10 @@ class EnkiCapabilityProfile:
         return "execute_preset" in self.capabilities
 
     @property
+    def supports_power_on_with_timer(self) -> bool:
+        return "power_on_with_timer" in self.capabilities
+
+    @property
     def supports_current_temperature(self) -> bool:
         return _supports(
             self.capabilities,
@@ -403,6 +407,11 @@ class EnkiCapabilityProfile:
         return self.supports_shutter_position
 
     @property
+    def is_impulse_relay(self) -> bool:
+        """Dry-contact gate/garage receivers (timed impulse via power-prod)."""
+        return self.supports_power_on_with_timer
+
+    @property
     def is_environment_sensor(self) -> bool:
         """Temperature, humidity, illuminance, or battery level sensors (not thermostats)."""
         if self.supports_thermostat:
@@ -470,6 +479,7 @@ class EnkiCapabilityProfile:
             or self.is_climate
             or self.is_pilot_wire
             or self.supports_vibration_sensibility
+            or self.is_impulse_relay
         )
 
     @property

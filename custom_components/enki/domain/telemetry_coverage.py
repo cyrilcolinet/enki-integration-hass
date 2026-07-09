@@ -37,6 +37,7 @@ _CAPABILITY_PROBES: dict[str, str] = {
     "change_roller_shutter_mode": "supports_roller_shutter_mode",
     "check_roller_shutter_mode": "supports_roller_shutter_mode",
     "execute_preset": "supports_shutter_preset",
+    "power_on_with_timer": "supports_power_on_with_timer",
     "change_vibration_sensibility_level": "supports_vibration_sensibility",
     "check_airflow_mode": "supports_airflow_mode",
     "check_battery_health": "supports_battery_health",

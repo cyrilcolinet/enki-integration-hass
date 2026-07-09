@@ -101,6 +101,18 @@ Commands:
 
 Gateway key: `ENKI_ACCESS_MOTORIZATION_API_KEY` in `const.py` (filled from APK 2.25.1). Legacy path `api-enki-access-and-motorizations-prod` is obsolete. See [BETA_VOLETS_KEY.md](BETA_VOLETS_KEY.md) for validation with mitmproxy.
 
+### Dry-contact gate / garage receiver (Lexman 83424576, Nodon SIN-4-1-20) — beta
+
+**Referentiel capability:** `power_on_with_timer` only (Mpulse mode — timed impulse, no state read).
+
+**HA entity:** `button` “Trigger”
+
+| Command | Endpoint | Notes |
+|---------|----------|-------|
+| Impulse | `POST …/power-on-with-timer` | **No body** — `api-enki-power-prod` (APK `mbj.e`) |
+
+Gateway key: `ENKI_POWER_API_KEY` (same as outlets). Distinct from roller shutters (`api-enki-rolling-prod`).
+
 ### Standard lights (Eglo V-Link, Lexman, etc.)
 
 | Capability | Parameter | Wire format |

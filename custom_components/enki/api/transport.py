@@ -270,6 +270,14 @@ class EnkiHttpClient:
             json={"value": value},
         )
 
+    async def power_on_with_timer(self, home_id: str, node_id: str) -> None:
+        """Timed dry-contact impulse (Lexman/Nodon gate receiver, APK mbj.e)."""
+        await self.post_command(
+            "power",
+            f"/api-enki-power-prod/v1/power/{node_id}/power-on-with-timer",
+            home_id=home_id,
+        )
+
     async def airflow_get(
         self,
         home_id: str,

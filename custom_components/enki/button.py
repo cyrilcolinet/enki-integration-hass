@@ -58,11 +58,16 @@ async def async_setup_entry(
     entry.async_on_unload(remove_listener)
 
     shutter_entities: list[EnkiShutterPresetButton] = []
+    impulse_entities: list[EnkiImpulseRelayButton] = []
     for device in coordinator.data or []:
         for preset in shutter_preset_options(device.profile.possible_values):
             shutter_entities.append(EnkiShutterPresetButton(coordinator, device, preset))
+        if device.profile.is_impulse_relay:
+            impulse_entities.append(EnkiImpulseRelayButton(coordinator, device))
     if shutter_entities:
         async_add_entities(shutter_entities)
+    if impulse_entities:
+        async_add_entities(impulse_entities)
 
 
 class EnkiScenarioButton(CoordinatorEntity[EnkiCoordinator], ButtonEntity):
@@ -138,4 +143,21 @@ class EnkiShutterPresetButton(EnkiEntity, ButtonEntity):
             self._device.home_id,
             self._device.node_id,
             self._preset,
+        )
+
+
+class EnkiImpulseRelayButton(EnkiEntity, ButtonEntity):
+    """Triggers a timed dry-contact impulse (gate, garage, water heater relay)."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "impulse_relay"
+
+    def __init__(self, coordinator: EnkiCoordinator, device: EnkiDevice) -> None:
+        super().__init__(coordinator, device)
+        self._attr_unique_id = f"{DOMAIN}-{device.node_id}-impulse"
+
+    async def async_press(self) -> None:
+        await self.coordinator.api.async_power_on_with_timer(
+            self._device.home_id,
+            self._device.node_id,
         )

@@ -125,3 +125,14 @@ def test_supports_fan_speed_control_requires_change_and_range() -> None:
     )
     assert with_change.profile.supports_fan_speed_control is True
     assert check_only.profile.supports_fan_speed_control is False
+
+
+def test_impulse_relay_supported_not_cover() -> None:
+    device = _device(
+        device_type="access_and_motorizations",
+        capabilities=["power_on_with_timer"],
+    )
+    profile = device.profile
+    assert profile.is_impulse_relay is True
+    assert profile.is_cover is False
+    assert device_is_supported(device) is True

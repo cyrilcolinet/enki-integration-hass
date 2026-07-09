@@ -5,7 +5,7 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from enki.button import EnkiShutterPresetButton
+from enki.button import EnkiImpulseRelayButton, EnkiShutterPresetButton
 from enki.cover import EnkiCoverEntity
 from enki.domain.models import EnkiDevice
 from homeassistant.components.cover import CoverEntityFeature
@@ -48,6 +48,7 @@ def _coordinator_for_device(device: EnkiDevice) -> MagicMock:
     coordinator.api.async_set_shutter_position = AsyncMock()
     coordinator.api.async_stop_shutter = AsyncMock()
     coordinator.api.async_execute_shutter_preset = AsyncMock()
+    coordinator.api.async_power_on_with_timer = AsyncMock()
     return coordinator
 
 
@@ -152,3 +153,14 @@ async def test_shutter_preset_button_press() -> None:
         "node-1",
         "MORNING",
     )
+
+
+@pytest.mark.asyncio
+async def test_impulse_relay_button_press() -> None:
+    device = _cover_device(capabilities=["power_on_with_timer"])
+    coordinator = _coordinator_for_device(device)
+    entity = EnkiImpulseRelayButton(coordinator, device)
+
+    await entity.async_press()
+
+    coordinator.api.async_power_on_with_timer.assert_awaited_once_with("home-1", "node-1")

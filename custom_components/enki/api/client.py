@@ -720,6 +720,11 @@ class EnkiAPI:
         http = await self._get_http()
         await http.switch_electrical_power(home_id, node_id, value, endpoint=endpoint)
 
+    async def async_power_on_with_timer(self, home_id: str, node_id: str) -> None:
+        """Fire a timed dry-contact impulse (power_on_with_timer capability)."""
+        http = await self._get_http()
+        await http.power_on_with_timer(home_id, node_id)
+
     async def async_set_fan_rotation(
         self,
         home_id: str,
