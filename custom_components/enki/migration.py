@@ -92,6 +92,20 @@ async def async_migrate_legacy_entry(hass: HomeAssistant, config_entry: ConfigEn
     )
 
 
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    """Migrate a config entry to the current schema.
+
+    Home Assistant 2026.x resolves this on the integration module (__init__.py),
+    not on the config flow class.
+    """
+    if config_entry.version >= 2:
+        return True
+
+    await async_migrate_legacy_entry(hass, config_entry)
+    hass.config_entries.async_update_entry(config_entry, version=2)
+    return True
+
+
 def resolve_scan_interval(config_entry: ConfigEntry) -> int:
     """Read polling interval from options, with legacy data fallback."""
     from .const import DEFAULT_SCAN_INTERVAL

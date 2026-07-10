@@ -38,6 +38,13 @@ PLATFORMS: list[Platform] = [
 type EnkiConfigEntry = ConfigEntry[EnkiCoordinator]
 
 
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    """Migrate config entries (required on this module for HA 2026.x+)."""
+    from .migration import async_migrate_entry as migrate_entry
+
+    return await migrate_entry(hass, config_entry)
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: EnkiConfigEntry) -> bool:
     from .coordinator import EnkiCoordinator
 

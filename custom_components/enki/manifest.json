@@ -9,5 +9,5 @@
   "issue_tracker": "https://github.com/cyrilcolinet/enki-integration-hass/issues",
   "loggers": ["enki"],
   "requirements": ["aiohttp>=3.9"],
-  "version": "1.6.18"
+  "version": "1.6.19"
 }
