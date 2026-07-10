@@ -7,11 +7,11 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from enki import async_migrate_entry as init_async_migrate_entry
 from enki.config_flow import EnkiConfigFlow
 from enki.const import CONF_SCAN_INTERVAL
 from enki.migration import async_migrate_entry, is_legacy_config_entry
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 
 
 @dataclass
@@ -156,8 +156,6 @@ async def test_legacy_v1_entry_renames_solar_entity_unique_id() -> None:
         "sensor.enki_solar_power",
         new_unique_id="enki-node1-power-production",
     )
-
-
 
 
 @pytest.mark.asyncio

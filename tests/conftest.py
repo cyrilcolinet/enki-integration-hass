@@ -29,6 +29,11 @@ def _patch_aiohttp_client_response_for_aioresponses() -> None:
 
 _patch_aiohttp_client_response_for_aioresponses()
 
+_voluptuous = MagicMock()
+_voluptuous.Schema = MagicMock(side_effect=lambda schema: schema)
+_voluptuous.Required = MagicMock(side_effect=lambda key, **kwargs: key)
+sys.modules.setdefault("voluptuous", _voluptuous)
+
 _HA_STUBS = [
     "homeassistant",
     "homeassistant.config_entries",
