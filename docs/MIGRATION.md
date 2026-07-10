@@ -44,4 +44,4 @@ Fan and light entities keep the same `unique_id` in most cases — automations s
 ## Canonical repo
 
 Active development: **[cyrilcolinet/enki-integration-hass](https://github.com/cyrilcolinet/enki-integration-hass)**  
-Original project: **[CyrilP/hass-enki-component](https://github.com/CyrilP/hass-enki-component)** (archived when ready)
+Original project: **[CyrilP/hass-enki-component](https://github.com/CyrilP/hass-enki-component)** (archived — README redirects here)
