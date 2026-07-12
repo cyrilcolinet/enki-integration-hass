@@ -44,6 +44,24 @@ class EnkiLightBehaviorMixin:
     def _simple_light_turn_on(self, kwargs: dict[str, Any]) -> bool:
         return ATTR_BRIGHTNESS not in kwargs and ATTR_COLOR_TEMP_KELVIN not in kwargs
 
+    def _bare_power_fallback_endpoint(self: EnkiEntity, kwargs: dict[str, Any]) -> int | None:
+        """Endpoint for a bare on/off via switch_electrical_power, or None.
+
+        Only applies when change_light_state has no real possibleValues
+        schema (see EnkiCapabilityProfile.light_state_has_schema) and the
+        call carries no brightness/color_temp_kelvin. Honors this entity's
+        own endpoint_id first, so a multi-gang fan light (e.g. Siroco+,
+        endpoints 2/3) always targets its own circuit rather than falling
+        back to the profile's first declared power-switch endpoint.
+        """
+        if not self._simple_light_turn_on(kwargs):
+            return None
+        if self._device.profile.light_state_has_schema:
+            return None
+        if self._endpoint_id is not None:
+            return self._endpoint_id
+        return self._device.profile.bare_power_fallback_endpoint
+
     async def _switch_endpoint_power(self: EnkiEntity, endpoint_id: int, power: str) -> None:
         await self.coordinator.api.async_switch_electrical_power(
             self._device.home_id,

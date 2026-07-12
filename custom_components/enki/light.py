@@ -120,11 +120,7 @@ class EnkiFanLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
             await self._switch_endpoint_power(self._endpoint_id, "ON")
             return
 
-        fallback_endpoint = (
-            self._device.profile.bare_power_fallback_endpoint
-            if self._simple_light_turn_on(kwargs)
-            else None
-        )
+        fallback_endpoint = self._bare_power_fallback_endpoint(kwargs)
         if fallback_endpoint is not None:
             await self.coordinator.api.async_switch_electrical_power(
                 self._device.home_id,
