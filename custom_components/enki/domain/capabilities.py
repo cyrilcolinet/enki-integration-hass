@@ -524,6 +524,21 @@ class EnkiCapabilityProfile:
         return list(self.main_change_capability_endpoints)
 
     @property
+    def bare_power_fallback_endpoint(self) -> int | None:
+        """Endpoint for a bare on/off via switch_electrical_power, or None.
+
+        Returns the referentiel's declared switch_electrical_power endpoint
+        when change_light_state has no real schema (see
+        light_state_has_schema), so callers know to bypass change-light-state
+        for a plain power toggle. Returns None when change_light_state should
+        be used as usual, or when no power-switch endpoint is declared.
+        """
+        if self.light_state_has_schema:
+            return None
+        power_endpoints = self.power_switch_endpoints
+        return power_endpoints[0] if power_endpoints else None
+
+    @property
     def _fan_motor_endpoint_ids(self) -> frozenset[int]:
         if self.device_type != DEVICE_TYPE_FANS and not self.is_fan:
             return frozenset()
