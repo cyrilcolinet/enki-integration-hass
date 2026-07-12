@@ -80,6 +80,31 @@ def test_main_change_capability_endpoints() -> None:
     assert main_change_capability_endpoints(device) == [2, 3]
 
 
+def test_light_state_has_schema_false_when_capability_tag_without_possible_values() -> None:
+    # AD_TCFL_1 (ceiling fan + light kit): "change_light_state"/"check_light_state"
+    # are listed in capabilities but possibleValues has no entry for either one.
+    device = _device(
+        device_type="ceiling_fans",
+        capabilities=["change_fan_speed", "change_light_state", "check_light_state"],
+        possible_values={
+            "change_fan_speed": {"format": "RANGE", "range": {"min": 0.0, "max": 6.0}},
+        },
+        main_change_capability_id="switch_electrical_power",
+        main_change_capability_endpoints=[1],
+    )
+    assert device.profile.supports_light_state is True
+    assert device.profile.light_state_has_schema is False
+
+
+def test_light_state_has_schema_true_when_possible_values_present() -> None:
+    device = _device(
+        device_type="lights",
+        capabilities=["change_light_state", "check_light_state"],
+        possible_values={"change_light_state": {"format": "VALUES", "values": ["ON", "OFF"]}},
+    )
+    assert device.profile.light_state_has_schema is True
+
+
 def test_fan_light_endpoints_excludes_motor() -> None:
     from enki.domain.capabilities import fan_light_endpoints
 

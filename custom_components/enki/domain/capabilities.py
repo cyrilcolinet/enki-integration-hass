@@ -94,6 +94,21 @@ class EnkiCapabilityProfile:
         )
 
     @property
+    def light_state_has_schema(self) -> bool:
+        """True when change_light_state/check_light_state has a real writable schema.
+
+        Some fan+light referentiels (e.g. AD_TCFL_1) list these capability names
+        without any possibleValues entry, so change-light-state never actually
+        applies a bare power change on those models even though the capability
+        tag is present. The real bare on/off channel for those is
+        switch_electrical_power on the referentiel's declared endpoint.
+        """
+        return (
+            "change_light_state" in self.possible_values
+            or "check_light_state" in self.possible_values
+        )
+
+    @property
     def supports_electrical_power(self) -> bool:
         return _supports(
             self.capabilities,
