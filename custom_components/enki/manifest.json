@@ -1,13 +1,19 @@
 {
   "domain": "enki",
   "name": "Enki",
-  "codeowners": ["@cyrilcolinet"],
+  "codeowners": [
+    "@cyrilcolinet"
+  ],
   "config_flow": true,
   "documentation": "https://github.com/cyrilcolinet/enki-integration-hass",
   "integration_type": "hub",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/cyrilcolinet/enki-integration-hass/issues",
-  "loggers": ["enki"],
-  "requirements": ["aiohttp>=3.9"],
-  "version": "1.6.19"
+  "loggers": [
+    "enki"
+  ],
+  "requirements": [
+    "aiohttp>=3.9"
+  ],
+  "version": "1.6.20"
 }
