@@ -1,0 +1,41 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "905d0c02a0549cfd36c4a802dee27dca1147897c",
+  "label": "pending release",
+  "release-label": "released",
+  "always-update": true,
+  "draft-pull-request": true,
+  "pull-request-title-pattern": "chore: release ${version}",
+  "pull-request-header": "Release candidate for Enki Home Assistant integration",
+  "pull-request-footer": "## Before merge\n\n- [ ] Release notes are readable for HACS users\n- [ ] `manifest.json` version matches the tag\n\nWorkflow: [docs/RELEASE.md](./docs/RELEASE.md)",
+  "packages": {
+    ".": {
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "simple",
+      "include-component-in-tag": false,
+      "include-v-in-tag": true,
+      "include-v-in-release-name": true,
+      "exclude-paths": [".github", "docs", "scripts", "tests"],
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "custom_components/enki/manifest.json",
+          "jsonpath": "$.version"
+        }
+      ],
+      "changelog-sections": [
+        { "type": "feat", "section": "Features" },
+        { "type": "fix", "section": "Bug Fixes" },
+        { "type": "perf", "section": "Performance" },
+        { "type": "revert", "section": "Reverts" },
+        { "type": "docs", "section": "Documentation", "hidden": true },
+        { "type": "style", "section": "Miscellaneous", "hidden": true },
+        { "type": "chore", "section": "Miscellaneous", "hidden": true },
+        { "type": "refactor", "section": "Miscellaneous", "hidden": true },
+        { "type": "test", "section": "Miscellaneous", "hidden": true },
+        { "type": "build", "section": "Miscellaneous", "hidden": true },
+        { "type": "ci", "section": "Miscellaneous", "hidden": true }
+      ]
+    }
+  }
+}
