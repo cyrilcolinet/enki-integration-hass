@@ -1,0 +1,36 @@
+name: Release please
+
+# Opens / updates the "chore: release X.Y.Z" PR (CHANGELOG + manifest.json).
+# Manual merge → tag vX.Y.Z + GitHub Release → enki.zip via `on: release`.
+# CI App token (not GITHUB_TOKEN) so the published release triggers release.yml.
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: release-please
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release-please:
+    name: release-please
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.CI_APP_ID }}
+          private-key: ${{ secrets.CI_APP_PRIVATE_KEY }}
+
+      - uses: googleapis/release-please-action@v4
+        continue-on-error: true
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

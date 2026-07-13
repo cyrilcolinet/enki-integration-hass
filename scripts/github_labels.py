@@ -8,6 +8,8 @@ from enki.lib.telemetry_labels import (
 )
 
 WORKFLOW_GITHUB_LABEL_DEFINITIONS: tuple[tuple[str, str, str], ...] = (
+    ("pending release", "0075ca", "Open release-please PR awaiting merge"),
+    ("released", "0e8a16", "Tagged by release-please"),
     ("next release", "0075ca", "Target for the upcoming tagged release"),
     ("release blocker", "b60205", "Must be resolved before the next release"),
     ("beta", "fbca04", "Beta or experimental; needs real-world testing"),

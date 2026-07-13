@@ -38,9 +38,7 @@ Configure on the repository **Settings** page:
 
 HACS shows the last 5 releases when they exist.
 
-1. Create a semantic tag (`v1.6.5`) aligned with `custom_components/enki/manifest.json`
-2. Publish a **GitHub Release** (not just a tag)
-3. The [`release.yml`](../.github/workflows/release.yml) workflow attaches `enki.zip` with the tag version injected into the ZIP manifest — update `manifest.json` in git manually before tagging
+Releases are automated via [release-please](../docs/RELEASE.md): merge the `chore: release X.Y.Z` PR on `main`, then [`release.yml`](../.github/workflows/release.yml) attaches `enki.zip` to the GitHub Release.
 
 ## Default HACS store
 
