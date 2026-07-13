@@ -94,6 +94,21 @@ class EnkiCapabilityProfile:
         )
 
     @property
+    def light_state_has_schema(self) -> bool:
+        """True when change_light_state/check_light_state has a real writable schema.
+
+        Some fan+light referentiels (e.g. AD_TCFL_1) list these capability names
+        without any possibleValues entry, so change-light-state never actually
+        applies a bare power change on those models even though the capability
+        tag is present. The real bare on/off channel for those is
+        switch_electrical_power on the referentiel's declared endpoint.
+        """
+        return (
+            "change_light_state" in self.possible_values
+            or "check_light_state" in self.possible_values
+        )
+
+    @property
     def supports_electrical_power(self) -> bool:
         return _supports(
             self.capabilities,
@@ -507,6 +522,33 @@ class EnkiCapabilityProfile:
         if self.main_change_capability_id != "switch_electrical_power":
             return []
         return list(self.main_change_capability_endpoints)
+
+    @property
+    def bare_power_fallback_endpoint(self) -> int | None:
+        """Endpoint for a bare on/off via switch_electrical_power, or None.
+
+        Returns the switch_electrical_power endpoint to target for a plain
+        power toggle when change_light_state has no real schema (see
+        light_state_has_schema). On fans, the first power_switch_endpoints
+        entry is often the motor circuit rather than the light kit (e.g.
+        Siroco+/Cadix, where endpoint 1 is conventionally the motor) — prefer
+        fan_light_endpoints, which already excludes motor endpoints via
+        infer_fan_motor_endpoints, and only fall back to the raw
+        power-switch endpoint when no light-kit endpoint can be resolved
+        (e.g. a single-endpoint device like AD_TCFL_1, where that one
+        endpoint doubles as the light channel because the motor is driven
+        separately via change_fan_speed). Returns None when
+        change_light_state should be used as usual, or when no endpoint can
+        be resolved either way.
+        """
+        if self.light_state_has_schema:
+            return None
+        if self.is_fan:
+            light_endpoints = self.fan_light_endpoints
+            if light_endpoints:
+                return light_endpoints[0]
+        power_endpoints = self.power_switch_endpoints
+        return power_endpoints[0] if power_endpoints else None
 
     @property
     def _fan_motor_endpoint_ids(self) -> frozenset[int]:

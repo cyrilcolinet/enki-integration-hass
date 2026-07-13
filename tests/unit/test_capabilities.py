@@ -80,6 +80,91 @@ def test_main_change_capability_endpoints() -> None:
     assert main_change_capability_endpoints(device) == [2, 3]
 
 
+def _unschemed_fan_light_device(**overrides) -> EnkiDevice:
+    """AD_TCFL_1-shaped device: change_light_state is listed in capabilities
+    but has no possibleValues schema, while switch_electrical_power (endpoint
+    1) does — the referentiel's real bare on/off channel.
+    """
+    defaults = {
+        "device_type": "ceiling_fans",
+        "capabilities": ["change_fan_speed", "change_light_state", "check_light_state"],
+        "possible_values": {
+            "change_fan_speed": {"format": "RANGE", "range": {"min": 0.0, "max": 6.0}},
+            "switch_electrical_power": {"format": "VALUES", "values": ["ON", "OFF"]},
+        },
+        "main_change_capability_id": "switch_electrical_power",
+        "main_change_capability_endpoints": [1],
+    }
+    defaults.update(overrides)
+    return _device(**defaults)
+
+
+def test_light_state_has_schema_false_when_capability_tag_without_possible_values() -> None:
+    device = _unschemed_fan_light_device()
+    assert device.profile.supports_light_state is True
+    assert device.profile.light_state_has_schema is False
+
+
+def test_light_state_has_schema_true_when_possible_values_present() -> None:
+    device = _device(
+        device_type="lights",
+        capabilities=["change_light_state", "check_light_state"],
+        possible_values={"change_light_state": {"format": "VALUES", "values": ["ON", "OFF"]}},
+    )
+    assert device.profile.light_state_has_schema is True
+
+
+def test_bare_power_fallback_endpoint_single_endpoint_falls_back_to_power_switch() -> None:
+    # AD_TCFL_1: a single switch_electrical_power endpoint doubles as the
+    # light channel — fan speed is driven separately via change_fan_speed,
+    # so infer_fan_motor_endpoints classifies the lone endpoint as the
+    # motor and fan_light_endpoints comes back empty, falling through to
+    # the raw power-switch endpoint. Verified live against real hardware.
+    device = _unschemed_fan_light_device()
+    assert device.profile.fan_light_endpoints == []
+    assert device.profile.bare_power_fallback_endpoint == 1
+
+
+def test_bare_power_fallback_endpoint_prefers_light_kit_on_siroco_layout() -> None:
+    # Siroco+/Cadix: motor on endpoint 1, light kit on endpoint 2. Must not
+    # target the motor for a bare light on/off.
+    device = _unschemed_fan_light_device(
+        device_name="Inspire Siroco+",
+        main_change_capability_endpoints=[1, 2],
+    )
+    assert device.profile.fan_light_endpoints == [2]
+    assert device.profile.bare_power_fallback_endpoint == 2
+
+
+def test_bare_power_fallback_endpoint_prefers_light_kit_on_radix_layout() -> None:
+    # Inspire Radix: dual LED kit at the corners (1, 3), motor on the
+    # middle endpoint (2). Must pick a light-kit endpoint, not the motor.
+    device = _unschemed_fan_light_device(
+        device_name="Inspire Radix",
+        main_change_capability_endpoints=[1, 2, 3],
+    )
+    assert device.profile.fan_light_endpoints == [1, 3]
+    assert device.profile.bare_power_fallback_endpoint == 1
+
+
+def test_bare_power_fallback_endpoint_none_when_light_state_has_schema() -> None:
+    device = _unschemed_fan_light_device(
+        possible_values={
+            "change_light_state": {"format": "VALUES", "values": ["ON", "OFF"]},
+            "switch_electrical_power": {"format": "VALUES", "values": ["ON", "OFF"]},
+        },
+    )
+    assert device.profile.bare_power_fallback_endpoint is None
+
+
+def test_bare_power_fallback_endpoint_none_without_power_switch_endpoint() -> None:
+    device = _unschemed_fan_light_device(
+        main_change_capability_id=None,
+        main_change_capability_endpoints=[],
+    )
+    assert device.profile.bare_power_fallback_endpoint is None
+
+
 def test_fan_light_endpoints_excludes_motor() -> None:
     from enki.domain.capabilities import fan_light_endpoints
 
