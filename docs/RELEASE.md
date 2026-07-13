@@ -13,17 +13,17 @@ feat/fix/* ──PR──► main ──► CI (ruff, pytest, HACS, Hassfest)
 | Step | Trigger | Result |
 |------|---------|--------|
 | Integration | Merge PR → `main` | CI green |
-| Version | Merge release-please PR | Tag + `CHANGELOG.md` + `manifest.json` bump |
-| GitHub Release | Same workflow (`publish-release` job) | Release created with changelog body, install note, and `enki.zip` |
+| Version | Merge release-please PR | Tag + GitHub Release + `CHANGELOG.md` + `manifest.json` bump |
+| HACS asset | Same workflow (`publish-release` job) | `enki.zip` uploaded; install note appended via `append_body` |
 
-Uses the default `GITHUB_TOKEN` only — no CI App secrets. release-please sets `skip-github-release: true`; `softprops/action-gh-release` creates the GitHub Release in one step (notes + asset).
+Uses the default `GITHUB_TOKEN` only — no CI App secrets. release-please creates the GitHub Release; `softprops/action-gh-release` uploads the zip and appends the install note in one step.
 
 ## Workflows
 
 | Workflow | Role |
 |----------|------|
 | **CI** | Lint, tests, HACS validation, Hassfest on PR and push `main` |
-| **Release please** | Release PR, tag, GitHub Release (`body` + `enki.zip`) |
+| **Release please** | Release PR, tag, GitHub Release, `enki.zip`, install note |
 
 ## Conventional Commits
 
@@ -47,7 +47,6 @@ Files: `release-please-config.json`, `.release-please-manifest.json`.
 | `bootstrap-sha` | Start point for the changelog — only commits **after** this SHA are included |
 | `exclude-paths` | Commits touching only `.github/`, `docs/`, `scripts/`, or `tests/` do not bump the version |
 | `extra-files` | Bumps `custom_components/enki/manifest.json` → `version` |
-| `skip-github-release` | Tag only — GitHub Release is created by `publish-release` with `enki.zip` |
 | `label` / `release-label` | `pending release` → `released` after merge |
 
 One-off version override: empty commit on `main` with `Release-As: 1.7.0` in the message (release-please honours the requested version).
