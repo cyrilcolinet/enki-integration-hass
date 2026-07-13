@@ -25,7 +25,7 @@ jobs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
-      - uses: googleapis/release-please-action@v4
+      - uses: googleapis/release-please-action@v5
         id: release
 
   publish-release:
@@ -47,7 +47,7 @@ jobs:
           zip -r enki.zip .
 
       - name: Upload enki.zip and append install note
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.release-please.outputs.tag_name }}
           files: ${{ github.workspace }}/custom_components/enki/enki.zip
