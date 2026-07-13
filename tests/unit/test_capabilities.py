@@ -114,8 +114,36 @@ def test_light_state_has_schema_true_when_possible_values_present() -> None:
     assert device.profile.light_state_has_schema is True
 
 
-def test_bare_power_fallback_endpoint_used_when_light_state_unschemed() -> None:
+def test_bare_power_fallback_endpoint_single_endpoint_falls_back_to_power_switch() -> None:
+    # AD_TCFL_1: a single switch_electrical_power endpoint doubles as the
+    # light channel — fan speed is driven separately via change_fan_speed,
+    # so infer_fan_motor_endpoints classifies the lone endpoint as the
+    # motor and fan_light_endpoints comes back empty, falling through to
+    # the raw power-switch endpoint. Verified live against real hardware.
     device = _unschemed_fan_light_device()
+    assert device.profile.fan_light_endpoints == []
+    assert device.profile.bare_power_fallback_endpoint == 1
+
+
+def test_bare_power_fallback_endpoint_prefers_light_kit_on_siroco_layout() -> None:
+    # Siroco+/Cadix: motor on endpoint 1, light kit on endpoint 2. Must not
+    # target the motor for a bare light on/off.
+    device = _unschemed_fan_light_device(
+        device_name="Inspire Siroco+",
+        main_change_capability_endpoints=[1, 2],
+    )
+    assert device.profile.fan_light_endpoints == [2]
+    assert device.profile.bare_power_fallback_endpoint == 2
+
+
+def test_bare_power_fallback_endpoint_prefers_light_kit_on_radix_layout() -> None:
+    # Inspire Radix: dual LED kit at the corners (1, 3), motor on the
+    # middle endpoint (2). Must pick a light-kit endpoint, not the motor.
+    device = _unschemed_fan_light_device(
+        device_name="Inspire Radix",
+        main_change_capability_endpoints=[1, 2, 3],
+    )
+    assert device.profile.fan_light_endpoints == [1, 3]
     assert device.profile.bare_power_fallback_endpoint == 1
 
 

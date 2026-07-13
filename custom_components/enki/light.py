@@ -129,6 +129,7 @@ class EnkiFanLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
                 endpoint=fallback_endpoint,
             )
             self._cache_global_light_on(self.coordinator)
+            self._update_light_endpoint_cache("ON", fallback_endpoint)
             return
 
         await self._mixed_endpoint_workaround()
