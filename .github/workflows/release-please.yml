@@ -1,7 +1,7 @@
 name: Release please
 
 # Opens / updates the "chore: release X.Y.Z" PR (CHANGELOG + manifest.json).
-# Manual merge → tag vX.Y.Z + GitHub Release (changelog + enki.zip) via softprops.
+# Manual merge → tag vX.Y.Z + GitHub Release (release-please) + enki.zip + install note.
 on:
   push:
     branches:
@@ -24,14 +24,9 @@ jobs:
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
-      body: ${{ steps.release.outputs.body }}
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          config-file: release-please-config.json
-          manifest-file: .release-please-manifest.json
 
   publish-release:
     name: publish-release
@@ -47,22 +42,17 @@ jobs:
           ref: ${{ needs.release-please.outputs.tag_name }}
 
       - name: Build HACS zip
-        shell: bash
         run: |
           cd "${{ github.workspace }}/custom_components/enki"
           zip -r enki.zip .
 
-      - name: Prepare release notes
-        env:
-          CHANGELOG_BODY: ${{ needs.release-please.outputs.body }}
-        run: |
-          printf '%s\n\n## Install\n\nHACS → Enki → Update, then restart Home Assistant.\n' \
-            "$CHANGELOG_BODY" > release-notes.md
-
-      - name: Create GitHub Release with enki.zip
+      - name: Upload enki.zip and append install note
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.release-please.outputs.tag_name }}
-          name: ${{ needs.release-please.outputs.tag_name }}
-          body_path: release-notes.md
           files: ${{ github.workspace }}/custom_components/enki/enki.zip
+          append_body: true
+          body: |
+            ## Install
+
+            HACS → Enki → Update, then restart Home Assistant.
