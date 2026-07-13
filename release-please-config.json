@@ -4,7 +4,6 @@
   "label": "pending release",
   "release-label": "released",
   "always-update": true,
-  "draft-pull-request": true,
   "pull-request-title-pattern": "chore: release ${version}",
   "pull-request-header": "Release candidate for Enki Home Assistant integration",
   "pull-request-footer": "## Before merge\n\n- [ ] Release notes are readable for HACS users\n- [ ] `manifest.json` version matches the tag\n\nWorkflow: [docs/RELEASE.md](./docs/RELEASE.md)",
