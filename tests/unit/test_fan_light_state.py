@@ -94,6 +94,20 @@ def test_bare_power_fallback_endpoint_uses_profile_default_when_endpoint_id_unse
     assert entity._bare_power_fallback_endpoint({}) == 1
 
 
+def test_bare_power_fallback_endpoint_skips_motor_when_endpoint_id_unset() -> None:
+    # Siroco+ layout (motor=1, light=2) built as a single entity because
+    # fan_light_endpoints has exactly one element (see light.py's
+    # _build_light_entities) — endpoint_id is unset, so this must resolve
+    # through the profile's motor-aware fallback (endpoint 2), never the
+    # motor (endpoint 1).
+    device = _unschemed_fan_light_device(
+        device_name="Inspire Siroco+",
+        main_change_capability_endpoints=[1, 2],
+    )
+    entity = _FakeFanLightEntity(device, endpoint_id=None)
+    assert entity._bare_power_fallback_endpoint({}) == 2
+
+
 def test_bare_power_fallback_endpoint_none_when_brightness_given() -> None:
     device = _unschemed_fan_light_device()
     entity = _FakeFanLightEntity(device, endpoint_id=None)
