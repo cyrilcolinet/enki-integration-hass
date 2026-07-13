@@ -9,15 +9,24 @@ from ..lib.enki_scope import device_in_enki_scope
 from .capabilities import EnkiCapabilityProfile
 from .models import EnkiDiscoveryRecord
 
-# Device lifecycle / admin — not exposed as Home Assistant entities.
+# Device lifecycle / admin / SDK plumbing — not exposed as Home Assistant entities.
+# Firmware *check* uses check_current_firmware_version + ota_inventory (binary_sensor).
+# SDK inventory / upgrade commands (update_sdk_firmware, …) are not planned as HA actions.
 _TELEMETRY_IGNORED_CAPABILITIES = frozenset(
     {
+        "ack_sdk_device_inventory_update",
         "change_esdk_certificate",
         "check_certificate_renewal_confirmation",
         "check_current_firmware_version",
         "check_esdk_certificate_renewal",
+        "check_sdk_firmware_upgrade",
         "execute_generic_ota_command",
+        "node_connected",
+        "node_disconnected",
         "ota_inventory",
+        "ota_inventory_updated",
+        "send_sdk_device_inventory",
+        "update_sdk_firmware",
     }
 )
 

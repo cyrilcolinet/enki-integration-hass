@@ -188,6 +188,46 @@ def test_lexman_shutter_profile_does_not_need_telemetry() -> None:
     assert discovery_record_needs_telemetry(record) is False
 
 
+# Capabilities from issue #73 — Edisio ED-PLUGSP10-1 smart plug (switch only).
+_EDISIO_PLUG_CAPABILITIES = [
+    "ack_sdk_device_inventory_update",
+    "cancel_electrical_power_switch_in",
+    "change_esdk_certificate",
+    "check_certificate_renewal_confirmation",
+    "check_current_firmware_version",
+    "check_electrical_power",
+    "check_esdk_certificate_renewal",
+    "check_sdk_firmware_upgrade",
+    "execute_generic_ota_command",
+    "next_electrical_power_switch_in",
+    "node_connected",
+    "node_disconnected",
+    "ota_inventory",
+    "ota_inventory_updated",
+    "send_sdk_device_inventory",
+    "switch_electrical_power",
+    "switch_electrical_power_in",
+    "update_sdk_firmware",
+]
+
+
+def test_edisio_plug_profile_does_not_need_telemetry() -> None:
+    record = build_discovery_record(
+        device_type="outlets",
+        bff_device_type="outlets",
+        capabilities=_EDISIO_PLUG_CAPABILITIES,
+        possible_values={
+            "check_electrical_power": {"values": ["ON", "OFF"]},
+            "switch_electrical_power": {"values": ["ON", "OFF"]},
+        },
+        manufacturer="Edisio",
+        model="ED-PLUGSP10-1",
+        firmware_version="2.0.0",
+        supported_by_integration=True,
+    )
+    assert discovery_record_needs_telemetry(record) is False
+
+
 def test_lexman_shutter_capabilities_are_covered() -> None:
     profile = profile_from_record(_lexman_shutter_record())
     assert capability_is_covered("stop_change_shutter_position", profile) is True
