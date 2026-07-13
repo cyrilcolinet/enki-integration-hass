@@ -7,26 +7,23 @@ feat/fix/* ──PR──► main ──► CI (ruff, pytest, HACS, Hassfest)
                     │
                     └──► release-please (PR "chore: release X.Y.Z")
                               │
-                         merge ──► tag vX.Y.Z + GitHub Release (CI App token)
-                              │
-                         GitHub Release published ──► enki.zip (release.yml)
+                         merge ──► tag vX.Y.Z + GitHub Release + enki.zip
 ```
 
 | Step | Trigger | Result |
 |------|---------|--------|
 | Integration | Merge PR → `main` | CI green |
 | Version | Merge release-please PR | Tag + GitHub Release + `CHANGELOG.md` + `manifest.json` bump |
-| HACS asset | GitHub Release `published` | `enki.zip` attached by [`release.yml`](../.github/workflows/release.yml) |
+| HACS asset | Same workflow (`attach-hacs-zip` job) | `enki.zip` uploaded to the GitHub Release |
 
-release-please uses the **GitHub App CI** token (`CI_APP_*`), not `GITHUB_TOKEN`: a published release still triggers `on: release` so the HACS zip workflow runs.
+Uses the default `GITHUB_TOKEN` only — no CI App secrets. The zip is attached in the same workflow run because releases created by `GITHUB_TOKEN` do not trigger separate `on: release` workflows.
 
 ## Workflows
 
 | Workflow | Role |
 |----------|------|
 | **CI** | Lint, tests, HACS validation, Hassfest on PR and push `main` |
-| **Release please** | Release PR + tag (CI App token) |
-| **Release** | On `release: published` → build and upload `enki.zip` |
+| **Release please** | Release PR, tag, GitHub Release, and `enki.zip` |
 
 ## Conventional Commits
 
@@ -56,16 +53,15 @@ One-off version override: empty commit on `main` with `Release-As: 1.7.0` in the
 
 After changing `bootstrap-sha`, close the open release PR and let release-please open a fresh one on the next `feat`/`fix`.
 
-## GitHub secrets (repository)
+## Manual zip re-upload
 
-| Secret | Usage |
-|--------|--------|
-| `CI_APP_ID` | GitHub App used by release-please (PR + tag + release) |
-| `CI_APP_PRIVATE_KEY` | Private key for the CI App |
+If `enki.zip` is missing from a release:
 
-The App needs **Contents** read/write and **Pull requests** read/write on this repository.
-
-Reuse the same CI App as [SyntaxLabsOrg/expert-crypto-ui](https://github.com/SyntaxLabsOrg/expert-crypto-ui) if it is installed on this repo; otherwise install it and add the secrets above.
+```bash
+git checkout vX.Y.Z
+cd custom_components/enki && zip -r enki.zip .
+gh release upload vX.Y.Z enki.zip --clobber
+```
 
 ## HACS
 
