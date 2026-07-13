@@ -14,7 +14,7 @@ feat/fix/* ──PR──► main ──► CI (ruff, pytest, HACS, Hassfest)
 |------|---------|--------|
 | Integration | Merge PR → `main` | CI green |
 | Version | Merge release-please PR | Tag + GitHub Release + `CHANGELOG.md` + `manifest.json` bump |
-| HACS asset | Same workflow (`publish-release` job) | `enki.zip` uploaded; install note appended via `append_body` |
+| HACS asset | Same workflow (`release` job) | `enki.zip` uploaded; install note appended via `append_body` |
 
 Uses the default `GITHUB_TOKEN` only — no CI App secrets. release-please creates the GitHub Release; `softprops/action-gh-release` uploads the zip and appends the install note in one step.
 
