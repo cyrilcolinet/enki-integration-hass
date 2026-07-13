@@ -1,8 +1,7 @@
 name: Release please
 
 # Opens / updates the "chore: release X.Y.Z" PR (CHANGELOG + manifest.json).
-# Manual merge → tag vX.Y.Z + GitHub Release → enki.zip via `on: release`.
-# CI App token (not GITHUB_TOKEN) so the published release triggers release.yml.
+# Manual merge → tag vX.Y.Z + GitHub Release + enki.zip (same workflow, GITHUB_TOKEN).
 on:
   push:
     branches:
@@ -14,23 +13,67 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
   release-please:
     name: release-please
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
-      - id: app-token
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: ${{ secrets.CI_APP_ID }}
-          private-key: ${{ secrets.CI_APP_PRIVATE_KEY }}
-
       - uses: googleapis/release-please-action@v4
-        continue-on-error: true
+        id: release
         with:
-          token: ${{ steps.app-token.outputs.token }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+  attach-hacs-zip:
+    name: attach-hacs-zip
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+
+      - name: Build HACS zip
+        shell: bash
+        run: |
+          cd "${{ github.workspace }}/custom_components/enki"
+          zip -r enki.zip .
+
+      - name: Upload enki.zip to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          gh release upload "${{ needs.release-please.outputs.tag_name }}" \
+            "${{ github.workspace }}/custom_components/enki/enki.zip" \
+            --clobber
+
+      - name: Append HACS install note to release body
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          tag="${{ needs.release-please.outputs.tag_name }}"
+          body="$(gh release view "$tag" --json body --jq .body)"
+          if printf '%s' "$body" | grep -q '## Install'; then
+            echo "Install section already present"
+            exit 0
+          fi
+          {
+            printf '%s\n\n' "$body"
+            printf '%s\n' '## Install'
+            printf '%s\n' 'HACS → Enki → Update, then restart Home Assistant.'
+          } > release-notes.md
+          gh release edit "$tag" --notes-file release-notes.md

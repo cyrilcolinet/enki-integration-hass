@@ -123,9 +123,9 @@ Releases are driven by [release-please](https://github.com/googleapis/release-pl
 1. Merge `feat`/`fix` PRs to `main` with [Conventional Commits](https://www.conventionalcommits.org/) titles.
 2. **Release please** opens or updates a draft PR `chore: release X.Y.Z` (`CHANGELOG.md` + `manifest.json`).
 3. Review the release PR, then merge — release-please creates tag `vX.Y.Z` and the GitHub Release.
-4. [`release.yml`](../.github/workflows/release.yml) attaches `enki.zip` when the release is published.
+4. [`release-please.yml`](../.github/workflows/release-please.yml) uploads `enki.zip` in the same workflow when the release is created.
 
-Requires repository secrets `CI_APP_ID` and `CI_APP_PRIVATE_KEY` (GitHub App token so `on: release` still runs).
+No extra repository secrets required — uses `GITHUB_TOKEN`.
 
 APK validation in CI release is **disabled for now**. Locally, after an Enki app update: `python3 scripts/extract_gateway_keys.py path/to/enki.apk --check` then `--apply --update-known` if needed.
 

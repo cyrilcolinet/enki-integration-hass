@@ -38,7 +38,7 @@ Configure on the repository **Settings** page:
 
 HACS shows the last 5 releases when they exist.
 
-Releases are automated via [release-please](../docs/RELEASE.md): merge the `chore: release X.Y.Z` PR on `main`, then [`release.yml`](../.github/workflows/release.yml) attaches `enki.zip` to the GitHub Release.
+Releases are automated via [release-please](../docs/RELEASE.md): merge the `chore: release X.Y.Z` PR on `main` — the workflow creates the GitHub Release and uploads `enki.zip`.
 
 ## Default HACS store
 
