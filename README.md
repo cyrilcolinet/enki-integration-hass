@@ -56,11 +56,11 @@ The **Enki** app controls hundreds of products (Lexman, Equation, Inspire, Edisi
 - **Sensors** (Lexman, Sedea, …) — `binary_sensor`, `sensor`
 - **Siren** (Lexman) — `switch`
 - **Heating** (Noirot radiator, Equation pilot wire) — `climate`, `select` (stable since **v1.6.8**)
+- **Gate / garage dry contact** (Lexman 83424576, Nodon SIN-4-1-20) — `button` impulse (stable since **v1.6.17**, [#56](https://github.com/cyrilcolinet/enki-integration-hass/issues/56))
 
 ### Beta
 
 - **Covers** (Evology, Nodon, …) — `cover`
-- **Gate / garage dry contact** (Lexman 83424576, Nodon SIN-4-1-20) — `button` impulse ([#56](https://github.com/cyrilcolinet/enki-integration-hass/issues/56))
 - **Water leak** (Lexman) — `binary_sensor`, `sensor` (on-site leak test pending — [#36](https://github.com/cyrilcolinet/enki-integration-hass/issues/36))
 - **Scenarios** (Enki cloud) — `button`
 
