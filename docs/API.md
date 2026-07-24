@@ -101,7 +101,7 @@ Commands:
 
 Gateway key: `ENKI_ACCESS_MOTORIZATION_API_KEY` in `const.py` (filled from APK 2.25.1). Legacy path `api-enki-access-and-motorizations-prod` is obsolete. See [BETA_VOLETS_KEY.md](BETA_VOLETS_KEY.md) for validation with mitmproxy.
 
-### Dry-contact gate / garage receiver (Lexman 83424576, Nodon SIN-4-1-20) — beta
+### Dry-contact gate / garage receiver (Lexman 83424576, Nodon SIN-4-1-20)
 
 **Referentiel capability:** `power_on_with_timer` only (Mpulse mode — timed impulse, no state read).
 

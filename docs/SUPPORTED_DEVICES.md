@@ -156,7 +156,7 @@ Contributor network feedback: [BETA_VOLETS_KEY.md](BETA_VOLETS_KEY.md).
 3. Test open / close / position vs the Enki mobile app.
 4. Report results (model, HA version, integration version, `enki` log excerpt if it fails).
 
-## Dry-contact gate / garage receiver — beta (Lexman, Nodon)
+## Dry-contact gate / garage receiver (Lexman, Nodon)
 
 **HA entity:** `button` “Trigger” / “Déclencher”
 
@@ -166,16 +166,9 @@ Contributor network feedback: [BETA_VOLETS_KEY.md](BETA_VOLETS_KEY.md).
 | Capability | `power_on_with_timer` only (no position/opening — **not** a `cover`) |
 | Enki app mode | **Mpulse** — contact closes for a few seconds then reopens (timed impulse) |
 
-**API:** `POST api-enki-power-prod/v1/power/{nodeId}/power-on-with-timer` — no body. Same gateway key as outlets (`ENKI_POWER_API_KEY`). Detail: [API.md](API.md#dry-contact-gate--garage-receiver-lexman-83424576-nodon-sin-4-1-20--beta).
+**API:** `POST api-enki-power-prod/v1/power/{nodeId}/power-on-with-timer` — no body. Same gateway key as outlets (`ENKI_POWER_API_KEY`). Detail: [API.md](API.md#dry-contact-gate--garage-receiver-lexman-83424576-nodon-sin-4-1-20).
 
-**Since v1.6.17.** Field feedback: [#56](https://github.com/cyrilcolinet/enki-integration-hass/issues/56).
-
-### For testers (gate / dry contact)
-
-1. Update the Enki integration (**v1.6.17+**) via HACS, then restart Home Assistant.
-2. Open the gate receiver device — look for a **Trigger** button entity.
-3. Press it and confirm the gate (or water heater relay) behaves like a single tap in the Enki app.
-4. Report model, integration version, and any error in `enki` logs.
+**Stable since v1.6.17** — field-confirmed ([#56](https://github.com/cyrilcolinet/enki-integration-hass/issues/56)). Related On/Off water-heater SKU (83424574): [#87](https://github.com/cyrilcolinet/enki-integration-hass/issues/87).
 
 ## Cross-cutting features
 
@@ -201,7 +194,8 @@ Reads are best-effort (404 skipped) and driven by referentiel capabilities, not 
 | Status | Topic |
 |--------|--------|
 | ✅ Stable | Heating (Noirot, pilot wire, Equation relay) since v1.6.8 |
-| 🔬 Beta | Covers, dry-contact gate receiver, Lexman water leak (on-site test), scenarios — feedback welcome |
+| ✅ Stable | Dry-contact gate / garage receiver (Lexman 83424576) since v1.6.17 |
+| 🔬 Beta | Covers, Lexman water leak (on-site test), scenarios — feedback welcome |
 | Soon | ACOVA ARLAN radiators (same heating API if capabilities match) |
 | Not planned | Enki alarm (no API identified) |
 | Out of scope | Enki pairing and device setup, Leroy Merlin account management → [Enki support](https://support.enki-home.com/) (configure devices in the app before HA) |
