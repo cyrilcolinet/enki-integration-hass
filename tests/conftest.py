@@ -56,12 +56,21 @@ _HA_STUBS = [
     "homeassistant.components.sensor",
     "homeassistant.components.cover",
     "homeassistant.components.button",
+    "homeassistant.components.climate",
+    "homeassistant.components.climate.const",
+    "homeassistant.components.switch",
+    "homeassistant.components.binary_sensor",
+    "homeassistant.components.number",
+    "homeassistant.components.select",
     "homeassistant.util",
 ]
 
 for module_name in _HA_STUBS:
     sys.modules.setdefault(module_name, MagicMock())
 
+# Real package so submodule imports like homeassistant.components.climate work.
+_components = sys.modules["homeassistant.components"]
+_components.__path__ = []  # type: ignore[attr-defined]
 _config_entries = sys.modules["homeassistant.config_entries"]
 
 
@@ -93,6 +102,17 @@ _ha_const = sys.modules["homeassistant.const"]
 _ha_const.CONF_USERNAME = "username"
 _ha_const.CONF_PASSWORD = "password"
 _ha_const.CONF_SCAN_INTERVAL = "scan_interval"
+_ha_const.__version__ = "test"
+_ha_const.ATTR_TEMPERATURE = "temperature"
+_ha_const.LIGHT_LUX = "lx"
+_ha_const.UnitOfEnergy = MagicMock()
+_ha_const.UnitOfPower = MagicMock()
+_ha_const.UnitOfRatio = MagicMock()
+_ha_const.UnitOfTemperature = MagicMock()
+_ha_const.UnitOfRatio.PERCENTAGE = "%"
+_ha_const.UnitOfTemperature.CELSIUS = "°C"
+_ha_const.UnitOfPower.WATT = "W"
+_ha_const.UnitOfEnergy.KILO_WATT_HOUR = "kWh"
 
 
 class _HaEntity:
@@ -183,3 +203,41 @@ _cover.CoverDeviceClass = _CoverDeviceClass
 
 _button = sys.modules["homeassistant.components.button"]
 _button.ButtonEntity = _HaEntity
+
+_light = sys.modules["homeassistant.components.light"]
+_light.LightEntity = _HaEntity
+_light.ColorMode = MagicMock()
+_light.ATTR_HS_COLOR = "hs_color"
+_light.ATTR_BRIGHTNESS = "brightness"
+_light.ATTR_COLOR_TEMP_KELVIN = "color_temp_kelvin"
+
+_light_const = sys.modules["homeassistant.components.light.const"]
+_light_const.DEFAULT_MAX_KELVIN = 6500
+_light_const.DEFAULT_MIN_KELVIN = 2000
+
+_sensor = sys.modules["homeassistant.components.sensor"]
+_sensor.SensorEntity = _HaEntity
+_sensor.SensorDeviceClass = MagicMock()
+_sensor.SensorStateClass = MagicMock()
+
+_climate = sys.modules["homeassistant.components.climate"]
+_climate.ClimateEntity = _HaEntity
+
+_climate_const = sys.modules["homeassistant.components.climate.const"]
+_climate_const.ClimateEntityFeature = MagicMock()
+_climate_const.HVACAction = MagicMock()
+_climate_const.HVACMode = MagicMock()
+
+_switch = sys.modules["homeassistant.components.switch"]
+_switch.SwitchEntity = _HaEntity
+_switch.SwitchDeviceClass = MagicMock()
+
+_binary_sensor = sys.modules["homeassistant.components.binary_sensor"]
+_binary_sensor.BinarySensorEntity = _HaEntity
+_binary_sensor.BinarySensorDeviceClass = MagicMock()
+
+_number = sys.modules["homeassistant.components.number"]
+_number.NumberEntity = _HaEntity
+
+_select = sys.modules["homeassistant.components.select"]
+_select.SelectEntity = _HaEntity
