@@ -10,9 +10,9 @@ from homeassistant.components.sensor import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     LIGHT_LUX,
+    PERCENTAGE,
     UnitOfEnergy,
     UnitOfPower,
-    UnitOfRatio,
     UnitOfTemperature,
 )
 from homeassistant.core import HomeAssistant
@@ -133,7 +133,7 @@ class EnkiTemperatureSensor(EnkiEntity, SensorEntity):
 class EnkiHumiditySensor(EnkiEntity, SensorEntity):
     _attr_translation_key = "humidity"
     _attr_device_class = SensorDeviceClass.HUMIDITY
-    _attr_native_unit_of_measurement = UnitOfRatio.PERCENTAGE
+    _attr_native_unit_of_measurement = PERCENTAGE
     _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(self, coordinator: EnkiCoordinator, device: EnkiDevice) -> None:
@@ -148,7 +148,7 @@ class EnkiHumiditySensor(EnkiEntity, SensorEntity):
 class EnkiBatterySensor(EnkiEntity, SensorEntity):
     _attr_translation_key = "battery"
     _attr_device_class = SensorDeviceClass.BATTERY
-    _attr_native_unit_of_measurement = UnitOfRatio.PERCENTAGE
+    _attr_native_unit_of_measurement = PERCENTAGE
     _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(self, coordinator: EnkiCoordinator, device: EnkiDevice) -> None:
