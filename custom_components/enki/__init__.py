@@ -47,25 +47,32 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
 
 async def async_setup_entry(hass: HomeAssistant, entry: EnkiConfigEntry) -> bool:
     from .coordinator import EnkiCoordinator
+    from .telemetry import async_handle_telemetry_nudge
 
     coordinator = EnkiCoordinator(hass, entry)
     notifier = EnkiNotifier(hass, entry)
 
+    # The API owns its aiohttp session; HA retries a failed setup, so every
+    # abandoned coordinator must close it or sessions pile up.
     try:
         await coordinator.api.async_connect()
     except EnkiAuthError as err:
+        await coordinator.api.async_close()
         notifier.notify_auth_failed()
         raise ConfigEntryNotReady(f"Invalid Enki credentials: {err}") from err
     except EnkiConnectionError as err:
+        await coordinator.api.async_close()
         notify_for_connection_error(notifier, err)
         raise ConfigEntryNotReady(f"Cannot reach Enki cloud: {err}") from err
 
     entry.runtime_data = coordinator
-    await coordinator.async_config_entry_first_refresh()
 
-    from .telemetry import async_handle_telemetry_nudge
-
-    await async_handle_telemetry_nudge(hass, entry)
+    try:
+        await coordinator.async_config_entry_first_refresh()
+        await async_handle_telemetry_nudge(hass, entry)
+    except Exception:
+        await coordinator.api.async_close()
+        raise
 
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)

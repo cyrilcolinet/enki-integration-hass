@@ -156,6 +156,19 @@ _fan.DIRECTION_REVERSE = "reverse"
 _core = sys.modules["homeassistant.core"]
 _core.callback = lambda fn: fn
 
+
+class _HomeAssistantError(Exception):
+    """Minimal HomeAssistantError stand-in — must stay raisable."""
+
+
+class _ConfigEntryNotReady(_HomeAssistantError):
+    """Minimal ConfigEntryNotReady stand-in — must stay raisable."""
+
+
+_ha_exceptions = sys.modules["homeassistant.exceptions"]
+_ha_exceptions.HomeAssistantError = _HomeAssistantError
+_ha_exceptions.ConfigEntryNotReady = _ConfigEntryNotReady
+
 _device_registry = sys.modules["homeassistant.helpers.device_registry"]
 _device_registry.DeviceInfo = dict
 
