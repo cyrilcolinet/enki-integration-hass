@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.6.21](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.6.20...v1.6.21) (2026-07-25)
+
+
+### Bug Fixes
+
+* **ci:** open release PR ready, fix title pattern ([a37bce6](https://github.com/cyrilcolinet/enki-integration-hass/commit/a37bce66c32ce5a407956c79ef64fad2aacf90a1))
+* close API session when entry setup fails ([b6bfa65](https://github.com/cyrilcolinet/enki-integration-hass/commit/b6bfa65d479ef055b62eaa4d1e5fe505bb469ed3))
+* **diagnostics:** restore Download diagnostics button ([90a6b1b](https://github.com/cyrilcolinet/enki-integration-hass/commit/90a6b1bec237bc208c35a935344d565f85fa03b5))
+* **sensor:** drop UnitOfRatio, unsupported before HA 2026.7 ([3eee87f](https://github.com/cyrilcolinet/enki-integration-hass/commit/3eee87fe3249b6f5dd78ed9599668a412ae122df))
+
 ## [1.6.20](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.6.19...v1.6.20) (2026-07-13)
 
 
