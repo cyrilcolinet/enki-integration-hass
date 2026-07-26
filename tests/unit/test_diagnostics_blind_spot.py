@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 from enki.domain.profile import (
     build_discovery_record,
     format_github_issue_body,
@@ -28,6 +30,8 @@ def _boiler_record():
         supported_by_integration=False,
         referentiel_device_id="6226fd906ceb9ce2aafcf715",
         main_change_capability_id="switch_electrical_power",
+        main_change_capability_endpoints=[{"id": 1}, {"id": 1}, 3],
+        referentiel_i18n="boiler.connected_receiver_on_off",
     )
 
 
@@ -98,20 +102,63 @@ def test_whenDroppedByScope_thenDiagnosticsCarryTheReason() -> None:
     assert "telemetry_reason" not in enriched
 
 
-def test_whenReferentielHasNoCapabilities_thenMainChangeCapabilityIsExported() -> None:
+def test_whenReferentielHasNoCapabilities_thenControlHintsAreExported() -> None:
     # Given
     record = _boiler_record()
 
     # When
     export = _export(record)
+    body = format_github_issue_body(export, "f" * 64)
 
-    # Then
+    # Then — capability says what to send, endpoints where, i18n names the product.
     assert export["capabilities"] == []
     assert export["main_change_capability_id"] == "switch_electrical_power"
-    assert "Main change capability" in format_github_issue_body(export, "f" * 64)
+    assert export["main_change_capability_endpoints"] == [1, 3]
+    assert export["referentiel_i18n"] == "boiler.connected_receiver_on_off"
+    assert "Main change capability" in body
+    assert "Main change endpoints" in body
+    assert "Referentiel i18n key" in body
 
 
-def test_whenMainChangeCapabilityChanges_thenFingerprintStaysStable() -> None:
+def test_whenEndpointEntriesAreMissingOrMalformed_thenExportStaysEmpty() -> None:
+    # Given
+    record = build_discovery_record(
+        device_type="boiler",
+        bff_device_type="boiler",
+        capabilities=[],
+        possible_values={},
+        manufacturer=None,
+        model=None,
+        firmware_version=None,
+        supported_by_integration=False,
+        main_change_capability_endpoints=[{"label": "no id"}, None],
+        referentiel_i18n="",
+    )
+
+    # When
+    export = _export(record)
+
+    # Then
+    assert export["main_change_capability_endpoints"] == []
+    assert export["referentiel_i18n"] is None
+
+
+def test_whenFirmwareIsPatchedLate_thenControlHintsSurvive() -> None:
+    # Given — discovery patches firmware once metadata reads land.
+    record = _boiler_record()
+
+    # When
+    patched = replace(record, firmware_version="2.0.0")
+
+    # Then — a rebuild here used to drop every field the builder gained since.
+    assert patched.firmware_version == "2.0.0"
+    assert patched.main_change_capability_id == "switch_electrical_power"
+    assert patched.main_change_capability_endpoints == [1, 3]
+    assert patched.referentiel_i18n == "boiler.connected_receiver_on_off"
+    assert patched.referentiel_device_id == "6226fd906ceb9ce2aafcf715"
+
+
+def test_whenControlHintsAreAdded_thenFingerprintStaysStable() -> None:
     # Given
     without = _export(
         build_discovery_record(
