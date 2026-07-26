@@ -157,6 +157,7 @@ def build_discovery_record(
     firmware_version: str | None,
     supported_by_integration: bool,
     referentiel_device_id: str | None = None,
+    main_change_capability_id: str | None = None,
 ) -> EnkiDiscoveryRecord:
     return EnkiDiscoveryRecord(
         device_type=device_type,
@@ -168,6 +169,7 @@ def build_discovery_record(
         firmware_version=firmware_version,
         supported_by_integration=supported_by_integration,
         referentiel_device_id=referentiel_device_id,
+        main_change_capability_id=main_change_capability_id,
     )
 
 
@@ -177,7 +179,7 @@ def profile_to_export_dict(
     integration_version: str,
     ha_version: str,
 ) -> dict[str, Any]:
-    return {
+    export: dict[str, Any] = {
         "device_type": record.device_type,
         "bff_device_type": record.bff_device_type,
         "manufacturer": record.manufacturer,
@@ -190,6 +192,9 @@ def profile_to_export_dict(
         "integration_version": integration_version,
         "ha_version": ha_version,
     }
+    if record.main_change_capability_id:
+        export["main_change_capability_id"] = record.main_change_capability_id
+    return export
 
 
 def profile_fingerprint(export_dict: dict[str, Any]) -> str:
@@ -203,6 +208,7 @@ def profile_fingerprint(export_dict: dict[str, Any]) -> str:
         "supported_by_integration": export_dict.get("supported_by_integration"),
         "capabilities": export_dict.get("capabilities"),
         "possible_values": export_dict.get("possible_values"),
+        "main_change_capability_id": export_dict.get("main_change_capability_id"),
     }
     payload = json.dumps(stable, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
@@ -242,6 +248,9 @@ def format_github_issue_body(export_dict: dict[str, Any], fingerprint: str) -> s
 
     if referentiel_device_id := export_dict.get("referentiel_device_id"):
         body += f"- **Referentiel device ID:** `{referentiel_device_id}`\n"
+
+    if main_change := export_dict.get("main_change_capability_id"):
+        body += f"- **BFF main capability:** `{main_change}`\n"
 
     if platforms := export_dict.get("ha_platforms"):
         platform_line = ", ".join(f"`{platform}`" for platform in platforms)

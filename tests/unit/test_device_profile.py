@@ -39,6 +39,23 @@ def test_profile_to_export_dict_excludes_sensitive_keys() -> None:
     assert "homeId" not in export["possible_values"]
 
 
+def test_profile_export_includes_bff_main_capability() -> None:
+    record = build_discovery_record(
+        device_type="boiler",
+        bff_device_type="boiler",
+        capabilities=["switch_electrical_power"],
+        possible_values={},
+        manufacturer=None,
+        model=None,
+        firmware_version=None,
+        supported_by_integration=True,
+        referentiel_device_id="6226fd906ceb9ce2aafcf715",
+        main_change_capability_id="switch_electrical_power",
+    )
+    export = profile_to_export_dict(record, integration_version="1.6.21", ha_version="2026.7.4")
+    assert export["main_change_capability_id"] == "switch_electrical_power"
+
+
 def test_profile_fingerprint_stable_across_versions() -> None:
     record = _sample_record()
     first = profile_to_export_dict(record, integration_version="1.0.0", ha_version="2024.1")

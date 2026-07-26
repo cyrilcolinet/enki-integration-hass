@@ -168,7 +168,18 @@ Contributor network feedback: [BETA_VOLETS_KEY.md](BETA_VOLETS_KEY.md).
 
 **API:** `POST api-enki-power-prod/v1/power/{nodeId}/power-on-with-timer` — no body. Same gateway key as outlets (`ENKI_POWER_API_KEY`). Detail: [API.md](API.md#dry-contact-gate--garage-receiver-lexman-83424576-nodon-sin-4-1-20).
 
-**Stable since v1.6.17** — field-confirmed ([#56](https://github.com/cyrilcolinet/enki-integration-hass/issues/56)). Related On/Off water-heater SKU (83424574): [#87](https://github.com/cyrilcolinet/enki-integration-hass/issues/87).
+**Stable since v1.6.17** — field-confirmed ([#56](https://github.com/cyrilcolinet/enki-integration-hass/issues/56)).
+
+### Lexman On/Off water-heater relay (83424574)
+
+Same Nodon SIN-4-1-20 family as the gate module, but Enki may expose it as referentiel type **`boiler`** (especially when the app name suggests a water heater) with an **empty** capability list and no manufacturer.
+
+| Signal | HA surface |
+|--------|------------|
+| BFF `mainChangeCapabilityId` = `switch_electrical_power`, or endpoint `lastReportedValue` ON/OFF | `switch` (outlet) via `api-enki-power-prod` |
+| BFF / referentiel `power_on_with_timer` only | `button` “Trigger” (same as gate) |
+
+Diagnostics now export `main_change_capability_id` so empty-referentiel boilers stay actionable ([#87](https://github.com/cyrilcolinet/enki-integration-hass/issues/87)). If both signals are missing, the dedicated `api-enki-equation-water-heater-prod` path is still unwired.
 
 ## Cross-cutting features
 

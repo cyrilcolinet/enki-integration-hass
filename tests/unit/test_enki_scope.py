@@ -24,3 +24,4 @@ def test_native_enki_device_types_without_manufacturer() -> None:
     assert device_in_enki_scope(manufacturer=None, device_type="ceiling_fans") is True
     assert device_in_enki_scope(manufacturer=None, device_type="inverters") is True
     assert device_in_enki_scope(manufacturer=None, device_type="access_and_motorizations") is True
+    assert device_in_enki_scope(manufacturer=None, device_type="boiler") is True

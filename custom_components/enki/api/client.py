@@ -9,7 +9,7 @@ from typing import Any
 import aiohttp
 
 from ..const import DEVICE_TYPE_LIGHTS, LOGGER
-from ..domain.capabilities import EnkiCapabilityProfile
+from ..domain.capabilities import EnkiCapabilityProfile, merge_capabilities_with_bff
 from ..domain.models import EnkiDevice, EnkiDiscoveryRecord, EnkiScenario
 from ..domain.profile import (
     build_discovery_record,
@@ -262,7 +262,14 @@ class EnkiAPI:
         node_info = await http.get_node(home_id, node_id)
         device_info = await self._get_referentiel_device(http, device_id)
         device_type = device_info.get("type") or bff_type
-        capabilities = device_info.get("capabilities", [])
+        main_change_capability_id = metadata.get("mainChangeCapabilityId")
+        if not isinstance(main_change_capability_id, str):
+            main_change_capability_id = None
+        capabilities = merge_capabilities_with_bff(
+            device_info.get("capabilities", []),
+            main_change_capability_id=main_change_capability_id,
+            endpoints=main_change_endpoints,
+        )
         possible_values = device_info.get("possibleValues", {})
         power_production = parse_bff_power(item.get("description"))
 
@@ -281,7 +288,7 @@ class EnkiAPI:
             capabilities=capabilities,
             possible_values=possible_values,
             bff_device_type=bff_type,
-            main_change_capability_id=metadata.get("mainChangeCapabilityId"),
+            main_change_capability_id=main_change_capability_id,
             main_change_capability_endpoints=main_change_endpoints,
             power_production=power_production,
             referentiel_i18n=str(device_info.get("i18n") or ""),
@@ -317,6 +324,7 @@ class EnkiAPI:
             firmware_version=str(preliminary_firmware) if preliminary_firmware else None,
             supported_by_integration=supported,
             referentiel_device_id=device_id,
+            main_change_capability_id=main_change_capability_id,
         )
         self._register_node_profile(node_id, record)
 
@@ -349,6 +357,7 @@ class EnkiAPI:
                 firmware_version=str(last_reported["firmware_version"]),
                 supported_by_integration=supported,
                 referentiel_device_id=device_id,
+                main_change_capability_id=main_change_capability_id,
             )
 
         self._register_poll_state(node_id, {**node_info, **last_reported})
@@ -374,7 +383,7 @@ class EnkiAPI:
                 possible_values=possible_values,
                 last_reported_value={**node_info, **last_reported},
                 bff_device_type=bff_type,
-                main_change_capability_id=metadata.get("mainChangeCapabilityId"),
+                main_change_capability_id=main_change_capability_id,
                 main_change_capability_endpoints=main_change_endpoints,
                 power_production=power_production,
                 referentiel_i18n=str(device_info.get("i18n") or ""),

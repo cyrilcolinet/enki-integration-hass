@@ -26,6 +26,9 @@ _ENKI_ECOSYSTEM_MANUFACTURERS = frozenset(
 _ENKI_NATIVE_DEVICE_TYPES = frozenset(
     {
         "access_and_motorizations",
+        # Lexman/Nodon On/Off water-heater relay may appear as boiler with null manufacturer
+        # when the app remaps the node from the device name (#87).
+        "boiler",
         "ceiling_fans",
         "inverters",
     }

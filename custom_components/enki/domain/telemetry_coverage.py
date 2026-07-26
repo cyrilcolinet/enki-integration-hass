@@ -140,6 +140,7 @@ def profile_from_record(record: EnkiDiscoveryRecord) -> EnkiCapabilityProfile:
         capabilities=frozenset(record.capabilities or []),
         possible_values=record.possible_values or {},
         bff_device_type=record.bff_device_type or "",
+        main_change_capability_id=record.main_change_capability_id,
     )
 
 

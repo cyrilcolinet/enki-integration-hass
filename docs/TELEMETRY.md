@@ -36,6 +36,7 @@ Diagnostics and GitHub prefill now include extra **English** context when availa
 |-------|---------|
 | `ha_platforms` | HA platforms that would be created (`climate`, `select`, …) |
 | `uncovered_capabilities` | Referentiel capabilities not implemented yet |
+| `main_change_capability_id` | BFF dashboard primary capability (useful when the referentiel list is empty, e.g. `boiler`) |
 | `api_read_errors` | Cloud read failures from the **last poll** (`heating/check_pilot_wire_state → HTTP 500`) — no node/home ids |
 | `telemetry_reason` | Why a notification was suggested |
 

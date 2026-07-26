@@ -14,6 +14,7 @@ _REASON_GITHUB_LABELS: dict[str, str] = {
 
 _DEVICE_FAMILY_GITHUB_LABELS: dict[str, str] = {
     "access_and_motorizations": "motorization",
+    "boiler": "control",
     "ceiling_fans": "climate",
     "heaters_and_pilot_wires": "climate",
     "inverters": "energy",
@@ -76,6 +77,7 @@ TELEMETRY_GITHUB_ORPHAN_LABELS: tuple[str, ...] = (
 
 _DEVICE_TYPE_LABELS: dict[str, str] = {
     "access_and_motorizations": "motorization",
+    "boiler": "boiler / water heater relay",
     "ceiling_fans": "ceiling fan",
     "heaters_and_pilot_wires": "heating",
     "inverters": "inverter",

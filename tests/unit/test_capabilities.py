@@ -221,3 +221,41 @@ def test_impulse_relay_supported_not_cover() -> None:
     assert profile.is_impulse_relay is True
     assert profile.is_cover is False
     assert device_is_supported(device) is True
+
+
+def test_boiler_empty_referentiel_uses_bff_switch_capability() -> None:
+    """Lexman On/Off water-heater (#87): boiler type, empty referentiel, BFF ON/OFF."""
+    device = _device(
+        device_type="boiler",
+        bff_device_type="boiler",
+        capabilities=[],
+        main_change_capability_id="switch_electrical_power",
+        main_change_capability_endpoints=[{"id": 1, "lastReportedValue": "ON"}],
+    )
+    profile = device.profile
+    assert profile.supports_electrical_power is True
+    assert profile.is_outlet is True
+    assert device_is_supported(device) is True
+
+
+def test_boiler_infers_power_from_bff_endpoint_state_alone() -> None:
+    device = _device(
+        device_type="boiler",
+        bff_device_type="boiler",
+        capabilities=[],
+        main_change_capability_id=None,
+        main_change_capability_endpoints=[{"id": 1, "lastReportedValue": {"power": "OFF"}}],
+    )
+    assert device.profile.is_outlet is True
+    assert device_is_supported(device) is True
+
+
+def test_boiler_empty_without_bff_signal_stays_unsupported() -> None:
+    device = _device(
+        device_type="boiler",
+        bff_device_type="boiler",
+        capabilities=[],
+        main_change_capability_id=None,
+        main_change_capability_endpoints=[],
+    )
+    assert device_is_supported(device) is False

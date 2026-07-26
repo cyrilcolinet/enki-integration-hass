@@ -34,6 +34,57 @@ def possible_values_dict(possible_values: dict[str, Any] | None) -> dict[str, An
     return {}
 
 
+def supplemental_capabilities_from_bff(
+    main_change_capability_id: str | None,
+    endpoints: list[Any] | tuple[Any, ...] | None = None,
+) -> list[str]:
+    """Capabilities implied by BFF dashboard metadata when the referentiel is thin.
+
+    Some On/Off relays (Lexman water-heater SKU, #87) are reclassified as ``boiler``
+    with an empty referentiel capability list. The BFF tile still exposes
+    ``mainChangeCapabilityId`` and/or endpoint ``lastReportedValue`` of ON/OFF.
+    """
+    found: list[str] = []
+    if isinstance(main_change_capability_id, str):
+        capability = main_change_capability_id.strip()
+        if capability:
+            found.append(capability)
+
+    for entry in endpoints or ():
+        if not isinstance(entry, dict):
+            continue
+        raw = entry.get("lastReportedValue")
+        power: str | None = None
+        if isinstance(raw, str) and raw in {"ON", "OFF"}:
+            power = raw
+        elif isinstance(raw, dict):
+            value = raw.get("power")
+            if isinstance(value, str) and value in {"ON", "OFF"}:
+                power = value
+        if power is not None:
+            found.extend(["switch_electrical_power", "check_electrical_power"])
+            break
+
+    return list(dict.fromkeys(found))
+
+
+def merge_capabilities_with_bff(
+    capabilities: list[str] | dict[str, Any] | None,
+    *,
+    main_change_capability_id: str | None = None,
+    endpoints: list[Any] | tuple[Any, ...] | None = None,
+) -> list[str]:
+    """Union referentiel capabilities with BFF-inferred ones (stable order)."""
+    merged = list(capabilities_set(capabilities))
+    for capability in supplemental_capabilities_from_bff(
+        main_change_capability_id,
+        endpoints,
+    ):
+        if capability not in merged:
+            merged.append(capability)
+    return merged
+
+
 def _supports(capabilities: set[str], possible_values: dict[str, Any], *names: str) -> bool:
     """True when any capability name appears in capabilities or possibleValues."""
     return any(name in capabilities or name in possible_values for name in names)
@@ -68,9 +119,14 @@ class EnkiCapabilityProfile:
             endpoint_id = endpoint_id_from_entry(entry)
             if endpoint_id is not None:
                 endpoints.append(endpoint_id)
+        capabilities = merge_capabilities_with_bff(
+            device.capabilities,
+            main_change_capability_id=device.main_change_capability_id,
+            endpoints=list(endpoint_entries),
+        )
         return cls(
             device_type=device.device_type,
-            capabilities=frozenset(capabilities_set(device.capabilities)),
+            capabilities=frozenset(capabilities),
             possible_values=possible_values_dict(device.possible_values),
             bff_device_type=device.bff_device_type,
             main_change_capability_id=device.main_change_capability_id,

@@ -6,6 +6,7 @@ from enki.domain.profile import build_discovery_record
 from enki.domain.telemetry_coverage import (
     api_read_errors_need_telemetry,
     capability_is_covered,
+    discovery_record_eligible_for_telemetry,
     discovery_record_needs_telemetry,
     profile_from_record,
 )
@@ -66,6 +67,23 @@ def test_unsupported_device_still_needs_telemetry() -> None:
         firmware_version=None,
         supported_by_integration=False,
     )
+    assert discovery_record_needs_telemetry(record) is True
+
+
+def test_empty_boiler_profile_eligible_without_manufacturer() -> None:
+    """#87 diagnostics: boiler + null manufacturer must stay in telemetry scope."""
+    record = build_discovery_record(
+        device_type="boiler",
+        bff_device_type="boiler",
+        capabilities=[],
+        possible_values={},
+        manufacturer=None,
+        model=None,
+        firmware_version=None,
+        supported_by_integration=False,
+        referentiel_device_id="6226fd906ceb9ce2aafcf715",
+    )
+    assert discovery_record_eligible_for_telemetry(record) is True
     assert discovery_record_needs_telemetry(record) is True
 
 
