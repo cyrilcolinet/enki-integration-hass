@@ -11,6 +11,7 @@ from .telemetry_coverage import (
     api_read_errors_need_telemetry,
     capability_is_covered,
     discovery_record_eligible_for_telemetry,
+    discovery_record_telemetry_exclusion,
     profile_from_record,
 )
 
@@ -113,5 +114,8 @@ def enrich_telemetry_export(
     )
     if reason:
         enriched["telemetry_reason"] = reason
+
+    if exclusion := discovery_record_telemetry_exclusion(record):
+        enriched["telemetry_excluded"] = exclusion
 
     return enriched

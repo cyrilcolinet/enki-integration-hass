@@ -317,6 +317,7 @@ class EnkiAPI:
             firmware_version=str(preliminary_firmware) if preliminary_firmware else None,
             supported_by_integration=supported,
             referentiel_device_id=device_id,
+            main_change_capability_id=metadata.get("mainChangeCapabilityId"),
         )
         self._register_node_profile(node_id, record)
 

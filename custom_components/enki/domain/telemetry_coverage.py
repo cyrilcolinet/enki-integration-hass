@@ -159,21 +159,33 @@ def _normalize_type(value: str | None) -> str:
     return value.strip().lower().replace(" ", "_")
 
 
-def discovery_record_eligible_for_telemetry(record: EnkiDiscoveryRecord) -> bool:
-    """Return False for out-of-scope or hub profiles that should not spam GitHub."""
+def discovery_record_telemetry_exclusion(record: EnkiDiscoveryRecord) -> str | None:
+    """Why this profile never reaches telemetry, or None when it is eligible.
+
+    Surfaced in diagnostics: without it an out-of-scope device looks identical to
+    a supported one that simply had nothing to report.
+    """
     if not device_in_enki_scope(
         manufacturer=record.manufacturer,
         device_type=record.device_type,
     ):
-        return False
+        return "out_of_enki_scope"
 
     device_type = _normalize_type(record.device_type)
     bff_type = _normalize_type(record.bff_device_type)
     if device_type in _GATEWAY_DEVICE_TYPES or bff_type in _GATEWAY_DEVICE_TYPES:
-        return False
+        return "gateway"
 
     caps = record.capabilities or []
-    return not (caps and any(cap in _GATEWAY_CAPABILITY_MARKERS for cap in caps))
+    if caps and any(cap in _GATEWAY_CAPABILITY_MARKERS for cap in caps):
+        return "gateway"
+
+    return None
+
+
+def discovery_record_eligible_for_telemetry(record: EnkiDiscoveryRecord) -> bool:
+    """Return False for out-of-scope or hub profiles that should not spam GitHub."""
+    return discovery_record_telemetry_exclusion(record) is None
 
 
 def _poll_state_has_key(poll_state: dict[str, Any], state_key: str) -> bool:
