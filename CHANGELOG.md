@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.7.0...v1.7.1) (2026-07-26)
+
+
+### Bug Fixes
+
+* **diagnostics:** keep control hints on the discovery record ([85f6e56](https://github.com/cyrilcolinet/enki-integration-hass/commit/85f6e5696802918185ad8ff73c2a9344532fc088)), closes [#87](https://github.com/cyrilcolinet/enki-integration-hass/issues/87)
+
 ## [1.7.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.6.21...v1.7.0) (2026-07-26)
 
 
