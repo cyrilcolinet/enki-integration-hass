@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.6.21...v1.7.0) (2026-07-26)
+
+
+### Features
+
+* **diagnostics:** expose control hint and telemetry exclusion ([d2a4849](https://github.com/cyrilcolinet/enki-integration-hass/commit/d2a4849dae9d36089497982867d4e29d82a7f309)), closes [#87](https://github.com/cyrilcolinet/enki-integration-hass/issues/87)
+
 ## [1.6.21](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.6.20...v1.6.21) (2026-07-25)
 
 
