@@ -64,8 +64,11 @@ class EnkiDiscoveryRecord:
     firmware_version: str | None
     supported_by_integration: bool
     referentiel_device_id: str | None = None
-    # BFF tile control hint: the only clue left when the referentiel returns no capabilities.
+    # BFF tile control hints: the only clues left when the referentiel returns no capabilities.
+    # The capability says what to send, the endpoints say where, the i18n key names the product.
     main_change_capability_id: str | None = None
+    main_change_capability_endpoints: list[int] = field(default_factory=list)
+    referentiel_i18n: str | None = None
 
 
 @dataclass(frozen=True, slots=True)

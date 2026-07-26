@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from dataclasses import replace
 from typing import Any
 
 import aiohttp
@@ -318,6 +319,8 @@ class EnkiAPI:
             supported_by_integration=supported,
             referentiel_device_id=device_id,
             main_change_capability_id=metadata.get("mainChangeCapabilityId"),
+            main_change_capability_endpoints=main_change_endpoints,
+            referentiel_i18n=skeleton.referentiel_i18n,
         )
         self._register_node_profile(node_id, record)
 
@@ -340,16 +343,11 @@ class EnkiAPI:
                 )
 
         if last_reported.get("firmware_version"):
-            record = build_discovery_record(
-                device_type=device_type,
-                bff_device_type=bff_type,
-                capabilities=capabilities,
-                possible_values=possible_values,
-                manufacturer=manufacturer_str,
-                model=model,
+            # Patch in place: rebuilding the record here silently dropped every
+            # field the builder gained since.
+            record = replace(
+                record,
                 firmware_version=str(last_reported["firmware_version"]),
-                supported_by_integration=supported,
-                referentiel_device_id=device_id,
             )
 
         self._register_poll_state(node_id, {**node_info, **last_reported})

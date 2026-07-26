@@ -8,6 +8,7 @@ from typing import Any
 from urllib.parse import quote
 
 from ..const import TELEMETRY_GITHUB_REPO
+from ..lib.fan_endpoints import endpoint_id_from_entry
 from ..lib.telemetry_labels import (
     format_telemetry_issue_title,
     resolve_display_value,
@@ -158,7 +159,14 @@ def build_discovery_record(
     supported_by_integration: bool,
     referentiel_device_id: str | None = None,
     main_change_capability_id: str | None = None,
+    main_change_capability_endpoints: list[int | dict[str, Any]] | None = None,
+    referentiel_i18n: str | None = None,
 ) -> EnkiDiscoveryRecord:
+    endpoint_ids = {
+        endpoint_id
+        for entry in main_change_capability_endpoints or []
+        if (endpoint_id := endpoint_id_from_entry(entry)) is not None
+    }
     return EnkiDiscoveryRecord(
         device_type=device_type,
         bff_device_type=bff_device_type,
@@ -170,6 +178,8 @@ def build_discovery_record(
         supported_by_integration=supported_by_integration,
         referentiel_device_id=referentiel_device_id,
         main_change_capability_id=main_change_capability_id,
+        main_change_capability_endpoints=sorted(endpoint_ids),
+        referentiel_i18n=referentiel_i18n or None,
     )
 
 
@@ -187,6 +197,8 @@ def profile_to_export_dict(
         "firmware_version": record.firmware_version,
         "referentiel_device_id": record.referentiel_device_id,
         "main_change_capability_id": record.main_change_capability_id,
+        "main_change_capability_endpoints": list(record.main_change_capability_endpoints),
+        "referentiel_i18n": record.referentiel_i18n,
         "supported_by_integration": record.supported_by_integration,
         "capabilities": sorted(record.capabilities or []),
         "possible_values": record.possible_values,
@@ -248,6 +260,13 @@ def format_github_issue_body(export_dict: dict[str, Any], fingerprint: str) -> s
 
     if main_change := export_dict.get("main_change_capability_id"):
         body += f"- **Main change capability:** `{main_change}`\n"
+
+    if endpoints := export_dict.get("main_change_capability_endpoints"):
+        endpoint_line = ", ".join(f"`{endpoint}`" for endpoint in endpoints)
+        body += f"- **Main change endpoints:** {endpoint_line}\n"
+
+    if i18n := export_dict.get("referentiel_i18n"):
+        body += f"- **Referentiel i18n key:** `{i18n}`\n"
 
     if platforms := export_dict.get("ha_platforms"):
         platform_line = ", ".join(f"`{platform}`" for platform in platforms)
