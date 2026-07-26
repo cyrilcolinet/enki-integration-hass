@@ -157,6 +157,7 @@ def build_discovery_record(
     firmware_version: str | None,
     supported_by_integration: bool,
     referentiel_device_id: str | None = None,
+    main_change_capability_id: str | None = None,
 ) -> EnkiDiscoveryRecord:
     return EnkiDiscoveryRecord(
         device_type=device_type,
@@ -168,6 +169,7 @@ def build_discovery_record(
         firmware_version=firmware_version,
         supported_by_integration=supported_by_integration,
         referentiel_device_id=referentiel_device_id,
+        main_change_capability_id=main_change_capability_id,
     )
 
 
@@ -184,6 +186,7 @@ def profile_to_export_dict(
         "model": record.model,
         "firmware_version": record.firmware_version,
         "referentiel_device_id": record.referentiel_device_id,
+        "main_change_capability_id": record.main_change_capability_id,
         "supported_by_integration": record.supported_by_integration,
         "capabilities": sorted(record.capabilities or []),
         "possible_values": record.possible_values,
@@ -242,6 +245,9 @@ def format_github_issue_body(export_dict: dict[str, Any], fingerprint: str) -> s
 
     if referentiel_device_id := export_dict.get("referentiel_device_id"):
         body += f"- **Referentiel device ID:** `{referentiel_device_id}`\n"
+
+    if main_change := export_dict.get("main_change_capability_id"):
+        body += f"- **Main change capability:** `{main_change}`\n"
 
     if platforms := export_dict.get("ha_platforms"):
         platform_line = ", ".join(f"`{platform}`" for platform in platforms)

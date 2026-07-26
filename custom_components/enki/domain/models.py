@@ -64,6 +64,8 @@ class EnkiDiscoveryRecord:
     firmware_version: str | None
     supported_by_integration: bool
     referentiel_device_id: str | None = None
+    # BFF tile control hint: the only clue left when the referentiel returns no capabilities.
+    main_change_capability_id: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
