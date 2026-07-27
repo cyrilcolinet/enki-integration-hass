@@ -774,6 +774,21 @@ class EnkiAPI:
             max(0, min(100, position)),
         )
 
+    async def async_switch_roller_shutter(
+        self,
+        home_id: str,
+        node_id: str,
+        opening: str,
+    ) -> None:
+        """Open or close an RTS shutter, which has no position to aim for."""
+        http = await self._get_http()
+        await http.motorization_post(
+            home_id,
+            node_id,
+            "switch-roller-shutter",
+            opening.upper(),
+        )
+
     async def async_stop_shutter(self, home_id: str, node_id: str) -> None:
         """Stop an in-progress shutter movement."""
         http = await self._get_http()

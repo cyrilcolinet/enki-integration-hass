@@ -47,6 +47,14 @@ class EnkiCoverEntity(EnkiEntity, CoverEntity):
         self._attr_unique_id = f"{DOMAIN}-{device.node_id}-cover"
         self._supports_position = device.profile.supports_shutter_position
         self._supports_stop = device.profile.supports_shutter_stop
+        self._supports_switch = device.profile.supports_roller_shutter_switch
+        # One-way RTS radio: nothing ever reports back, so the state HA shows is
+        # only what we last sent.
+        self._attr_assumed_state = self._supports_switch and not (
+            self._supports_position
+            or device.profile.supports_shutter_opening
+            or device.profile.supports_roller_shutter_state
+        )
 
     @property
     def supported_features(self) -> CoverEntityFeature:
@@ -82,10 +90,10 @@ class EnkiCoverEntity(EnkiEntity, CoverEntity):
         return roller_shutter_state_is_closing(self._device.reported.roller_shutter_state)
 
     async def async_open_cover(self, **kwargs: Any) -> None:
-        await self._set_position(100)
+        await self._move("OPEN")
 
     async def async_close_cover(self, **kwargs: Any) -> None:
-        await self._set_position(0)
+        await self._move("CLOSED")
 
     async def async_set_cover_position(self, position: int, **kwargs: Any) -> None:
         await self._set_position(position)
@@ -95,6 +103,21 @@ class EnkiCoverEntity(EnkiEntity, CoverEntity):
         node_id = self._device.node_id
         await self.coordinator.api.async_stop_shutter(home_id, node_id)
         self.coordinator.update_cached_value(node_id, "roller_shutter_state", "STOPPED")
+
+    async def _move(self, opening: str) -> None:
+        if self._supports_switch and not self._supports_position:
+            await self._switch(opening)
+            return
+        await self._set_position(100 if opening == "OPEN" else 0)
+
+    async def _switch(self, opening: str) -> None:
+        node_id = self._device.node_id
+        await self.coordinator.api.async_switch_roller_shutter(
+            self._device.home_id,
+            node_id,
+            opening,
+        )
+        self.coordinator.update_cached_value(node_id, "shutter_opening", opening)
 
     async def _set_position(self, position: int) -> None:
         clamped = max(0, min(100, position))

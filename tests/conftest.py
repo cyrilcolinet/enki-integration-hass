@@ -117,8 +117,14 @@ _ha_const.UnitOfEnergy.KILO_WATT_HOUR = "kWh"
 class _HaEntity:
     """Minimal HA Entity stand-in for unit tests."""
 
+    _attr_assumed_state = False
+
     def async_write_ha_state(self) -> None:
         return None
+
+    @property
+    def assumed_state(self) -> bool:
+        return self._attr_assumed_state
 
 
 class _CoordinatorEntity(_HaEntity):

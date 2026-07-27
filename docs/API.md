@@ -98,6 +98,12 @@ Commands:
 - `POST …/stop-change-shutter-position` — stop mid-travel (no body)
 - `POST …/change-roller-shutter-mode` — body `{"value": "NORMAL"|"INVERTED"}`
 - `POST …/execute-preset` — body `{"value": "<preset>"}` when referentiel lists presets
+- `POST …/switch-roller-shutter` — body `{"value": "OPEN"|"CLOSED"}` for RTS motorizations
+
+RTS models (Somfy, `tr_device_rts_roller_shutter_motorization_label`) expose only
+`switch_roller_shutter` and `stop_change_shutter_position`: one-way radio, so no
+position and no `check-*` feedback. The cover entity reports `assumed_state`.
+Path segment unconfirmed against real hardware — see #96.
 
 Gateway key: `ENKI_ACCESS_MOTORIZATION_API_KEY` in `const.py` (filled from APK 2.25.1). Legacy path `api-enki-access-and-motorizations-prod` is obsolete. See [BETA_VOLETS_KEY.md](BETA_VOLETS_KEY.md) for validation with mitmproxy.
 
