@@ -67,6 +67,9 @@ class EnkiAPI:
         self._node_fingerprints: dict[str, str] = {}
         self._profile_read_errors: dict[str, dict[str, str]] = {}
         self._profile_poll_state: dict[str, dict[str, Any]] = {}
+        self._pending_fingerprints: dict[str, str] = {}
+        self._pending_read_errors: dict[str, dict[str, str]] = {}
+        self._pending_poll_state: dict[str, dict[str, Any]] = {}
 
     async def async_close(self) -> None:
         """Close the underlying HTTP session."""
@@ -112,15 +115,26 @@ class EnkiAPI:
         """Discover all nodes across every home on the account."""
         http = await self._get_http()
         homes = await http.get_homes()
+
+        # Discovery writes into the pending snapshot and only publishes it once
+        # every home succeeded. Clearing upfront exposed readers (diagnostics,
+        # telemetry) to a half-built snapshot mid-poll, and left them empty for
+        # good whenever a poll raised after the reset.
+        self._pending_fingerprints = {}
+        self._pending_read_errors = {}
+        self._pending_poll_state = {}
+
         devices: list[EnkiDevice] = []
-        self._discovery_records = []
-        self._node_fingerprints.clear()
-        self._profile_read_errors.clear()
-        self._profile_poll_state.clear()
+        records: list[EnkiDiscoveryRecord] = []
         for home_id in homes:
-            home_devices, records = await self._discover_home(http, home_id)
+            home_devices, home_records = await self._discover_home(http, home_id)
             devices.extend(home_devices)
-            self._discovery_records.extend(records)
+            records.extend(home_records)
+
+        self._discovery_records = records
+        self._node_fingerprints = self._pending_fingerprints
+        self._profile_read_errors = self._pending_read_errors
+        self._profile_poll_state = self._pending_poll_state
         return devices
 
     @property
@@ -137,15 +151,15 @@ class EnkiAPI:
 
     def _register_node_profile(self, node_id: str, record: EnkiDiscoveryRecord) -> None:
         export = profile_to_export_dict(record, integration_version="", ha_version="")
-        self._node_fingerprints[node_id] = profile_fingerprint(export)
+        self._pending_fingerprints[node_id] = profile_fingerprint(export)
 
     def _register_poll_state(self, node_id: str, state: dict[str, Any]) -> None:
-        fingerprint = self._node_fingerprints.get(node_id)
+        fingerprint = self._pending_fingerprints.get(node_id)
         if not fingerprint:
             return
         sanitized = sanitize_poll_state(state)
         if sanitized:
-            self._profile_poll_state[fingerprint] = sanitized
+            self._pending_poll_state[fingerprint] = sanitized
 
     def _note_read_error(
         self,
@@ -155,13 +169,13 @@ class EnkiAPI:
         capability: str,
         err: Exception,
     ) -> None:
-        fingerprint = self._node_fingerprints.get(node_id)
+        fingerprint = self._pending_fingerprints.get(node_id)
         if not fingerprint:
             return
         status = getattr(err, "status", None)
         label = f"HTTP {status}" if status else err.__class__.__name__
         key = f"{service}/{capability}"
-        self._profile_read_errors.setdefault(fingerprint, {})[key] = label
+        self._pending_read_errors.setdefault(fingerprint, {})[key] = label
 
     @property
     def scenarios(self) -> tuple[EnkiScenario, ...]:
