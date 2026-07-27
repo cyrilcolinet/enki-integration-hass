@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.8.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.7.1...v1.8.0) (2026-07-27)
+
+
+### Features
+
+* **cover:** support RTS roller shutters without position ([4ad9bf8](https://github.com/cyrilcolinet/enki-integration-hass/commit/4ad9bf86ca14a476550cb0dab688c60d2d83f51a)), closes [#96](https://github.com/cyrilcolinet/enki-integration-hass/issues/96)
+
+
+### Bug Fixes
+
+* **api:** publish the discovery snapshot atomically ([fab9f15](https://github.com/cyrilcolinet/enki-integration-hass/commit/fab9f15e5ad63b49bb0b08dd8f9fdee5c06ecf93)), closes [#87](https://github.com/cyrilcolinet/enki-integration-hass/issues/87)
+
 ## [1.7.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.7.0...v1.7.1) (2026-07-26)
 
 
