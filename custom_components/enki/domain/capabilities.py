@@ -184,6 +184,11 @@ class EnkiCapabilityProfile:
         )
 
     @property
+    def supports_roller_shutter_switch(self) -> bool:
+        """RTS-style motorizations: OPEN/CLOSED commands, no position at all."""
+        return "switch_roller_shutter" in self.capabilities
+
+    @property
     def supports_shutter_stop(self) -> bool:
         return "stop_change_shutter_position" in self.capabilities
 
@@ -418,7 +423,11 @@ class EnkiCapabilityProfile:
     def is_cover(self) -> bool:
         """Roller shutters and similar motorizations (beta)."""
         if self.device_type in {DEVICE_TYPE_ACCESS_MOTORIZATION, "access_and_motorizations"}:
-            return self.supports_shutter_position or self.supports_shutter_opening
+            return (
+                self.supports_shutter_position
+                or self.supports_shutter_opening
+                or self.supports_roller_shutter_switch
+            )
         return self.supports_shutter_position
 
     @property

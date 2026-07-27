@@ -42,6 +42,7 @@ _CAPABILITY_PROBES: dict[str, str] = {
     "change_light_state": "supports_light_state",
     "change_shutter_position": "supports_shutter_position",
     "stop_change_shutter_position": "supports_shutter_stop",
+    "switch_roller_shutter": "supports_roller_shutter_switch",
     "check_roller_shutter_state": "supports_roller_shutter_state",
     "change_roller_shutter_mode": "supports_roller_shutter_mode",
     "check_roller_shutter_mode": "supports_roller_shutter_mode",
