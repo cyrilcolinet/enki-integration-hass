@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.9.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.9.0...v1.9.1) (2026-07-29)
+
+
+### Bug Fixes
+
+* **light:** coalesce optimistic writes into one refresh ([8db8d4f](https://github.com/cyrilcolinet/enki-integration-hass/commit/8db8d4ffc6ece945f7632f1952823031edf6c947))
+* **light:** keep dual fan light kits state in sync ([f8bd899](https://github.com/cyrilcolinet/enki-integration-hass/commit/f8bd8993b5164b34bbb90a200677782409135ee6))
+
 ## [1.9.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.8.0...v1.9.0) (2026-07-29)
 
 
