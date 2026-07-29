@@ -143,6 +143,9 @@
       "outlet": {
         "name": "Outlet"
       },
+      "boiler": {
+        "name": "Water heater"
+      },
       "vibration_detection": {
         "name": "Vibration detection"
       },

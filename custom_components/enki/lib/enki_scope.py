@@ -23,9 +23,14 @@ _ENKI_ECOSYSTEM_MANUFACTURERS = frozenset(
 )
 
 # Referentiel types reserved for the Enki catalogue (manufacturer sometimes missing from API).
+# `boiler` is the Enki "chauffe-eau piloté" module: the app re-types a plain Enki relay to
+# this profile when it is wired to a water heater, and the referentiel then serves it with an
+# empty manufacturer. It is native Enki (dedicated api-enki-boiler-system-prod service), not
+# third-party Zigbee — see EnkiCapabilityProfile.is_boiler_switch.
 _ENKI_NATIVE_DEVICE_TYPES = frozenset(
     {
         "access_and_motorizations",
+        "boiler",
         "ceiling_fans",
         "inverters",
     }

@@ -143,6 +143,9 @@
       "outlet": {
         "name": "Prise"
       },
+      "boiler": {
+        "name": "Chauffe-eau"
+      },
       "vibration_detection": {
         "name": "Détection vibration"
       },

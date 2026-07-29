@@ -81,8 +81,18 @@ def _build_switch_entities(
 ) -> list[SwitchEntity]:
     entities: list[SwitchEntity] = []
     entities.extend(_build_outlet_switches(coordinator, device))
+    entities.extend(_build_boiler_switches(coordinator, device))
     entities.extend(_build_config_switches(coordinator, device))
     return entities
+
+
+def _build_boiler_switches(
+    coordinator: EnkiCoordinator,
+    device: EnkiDevice,
+) -> list[EnkiBoilerSwitch]:
+    if not device.profile.is_boiler_switch:
+        return []
+    return [EnkiBoilerSwitch(coordinator, device)]
 
 
 def _build_outlet_switches(
@@ -190,6 +200,25 @@ class EnkiOutletSwitch(EnkiEntity, SwitchEntity):
             return
         self.coordinator.update_cached_value(node_id, "electrical_power", power)
         self.coordinator.update_cached_value(node_id, "power", power)
+
+
+class EnkiBoilerSwitch(EnkiOutletSwitch):
+    """On/off relay wired to a water heater (Enki `boiler` module).
+
+    Same power API as an outlet (switch_electrical_power on the whole node), but
+    surfaced as a plain switch rather than an OUTLET so it reads as a water-heater
+    control. See EnkiCapabilityProfile.is_boiler_switch.
+    """
+
+    _attr_translation_key = "boiler"
+    _attr_device_class = SwitchDeviceClass.SWITCH
+
+    def __init__(
+        self,
+        coordinator: EnkiCoordinator,
+        device: EnkiDevice,
+    ) -> None:
+        super().__init__(coordinator, device, endpoint_id=None, suffix="boiler")
 
 
 class EnkiConfigSwitch(EnkiEntity, SwitchEntity):
