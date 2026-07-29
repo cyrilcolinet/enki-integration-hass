@@ -72,6 +72,9 @@
       "fan_light": {
         "name": "Light"
       },
+      "fan_light_numbered": {
+        "name": "Light {number}"
+      },
       "light": {
         "name": "Light"
       }

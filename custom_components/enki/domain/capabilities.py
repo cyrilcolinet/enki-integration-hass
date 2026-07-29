@@ -54,6 +54,7 @@ class EnkiCapabilityProfile:
     main_change_capability_id: str | None = None
     main_change_capability_endpoints: tuple[int, ...] = ()
     endpoint_entries: tuple[int | dict[str, Any], ...] = ()
+    reported_endpoint_ids: frozenset[int] = frozenset()
     device_name: str = ""
     referentiel_i18n: str = ""
     referentiel_model: str = ""
@@ -76,6 +77,7 @@ class EnkiCapabilityProfile:
             main_change_capability_id=device.main_change_capability_id,
             main_change_capability_endpoints=tuple(sorted(set(endpoints))),
             endpoint_entries=endpoint_entries,
+            reported_endpoint_ids=device.reported.electrical_endpoint_ids(),
             device_name=device.device_name,
             referentiel_i18n=device.referentiel_i18n,
             referentiel_model=device.referentiel_model,
@@ -573,6 +575,7 @@ class EnkiCapabilityProfile:
             device_name=self.device_name,
             referentiel_i18n=self.referentiel_i18n,
             referentiel_model=self.referentiel_model,
+            reported_endpoint_ids=self.reported_endpoint_ids,
         )
 
     @property
