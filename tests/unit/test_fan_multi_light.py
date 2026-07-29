@@ -13,6 +13,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from enki.domain.models import EnkiDevice
 from enki.light import EnkiFanLightEntity, _build_light_entities
+from homeassistant.components.light import ATTR_BRIGHTNESS
 
 
 def _cadix(**overrides) -> EnkiDevice:
@@ -63,8 +64,22 @@ def test_cadix_builds_two_independent_light_entities() -> None:
     assert all(isinstance(entity, EnkiFanLightEntity) for entity in entities)
     endpoints = sorted(entity._endpoint_id for entity in entities)
     assert endpoints == [1, 3]
-    # Distinct unique ids and numbered names so both are addressable in HA.
+    # Distinct unique ids so both are addressable in HA.
     assert len({entity._attr_unique_id for entity in entities}) == 2
+
+
+def test_cadix_lights_named_main_and_ambient() -> None:
+    # Confirmed layout (issue #101): endpoint 1 = main ceiling light,
+    # endpoint 3 = ambient ring.
+    entities = _build_light_entities(_coordinator(), _cadix())
+    by_endpoint = {entity._endpoint_id: entity._attr_translation_key for entity in entities}
+    assert by_endpoint == {1: "fan_light_main", 3: "fan_light_ambient"}
+
+
+def test_non_cadix_dual_light_fan_stays_numbered() -> None:
+    # A dual-kit fan we don't have a confirmed layout for keeps generic names.
+    device = _cadix(device_name="Inspire Radix")
+    entities = _build_light_entities(_coordinator(), device)
     assert {entity._attr_translation_key for entity in entities} == {"fan_light_numbered"}
     assert {entity._attr_translation_placeholders["number"] for entity in entities} == {"1", "2"}
 
@@ -105,3 +120,31 @@ async def test_cadix_turn_off_targets_only_its_endpoint() -> None:
     )
     coordinator.api.async_change_light_state.assert_not_called()
     coordinator.update_endpoint_power.assert_called_once_with("node-cadix", 1, "OFF")
+
+
+@pytest.mark.asyncio
+async def test_cadix_global_brightness_marks_all_light_endpoints_on() -> None:
+    # brightness/color-temp go through the node-global lighting API, which
+    # switches every kit ON. HA must cache all light endpoints ON, not just the
+    # one the command was sent from, so the sibling kit isn't stuck at OFF while
+    # physically lit (issue #101 follow-up).
+    coordinator = _coordinator()
+    device = _cadix(
+        last_reported_value={
+            "electrical_endpoints": [
+                {"id": 1, "lastReportedValue": "OFF"},
+                {"id": 2, "lastReportedValue": "OFF"},
+                {"id": 3, "lastReportedValue": "OFF"},
+            ],
+        },
+    )
+    light_3 = EnkiFanLightEntity(coordinator, device, endpoint_id=3, suffix="light_b")
+
+    await light_3.async_turn_on(**{ATTR_BRIGHTNESS: 128})
+
+    coordinator.api.async_change_light_state.assert_awaited()
+    cached = {
+        (call.args[1], call.args[2]) for call in coordinator.update_endpoint_power.call_args_list
+    }
+    assert (1, "ON") in cached
+    assert (3, "ON") in cached

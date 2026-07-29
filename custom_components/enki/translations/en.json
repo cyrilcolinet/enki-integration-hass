@@ -75,6 +75,12 @@
       "fan_light_numbered": {
         "name": "Light {number}"
       },
+      "fan_light_main": {
+        "name": "Main light"
+      },
+      "fan_light_ambient": {
+        "name": "Ambient ring"
+      },
       "light": {
         "name": "Light"
       }
