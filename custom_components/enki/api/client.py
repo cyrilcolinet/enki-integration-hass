@@ -430,7 +430,7 @@ class EnkiAPI:
                     err=err,
                 )
 
-        if profile.supports_electrical_power:
+        if profile.supports_electrical_power or profile.is_boiler_switch:
             try:
                 power_details = await http.get_electrical_power(home_id, node_id)
                 state["electrical_power"] = power_details.get("lastReportedValue")

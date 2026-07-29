@@ -7,6 +7,7 @@ from typing import Any
 
 from ..const import (
     DEVICE_TYPE_ACCESS_MOTORIZATION,
+    DEVICE_TYPE_BOILER,
     DEVICE_TYPE_FANS,
     DEVICE_TYPE_INVERTERS,
     DEVICE_TYPE_LIGHTS,
@@ -436,6 +437,27 @@ class EnkiCapabilityProfile:
         return self.supports_power_on_with_timer
 
     @property
+    def is_boiler_switch(self) -> bool:
+        """Plain on/off relay re-typed as a water heater (Enki `boiler` module).
+
+        When a Nodon/Lexman relay is assigned to a water heater, the app re-types
+        it to the `boiler` profile and the referentiel serves an empty catalogue
+        entry — no capabilities, no mainChangeCapability. The boiler-system
+        micro-service only reads status and manages node linking (APK ic1/dd1);
+        the actual on/off still goes through the generic power API on the node.
+        So drive it as a bare on/off switch via switch_electrical_power.
+
+        Scoped narrowly (empty capabilities, no mainChangeCapability) so a real
+        piloted water heater that declares its own capabilities is never caught
+        here and mis-driven.
+        """
+        return (
+            self.device_type == DEVICE_TYPE_BOILER
+            and not self.capabilities
+            and self.main_change_capability_id is None
+        )
+
+    @property
     def is_environment_sensor(self) -> bool:
         """Temperature, humidity, illuminance, or battery level sensors (not thermostats)."""
         if self.supports_thermostat:
@@ -504,6 +526,7 @@ class EnkiCapabilityProfile:
             or self.is_pilot_wire
             or self.supports_vibration_sensibility
             or self.is_impulse_relay
+            or self.is_boiler_switch
         )
 
     @property
