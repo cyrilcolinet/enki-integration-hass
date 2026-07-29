@@ -92,6 +92,19 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
             return None
         return next((device for device in self.data if device.node_id == node_id), None)
 
+    def request_reconcile(self) -> None:
+        """Schedule a debounced re-poll to reconcile firmware-driven side effects.
+
+        Optimistic caching reflects the commanded change instantly, but some
+        devices apply coupled changes in firmware that HA cannot predict — e.g.
+        the Inspire Cadix forces the ambient ring OFF and the main light ON when
+        the fan starts, and restores the ring when it stops (issue #106). This
+        pulls the real state shortly after a command instead of waiting for the
+        next scheduled poll. HA debounces async_request_refresh, so a burst of
+        commands coalesces into a single poll.
+        """
+        self.hass.async_create_task(self.async_request_refresh())
+
     def _notify(self) -> None:
         """Push cached state to entities unless a batch is coalescing writes."""
         if self._suspend_notify or self.data is None:

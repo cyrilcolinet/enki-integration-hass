@@ -180,3 +180,27 @@ def test_batch_updates_coalesces_refreshes_into_one() -> None:
         coordinator.update_endpoint_power("node-cadix", 3, "ON")
         assert refreshes == []
     assert len(refreshes) == 1
+
+
+def test_request_reconcile_schedules_debounced_refresh() -> None:
+    coordinator = _bare_coordinator()
+    coordinator.hass = MagicMock()
+    coordinator.async_request_refresh = MagicMock(return_value="coro-token")
+
+    coordinator.request_reconcile()
+
+    coordinator.async_request_refresh.assert_called_once()
+    coordinator.hass.async_create_task.assert_called_once_with("coro-token")
+
+
+@pytest.mark.asyncio
+async def test_cadix_light_command_requests_reconcile() -> None:
+    # Hybrid: optimistic cache + a reconcile poll so firmware side effects
+    # (e.g. the ring/main coupling on fan toggle) land in HA without guessing.
+    coordinator = _coordinator()
+    light = EnkiFanLightEntity(coordinator, _cadix(), endpoint_id=3, suffix="light_b")
+
+    await light.async_turn_on()
+    await light.async_turn_off()
+
+    assert coordinator.request_reconcile.call_count == 2
