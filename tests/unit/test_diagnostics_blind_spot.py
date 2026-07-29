@@ -35,6 +35,20 @@ def _boiler_record():
     )
 
 
+def _third_party_record():
+    """A genuine non-Enki Zigbee device paired on the box (belongs in ZHA/Z2M)."""
+    return build_discovery_record(
+        device_type="smart_plug",
+        bff_device_type="smart_plug",
+        capabilities=["switch_electrical_power"],
+        possible_values={},
+        manufacturer="Tuya",
+        model="TS011F",
+        firmware_version="1.0.0",
+        supported_by_integration=False,
+    )
+
+
 def _export(record) -> dict:
     return profile_to_export_dict(
         record,
@@ -45,7 +59,7 @@ def _export(record) -> dict:
 
 def test_whenProfileIsOutOfEnkiScope_thenExclusionIsReported() -> None:
     # Given
-    record = _boiler_record()
+    record = _third_party_record()
 
     # When
     exclusion = discovery_record_telemetry_exclusion(record)
@@ -92,7 +106,7 @@ def test_whenSupportedProfile_thenNoExclusion() -> None:
 
 def test_whenDroppedByScope_thenDiagnosticsCarryTheReason() -> None:
     # Given
-    record = _boiler_record()
+    record = _third_party_record()
 
     # When
     enriched = enrich_telemetry_export(_export(record), record)
@@ -100,6 +114,25 @@ def test_whenDroppedByScope_thenDiagnosticsCarryTheReason() -> None:
     # Then
     assert enriched["telemetry_excluded"] == "out_of_enki_scope"
     assert "telemetry_reason" not in enriched
+
+
+def test_whenBoilerRelayHasNoManufacturer_thenItStaysInEnkiScope() -> None:
+    # Given — the re-skinned water-heater relay: type `boiler`, no manufacturer (#87).
+    record = build_discovery_record(
+        device_type="boiler",
+        bff_device_type="boiler",
+        capabilities=[],
+        possible_values={},
+        manufacturer=None,
+        model=None,
+        firmware_version=None,
+        supported_by_integration=True,
+        referentiel_device_id="6226fd906ceb9ce2aafcf715",
+    )
+
+    # When / Then — no longer silently dropped as third-party Zigbee.
+    assert discovery_record_telemetry_exclusion(record) is None
+    assert discovery_record_eligible_for_telemetry(record) is True
 
 
 def test_whenReferentielHasNoCapabilities_thenControlHintsAreExported() -> None:

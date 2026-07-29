@@ -72,6 +72,30 @@ def test_device_uses_power_api_only() -> None:
     assert device_is_supported(device) is True
 
 
+def test_boiler_relay_without_capabilities_is_a_switch() -> None:
+    # The re-skinned water-heater relay (#87): type `boiler`, empty referentiel.
+    device = _device(
+        device_type="boiler",
+        capabilities=[],
+        main_change_capability_id=None,
+    )
+    assert device.profile.is_boiler_switch is True
+    assert device_is_supported(device) is True
+    # Not a light, not an outlet — a plain switch driven via the power API.
+    assert is_light_controllable(device) is False
+    assert device.profile.is_outlet is False
+
+
+def test_real_piloted_boiler_with_capabilities_is_not_a_bare_switch() -> None:
+    # A genuine piloted water heater declares its own capabilities: leave it alone.
+    device = _device(
+        device_type="boiler",
+        capabilities=["change_thermostat_target_temperature"],
+        main_change_capability_id="change_thermostat_target_temperature",
+    )
+    assert device.profile.is_boiler_switch is False
+
+
 def test_main_change_capability_endpoints() -> None:
     device = _device(
         main_change_capability_id="switch_electrical_power",

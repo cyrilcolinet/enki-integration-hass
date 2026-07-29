@@ -53,6 +53,7 @@ DEVICE_TYPE_FANS = "ceiling_fans"
 DEVICE_TYPE_INVERTERS = "inverters"
 DEVICE_TYPE_ACCESS_MOTORIZATION = "access_and_motorizations"
 DEVICE_TYPE_SENSORS = "sensors"
+DEVICE_TYPE_BOILER = "boiler"
 
 REFERENTIEL_VERSION = "2.23.0"
 

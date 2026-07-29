@@ -72,6 +72,9 @@
       "fan_light": {
         "name": "Light"
       },
+      "fan_light_numbered": {
+        "name": "Light {number}"
+      },
       "light": {
         "name": "Light"
       }
@@ -139,6 +142,9 @@
     "switch": {
       "outlet": {
         "name": "Outlet"
+      },
+      "boiler": {
+        "name": "Water heater"
       },
       "vibration_detection": {
         "name": "Vibration detection"
