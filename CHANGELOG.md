@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.9.1...v1.10.0) (2026-07-29)
+
+
+### Features
+
+* **coordinator:** reconcile firmware side effects after commands ([4ec9c7b](https://github.com/cyrilcolinet/enki-integration-hass/commit/4ec9c7b4809b7d6e172a2043ef65c74ab6b6e5ff))
+
 ## [1.9.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.9.0...v1.9.1) (2026-07-29)
 
 
