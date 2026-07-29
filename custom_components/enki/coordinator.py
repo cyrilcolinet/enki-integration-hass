@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import timedelta
 from typing import Any
 
@@ -27,6 +29,7 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
 
     def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry) -> None:
         self.config_entry = config_entry
+        self._suspend_notify = False
         self.api = EnkiAPI(
             config_entry.data[CONF_USERNAME],
             config_entry.data[CONF_PASSWORD],
@@ -89,13 +92,38 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
             return None
         return next((device for device in self.data if device.node_id == node_id), None)
 
+    def _notify(self) -> None:
+        """Push cached state to entities unless a batch is coalescing writes."""
+        if self._suspend_notify or self.data is None:
+            return
+        self.async_set_updated_data(self.data)
+
+    @contextmanager
+    def batch_updates(self) -> Iterator[None]:
+        """Coalesce optimistic cache writes into a single state refresh.
+
+        Each update_* helper normally notifies HA immediately, so one service
+        call can emit several refreshes and re-render every entity on a node
+        repeatedly (observed as UI flicker on multi-entity nodes like the
+        Inspire Cadix). Within this block intermediate notifications are
+        suppressed and a single refresh is emitted on exit.
+        """
+        previous = self._suspend_notify
+        self._suspend_notify = True
+        try:
+            yield
+        finally:
+            self._suspend_notify = previous
+            if not previous:
+                self._notify()
+
     def update_cached_value(self, node_id: str, key: str, value: Any) -> None:
         """Optimistically patch cached state after a successful command."""
         device = self.get_device_by_node(node_id)
         if device is None or self.data is None:
             return
         device.last_reported_value[key] = value
-        self.async_set_updated_data(self.data)
+        self._notify()
 
     def update_cached_nested(self, node_id: str, parent_key: str, key: str, value: Any) -> None:
         """Optimistically patch a nested value in cached device state."""
@@ -105,7 +133,7 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
         parent = device.last_reported_value.setdefault(parent_key, {})
         if isinstance(parent, dict):
             parent[key] = value
-        self.async_set_updated_data(self.data)
+        self._notify()
 
     def update_endpoint_power(self, node_id: str, endpoint_id: int, power: str) -> None:
         """Optimistically update power for one electricalEndpoints entry."""
@@ -118,4 +146,4 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
                 if isinstance(endpoint, dict) and endpoint.get("id") == endpoint_id:
                     endpoint["lastReportedValue"] = power
                     break
-        self.async_set_updated_data(self.data)
+        self._notify()

@@ -8,9 +8,11 @@ to its own Home Assistant entity with independent per-endpoint on/off state.
 
 from __future__ import annotations
 
+from contextlib import nullcontext
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from enki.coordinator import EnkiCoordinator
 from enki.domain.models import EnkiDevice
 from enki.light import EnkiFanLightEntity, _build_light_entities
 from homeassistant.components.light import ATTR_BRIGHTNESS
@@ -55,6 +57,7 @@ def _coordinator() -> MagicMock:
     coordinator.api.async_change_light_state = AsyncMock()
     coordinator.update_endpoint_power = MagicMock()
     coordinator.update_cached_value = MagicMock()
+    coordinator.batch_updates = MagicMock(return_value=nullcontext())
     return coordinator
 
 
@@ -148,3 +151,32 @@ async def test_cadix_global_brightness_marks_all_light_endpoints_on() -> None:
     }
     assert (1, "ON") in cached
     assert (3, "ON") in cached
+
+
+def _bare_coordinator() -> EnkiCoordinator:
+    """A coordinator instance without HA wiring, for cache-notify tests."""
+    coordinator = object.__new__(EnkiCoordinator)
+    coordinator._suspend_notify = False
+    coordinator.data = [_cadix()]
+    return coordinator
+
+
+def test_batch_updates_coalesces_refreshes_into_one() -> None:
+    coordinator = _bare_coordinator()
+    refreshes: list = []
+    coordinator.async_set_updated_data = lambda data: refreshes.append(data)
+
+    # Unbatched: every optimistic write notifies HA individually.
+    coordinator.update_cached_value("node-cadix", "brightness", 0.5)
+    coordinator.update_endpoint_power("node-cadix", 1, "ON")
+    assert len(refreshes) == 2
+
+    refreshes.clear()
+
+    # Batched: writes are suppressed until the block exits, then one refresh.
+    with coordinator.batch_updates():
+        coordinator.update_cached_value("node-cadix", "brightness", 0.7)
+        coordinator.update_endpoint_power("node-cadix", 1, "ON")
+        coordinator.update_endpoint_power("node-cadix", 3, "ON")
+        assert refreshes == []
+    assert len(refreshes) == 1
