@@ -52,8 +52,7 @@ def _fan_light_labels(
     if "cadix" in label_blob and len(light_endpoints) == 2:
         return [("fan_light_main", None), ("fan_light_ambient", None)]
     return [
-        ("fan_light_numbered", {"number": str(index + 1)})
-        for index in range(len(light_endpoints))
+        ("fan_light_numbered", {"number": str(index + 1)}) for index in range(len(light_endpoints))
     ]
 
 
