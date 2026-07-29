@@ -141,6 +141,7 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
         node_id = self._device.node_id
         await self.coordinator.api.async_set_fan_rotation(home_id, node_id, direction)
         self.coordinator.update_cached_value(node_id, "airflow_rotation", direction)
+        self.coordinator.request_reconcile()
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
         if not self._supports_preset_mode():
@@ -152,6 +153,7 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
         enki_mode = preset_to_enki_airflow_mode(preset_mode)
         await self.coordinator.api.async_set_airflow_mode(home_id, node_id, enki_mode)
         self.coordinator.update_cached_value(node_id, "airflow_mode", enki_mode)
+        self.coordinator.request_reconcile()
 
     async def async_turn_on(
         self,
@@ -197,6 +199,8 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
         node_id = self._device.node_id
         await self.coordinator.api.async_set_fan_speed(home_id, node_id, speed)
         self.coordinator.update_cached_value(node_id, "fan_speed", speed)
+        # Fan start/stop couples other kits in firmware (Cadix ring/main) — reconcile.
+        self.coordinator.request_reconcile()
 
     async def _set_motor_power(self, power: str) -> None:
         """ON/OFF fans without speed range — per-endpoint or global power API."""
@@ -210,6 +214,7 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
         )
         self.coordinator.update_cached_value(node_id, "electrical_power", power)
         self.coordinator.update_cached_value(node_id, "power", power)
+        self.coordinator.request_reconcile()
 
     def _supports_direction(self) -> bool:
         if self._device.reported.airflow_rotation_supported:

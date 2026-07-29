@@ -151,6 +151,8 @@ class EnkiFanLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
         # so a multi-entity node doesn't re-render on every field (Cadix flicker).
         with self.coordinator.batch_updates():
             await self._perform_turn_on(**kwargs)
+        # Reconcile firmware side effects (e.g. Cadix ring/main coupling) from truth.
+        self.coordinator.request_reconcile()
 
     async def _perform_turn_on(self, **kwargs: Any) -> None:
         if (
@@ -201,6 +203,7 @@ class EnkiFanLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
     async def async_turn_off(self, **kwargs: Any) -> None:
         with self.coordinator.batch_updates():
             await self._perform_turn_off(**kwargs)
+        self.coordinator.request_reconcile()
 
     async def _perform_turn_off(self, **kwargs: Any) -> None:
         if self._endpoint_id is not None and self._uses_endpoint_power(self._endpoint_id):
