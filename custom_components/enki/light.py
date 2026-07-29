@@ -34,6 +34,29 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
+def _fan_light_labels(
+    profile: Any,
+    light_endpoints: list[int],
+) -> list[tuple[str, dict[str, str] | None]]:
+    """Translation key + placeholders for each light kit of a multi-light fan.
+
+    The Inspire Cadix has a confirmed layout (issue #101): the lower endpoint
+    is the main ceiling light, the higher one the ambient ring. Other dual-kit
+    fans (e.g. Radix, two symmetric corner kits) stay generically numbered.
+    """
+    label_blob = " ".join(
+        part
+        for part in (profile.device_name, profile.referentiel_i18n, profile.referentiel_model)
+        if part
+    ).lower()
+    if "cadix" in label_blob and len(light_endpoints) == 2:
+        return [("fan_light_main", None), ("fan_light_ambient", None)]
+    return [
+        ("fan_light_numbered", {"number": str(index + 1)})
+        for index in range(len(light_endpoints))
+    ]
+
+
 def _build_light_entities(
     coordinator: EnkiCoordinator,
     device: EnkiDevice,
@@ -45,14 +68,15 @@ def _build_light_entities(
     if profile.is_fan:
         light_endpoints = profile.fan_light_endpoints
         if len(light_endpoints) > 1:
+            labels = _fan_light_labels(profile, light_endpoints)
             return [
                 EnkiFanLightEntity(
                     coordinator,
                     device,
                     endpoint_id=endpoint_id,
                     suffix=f"light_{chr(ord('a') + index)}",
-                    translation_key="fan_light_numbered",
-                    translation_placeholders={"number": str(index + 1)},
+                    translation_key=labels[index][0],
+                    translation_placeholders=labels[index][1],
                 )
                 for index, endpoint_id in enumerate(light_endpoints)
             ]
@@ -155,7 +179,11 @@ class EnkiFanLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
             changes,
         )
         self._cache_global_light_on(self.coordinator)
-        self._update_light_endpoint_cache("ON", self._endpoint_id)
+        # change_light_state (brightness/color-temp) is a node-global command:
+        # the Enki lighting API switches every light kit ON, not just this
+        # entity's endpoint. Mark them all ON so HA doesn't keep the sibling
+        # kit stuck at OFF while it is physically lit (Inspire Cadix).
+        self._update_light_endpoint_cache("ON")
         if "brightness" in changes:
             self.coordinator.update_cached_value(self.node_id, "brightness", changes["brightness"])
         if "colorTemperature" in changes:

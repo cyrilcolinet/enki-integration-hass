@@ -75,6 +75,12 @@
       "fan_light_numbered": {
         "name": "Lumière {number}"
       },
+      "fan_light_main": {
+        "name": "Lumière principale"
+      },
+      "fan_light_ambient": {
+        "name": "Anneau d'ambiance"
+      },
       "light": {
         "name": "Lumière"
       }
