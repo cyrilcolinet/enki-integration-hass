@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.9.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.8.0...v1.9.0) (2026-07-29)
+
+
+### Features
+
+* **light:** expose dual light kits on speed-driven ceiling fans ([926159f](https://github.com/cyrilcolinet/enki-integration-hass/commit/926159f0d0831ea80b8b84743388fef0e254ee0a))
+* **switch:** expose water-heater on/off relay as a switch ([0facce5](https://github.com/cyrilcolinet/enki-integration-hass/commit/0facce5e9d69fb4ee8bae5d77a9d09c30b5682d0))
+
 ## [1.8.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.7.1...v1.8.0) (2026-07-27)
 
 
