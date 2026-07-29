@@ -147,6 +147,12 @@ class EnkiFanLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
         return int(raw.strip("TK")) if raw else None
 
     async def async_turn_on(self, **kwargs: Any) -> None:
+        # Coalesce the optimistic cache writes below into a single HA refresh,
+        # so a multi-entity node doesn't re-render on every field (Cadix flicker).
+        with self.coordinator.batch_updates():
+            await self._perform_turn_on(**kwargs)
+
+    async def _perform_turn_on(self, **kwargs: Any) -> None:
         if (
             self._endpoint_id is not None
             and self._uses_endpoint_power(self._endpoint_id)
@@ -170,7 +176,7 @@ class EnkiFanLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
         await self._mixed_endpoint_workaround()
         changes = self._build_turn_on_changes(kwargs, restore_last_brightness=True)
         if changes.get("power") == "OFF":
-            await self.async_turn_off(**kwargs)
+            await self._perform_turn_off(**kwargs)
             return
         await self.coordinator.api.async_change_light_state(
             self._device.home_id,
@@ -193,6 +199,10 @@ class EnkiFanLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
             )
 
     async def async_turn_off(self, **kwargs: Any) -> None:
+        with self.coordinator.batch_updates():
+            await self._perform_turn_off(**kwargs)
+
+    async def _perform_turn_off(self, **kwargs: Any) -> None:
         if self._endpoint_id is not None and self._uses_endpoint_power(self._endpoint_id):
             await self._switch_endpoint_power(self._endpoint_id, "OFF")
             return

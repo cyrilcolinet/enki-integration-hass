@@ -150,8 +150,27 @@ class _FanEntityFeature:
     PRESET_MODE = 16
 
 
+class _DataUpdateCoordinator:
+    """Minimal DataUpdateCoordinator stand-in so EnkiCoordinator is a real class."""
+
+    def __init__(self, *args, **kwargs) -> None:
+        self.data = None
+
+    def __class_getitem__(cls, _item):
+        return cls
+
+    def async_set_updated_data(self, data) -> None:
+        self.data = data
+
+
+class _UpdateFailed(Exception):
+    """Minimal UpdateFailed stand-in — must stay raisable."""
+
+
 _update_coordinator = sys.modules["homeassistant.helpers.update_coordinator"]
 _update_coordinator.CoordinatorEntity = _CoordinatorEntity
+_update_coordinator.DataUpdateCoordinator = _DataUpdateCoordinator
+_update_coordinator.UpdateFailed = _UpdateFailed
 
 _fan = sys.modules["homeassistant.components.fan"]
 _fan.FanEntity = _FanEntity
