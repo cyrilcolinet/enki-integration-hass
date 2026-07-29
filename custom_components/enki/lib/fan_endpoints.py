@@ -67,6 +67,7 @@ def infer_fan_motor_endpoints(
     device_name: str,
     referentiel_i18n: str,
     referentiel_model: str,
+    reported_endpoint_ids: frozenset[int] = frozenset(),
 ) -> frozenset[int]:
     """Best-effort motor endpoint resolution (Siroco+ vs Inspire Radix, …)."""
     if not power_endpoints:
@@ -75,6 +76,19 @@ def infer_fan_motor_endpoints(
     from_metadata = motor_endpoints_from_metadata(endpoint_entries)
     if from_metadata is not None:
         return from_metadata
+
+    # Speed-controlled fans drive the motor via change_fan_speed, so the motor
+    # circuit never appears in the switch_electrical_power endpoint list. When
+    # the electrical-power service still reports it (an endpoint id outside
+    # power_endpoints), that unlisted endpoint is the motor and every switch
+    # endpoint is a light kit. Separates the Inspire Cadix (AD_TCFL_1) dual
+    # light layout — switch endpoints [1, 3], motor reported on the unlisted
+    # endpoint 2 — from a Siroco+ motor-on-endpoint-1 layout, where the switch
+    # list already covers every reported endpoint.
+    if supports_fan_speed and reported_endpoint_ids:
+        unlisted = reported_endpoint_ids - set(power_endpoints)
+        if unlisted:
+            return frozenset(unlisted)
 
     if not supports_light_state:
         return frozenset(power_endpoints)

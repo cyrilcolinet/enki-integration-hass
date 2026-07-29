@@ -258,6 +258,15 @@ class EnkiDeviceState:
             return [endpoint for endpoint in endpoints if isinstance(endpoint, dict)]
         return []
 
+    def electrical_endpoint_ids(self) -> frozenset[int]:
+        """Every endpoint id the electrical-power service reports for this node."""
+        ids: set[int] = set()
+        for endpoint in self.electrical_endpoints:
+            raw = endpoint.get("id")
+            if isinstance(raw, int):
+                ids.add(raw)
+        return frozenset(ids)
+
     def endpoint_power(self, endpoint_id: int) -> str | None:
         """Power state for one electrical endpoint (multi-gang switches)."""
         for endpoint in self.electrical_endpoints:

@@ -215,6 +215,58 @@ def test_fan_light_endpoints_radix_motor_on_middle_endpoint() -> None:
     assert device.profile.fan_motor_endpoints == [2]
 
 
+def _cadix_endpoints(*ids: int) -> dict:
+    return {
+        "electrical_endpoints": [{"id": ep, "lastReportedValue": "ON"} for ep in ids],
+    }
+
+
+def test_fan_light_endpoints_cadix_two_lights_motor_on_unlisted_endpoint() -> None:
+    # Inspire Cadix (AD_TCFL_1) variant: switch_electrical_power exposes two
+    # light kits on endpoints 1 and 3, and the electrical-power service also
+    # reports endpoint 2 (the speed-driven motor). Both switch endpoints must
+    # resolve as lights — endpoint 1 must not be stolen as the motor.
+    device = _device(
+        device_type="ceiling_fans",
+        device_name="Inspire Cadix",
+        capabilities=["change_fan_speed", "change_light_state", "check_light_state"],
+        main_change_capability_id="switch_electrical_power",
+        main_change_capability_endpoints=[1, 3],
+        last_reported_value=_cadix_endpoints(1, 2, 3),
+    )
+    assert device.profile.fan_light_endpoints == [1, 3]
+    assert device.profile.fan_motor_endpoints == []
+
+
+def test_fan_light_endpoints_cadix_without_reported_motor_keeps_legacy_single_light() -> None:
+    # No electrical_endpoints reported yet (pre-first-poll) → fall back to the
+    # legacy motor-on-endpoint-1 heuristic rather than guessing two lights.
+    device = _device(
+        device_type="ceiling_fans",
+        device_name="Inspire Cadix",
+        capabilities=["change_fan_speed", "change_light_state", "check_light_state"],
+        main_change_capability_id="switch_electrical_power",
+        main_change_capability_endpoints=[1, 3],
+    )
+    assert device.profile.fan_light_endpoints == [3]
+
+
+def test_fan_light_endpoints_siroco_matching_reported_endpoints_keeps_motor() -> None:
+    # Siroco+ [1, 2]: the electrical-power service reports exactly the switch
+    # endpoints (no unlisted motor), so the legacy motor-on-endpoint-1 mapping
+    # must stand — one light on endpoint 2.
+    device = _device(
+        device_type="ceiling_fans",
+        device_name="Inspire Siroco+",
+        capabilities=["change_fan_speed", "change_light_state", "check_light_state"],
+        main_change_capability_id="switch_electrical_power",
+        main_change_capability_endpoints=[1, 2],
+        last_reported_value=_cadix_endpoints(1, 2),
+    )
+    assert device.profile.fan_light_endpoints == [2]
+    assert device.profile.fan_motor_endpoints == [1]
+
+
 def test_fan_max_speed_from_metadata() -> None:
     device = _device(
         possible_values={"change_fan_speed": {"range": {"min": 0, "max": 5}}},

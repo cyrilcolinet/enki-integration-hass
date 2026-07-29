@@ -51,6 +51,8 @@ def _build_light_entities(
                     device,
                     endpoint_id=endpoint_id,
                     suffix=f"light_{chr(ord('a') + index)}",
+                    translation_key="fan_light_numbered",
+                    translation_placeholders={"number": str(index + 1)},
                 )
                 for index, endpoint_id in enumerate(light_endpoints)
             ]
@@ -89,16 +91,26 @@ class EnkiFanLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
         *,
         endpoint_id: int | None = None,
         suffix: str = "light",
+        translation_key: str | None = None,
+        translation_placeholders: dict[str, str] | None = None,
     ) -> None:
         super().__init__(coordinator, device)
         self._endpoint_id = endpoint_id
         self._attr_unique_id = f"{DOMAIN}-{device.node_id}-{suffix}"
+        if translation_key is not None:
+            self._attr_translation_key = translation_key
+        if translation_placeholders is not None:
+            self._attr_translation_placeholders = translation_placeholders
         possible = device.profile.possible_values
         self._brightness_max = self._parse_brightness_max(possible)
         self._color_temp_values = self._parse_color_temp_values(possible)
 
     @property
     def is_on(self) -> bool:
+        if self._endpoint_id is not None:
+            power = self._device.reported.endpoint_power(self._endpoint_id)
+            if power is not None:
+                return power == "ON"
         return self._device.reported.light_power == "ON"
 
     @property
@@ -155,6 +167,13 @@ class EnkiFanLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         if self._endpoint_id is not None and self._uses_endpoint_power(self._endpoint_id):
+            await self._switch_endpoint_power(self._endpoint_id, "OFF")
+            return
+
+        # Multi-light fans (e.g. Inspire Cadix, endpoints 1/3) drive each kit
+        # through per-endpoint power when change_light_state carries no schema;
+        # turn off just this circuit instead of the whole node.
+        if self._endpoint_id is not None and not self._device.profile.light_state_has_schema:
             await self._switch_endpoint_power(self._endpoint_id, "OFF")
             return
 
