@@ -199,8 +199,35 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
         node_id = self._device.node_id
         await self.coordinator.api.async_set_fan_speed(home_id, node_id, speed)
         self.coordinator.update_cached_value(node_id, "fan_speed", speed)
+        self._apply_cadix_light_coupling(starting=speed > 0)
         # Fan start/stop couples other kits in firmware (Cadix ring/main) — reconcile.
         self.coordinator.request_reconcile()
+
+    def _apply_cadix_light_coupling(self, *, starting: bool) -> None:
+        """Optimistically mirror the Cadix fan/light coupling (issue #106).
+
+        Starting the fan forces the ambient ring OFF (anti-strobe) and, when the
+        ring was lit, turns the main light ON so the room isn't left dark. These
+        firmware side effects otherwise only reach HA at the next cloud poll; the
+        optimistic guard (#111) keeps them from being reverted meanwhile. The
+        fan-stop restore is left to polling for now (it depends on the pre-start
+        state).
+        """
+        if not starting:
+            return
+        profile = self._device.profile
+        labels = f"{profile.device_name} {profile.referentiel_i18n} {profile.referentiel_model}"
+        if "cadix" not in labels.lower():
+            return
+        light_endpoints = profile.fan_light_endpoints
+        if len(light_endpoints) != 2:
+            return
+        main, ambient = light_endpoints[0], light_endpoints[1]
+        node_id = self._device.node_id
+        ring_was_on = self._device.reported.endpoint_power(ambient) == "ON"
+        self.coordinator.update_endpoint_power(node_id, ambient, "OFF")
+        if ring_was_on:
+            self.coordinator.update_endpoint_power(node_id, main, "ON")
 
     async def _set_motor_power(self, power: str) -> None:
         """ON/OFF fans without speed range — per-endpoint or global power API."""

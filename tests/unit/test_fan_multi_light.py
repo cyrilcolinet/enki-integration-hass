@@ -14,6 +14,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from enki.coordinator import EnkiCoordinator
 from enki.domain.models import EnkiDevice
+from enki.fan import EnkiFanEntity
 from enki.light import EnkiFanLightEntity, _build_light_entities
 from homeassistant.components.light import ATTR_BRIGHTNESS
 
@@ -55,8 +56,10 @@ def _coordinator() -> MagicMock:
     coordinator = MagicMock()
     coordinator.api.async_switch_electrical_power = AsyncMock()
     coordinator.api.async_change_light_state = AsyncMock()
+    coordinator.api.async_set_fan_speed = AsyncMock()
     coordinator.update_endpoint_power = MagicMock()
     coordinator.update_cached_value = MagicMock()
+    coordinator.request_reconcile = MagicMock()
     coordinator.batch_updates = MagicMock(return_value=nullcontext())
     return coordinator
 
@@ -205,3 +208,47 @@ async def test_cadix_light_command_requests_reconcile() -> None:
     await light.async_turn_off()
 
     assert coordinator.request_reconcile.call_count == 2
+
+
+@pytest.mark.asyncio
+async def test_cadix_fan_start_optimistically_couples_ring_off_and_main_on() -> None:
+    # Confirmed firmware coupling (#106): starting the fan forces the ambient
+    # ring OFF and, since it was lit, turns the main light ON to avoid darkness.
+    coordinator = _coordinator()
+    device = _cadix(
+        last_reported_value={
+            "electrical_endpoints": [
+                {"id": 1, "lastReportedValue": "OFF"},  # main off
+                {"id": 2, "lastReportedValue": "ON"},  # motor
+                {"id": 3, "lastReportedValue": "ON"},  # ambient ring on
+            ],
+        },
+    )
+    fan = EnkiFanEntity(coordinator, device)
+
+    await fan.async_turn_on(percentage=50)
+
+    coupled = {(c.args[1], c.args[2]) for c in coordinator.update_endpoint_power.call_args_list}
+    assert (3, "OFF") in coupled  # ring forced off
+    assert (1, "ON") in coupled  # main on to avoid darkness
+
+
+@pytest.mark.asyncio
+async def test_cadix_fan_start_leaves_main_untouched_when_ring_already_off() -> None:
+    coordinator = _coordinator()
+    device = _cadix(
+        last_reported_value={
+            "electrical_endpoints": [
+                {"id": 1, "lastReportedValue": "ON"},
+                {"id": 2, "lastReportedValue": "ON"},
+                {"id": 3, "lastReportedValue": "OFF"},  # ring already off
+            ],
+        },
+    )
+    fan = EnkiFanEntity(coordinator, device)
+
+    await fan.async_turn_on(percentage=50)
+
+    coupled = {(c.args[1], c.args[2]) for c in coordinator.update_endpoint_power.call_args_list}
+    assert (3, "OFF") in coupled  # ring stays off (idempotent)
+    assert not any(ep == 1 for ep, _ in coupled)  # main not forced
