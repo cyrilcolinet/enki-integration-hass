@@ -252,3 +252,61 @@ async def test_cadix_fan_start_leaves_main_untouched_when_ring_already_off() -> 
     coupled = {(c.args[1], c.args[2]) for c in coordinator.update_endpoint_power.call_args_list}
     assert (3, "OFF") in coupled  # ring stays off (idempotent)
     assert not any(ep == 1 for ep, _ in coupled)  # main not forced
+
+
+@pytest.mark.asyncio
+async def test_cadix_fan_start_remembers_pre_fan_light_state() -> None:
+    coordinator = _coordinator()
+    coordinator.remember_fan_light_state = MagicMock()
+    device = _cadix(
+        last_reported_value={
+            "electrical_endpoints": [
+                {"id": 1, "lastReportedValue": "OFF"},
+                {"id": 2, "lastReportedValue": "ON"},  # motor
+                {"id": 3, "lastReportedValue": "ON"},
+            ],
+        },
+    )
+    fan = EnkiFanEntity(coordinator, device)
+
+    await fan.async_turn_on(percentage=50)
+
+    coordinator.remember_fan_light_state.assert_called_once_with("node-cadix", {1: "OFF", 3: "ON"})
+
+
+@pytest.mark.asyncio
+async def test_cadix_fan_stop_restores_saved_light_state() -> None:
+    coordinator = _coordinator()
+    coordinator.pop_fan_light_state = MagicMock(return_value={1: "OFF", 3: "ON"})
+    device = _cadix(
+        last_reported_value={
+            "fan_speed": 2,  # already running → turning off is a stop transition
+            "electrical_endpoints": [
+                {"id": 1, "lastReportedValue": "ON"},
+                {"id": 2, "lastReportedValue": "ON"},  # motor
+                {"id": 3, "lastReportedValue": "OFF"},
+            ],
+        },
+    )
+    fan = EnkiFanEntity(coordinator, device)
+
+    await fan.async_turn_off()
+
+    restored = {(c.args[1], c.args[2]) for c in coordinator.update_endpoint_power.call_args_list}
+    assert (1, "OFF") in restored
+    assert (3, "ON") in restored
+
+
+@pytest.mark.asyncio
+async def test_cadix_fan_speed_change_while_running_does_not_recouple() -> None:
+    coordinator = _coordinator()
+    coordinator.remember_fan_light_state = MagicMock()
+    coordinator.pop_fan_light_state = MagicMock()
+    device = _cadix(last_reported_value={"fan_speed": 2})
+    fan = EnkiFanEntity(coordinator, device)
+
+    await fan.async_set_percentage(80)  # running → running, not a start/stop
+
+    coordinator.remember_fan_light_state.assert_not_called()
+    coordinator.pop_fan_light_state.assert_not_called()
+    coordinator.update_endpoint_power.assert_not_called()
