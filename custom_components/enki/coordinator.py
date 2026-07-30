@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import timedelta
@@ -21,6 +22,50 @@ from .migration import resolve_scan_interval
 from .notifications import EnkiNotifier, notify_for_connection_error
 from .telemetry import EnkiTelemetryReporter
 
+# How long an optimistic value stays authoritative against the cloud. The Enki
+# cloud can take ~30 s to reflect a command, so a poll inside that window still
+# returns the pre-command state; holding a bit past that keeps HA from reverting
+# an optimistic change before the cloud catches up (issue #111).
+_OPTIMISTIC_HOLD_SECONDS = 45.0
+
+
+def _override_current(device: EnkiDevice, path: tuple) -> Any:
+    """Read the value a stored override targets from live device state."""
+    reported = device.last_reported_value
+    kind = path[0]
+    if kind == "top":
+        return reported.get(path[1])
+    if kind == "nested":
+        parent = reported.get(path[1])
+        return parent.get(path[2]) if isinstance(parent, dict) else None
+    if kind == "endpoint":
+        for endpoint in reported.get("electrical_endpoints") or []:
+            if isinstance(endpoint, dict) and endpoint.get("id") == path[1]:
+                value = endpoint.get("lastReportedValue")
+                return value.get("power") if isinstance(value, dict) else value
+    return None
+
+
+def _override_apply(device: EnkiDevice, path: tuple, value: Any) -> None:
+    """Re-apply a held optimistic value onto freshly polled device state."""
+    reported = device.last_reported_value
+    kind = path[0]
+    if kind == "top":
+        reported[path[1]] = value
+    elif kind == "nested":
+        parent = reported.setdefault(path[1], {})
+        if isinstance(parent, dict):
+            parent[path[2]] = value
+    elif kind == "endpoint":
+        for endpoint in reported.get("electrical_endpoints") or []:
+            if isinstance(endpoint, dict) and endpoint.get("id") == path[1]:
+                current = endpoint.get("lastReportedValue")
+                if isinstance(current, dict):
+                    current["power"] = value
+                else:
+                    endpoint["lastReportedValue"] = value
+                break
+
 
 class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
     """Poll Enki cloud and expose device snapshots to platforms."""
@@ -30,6 +75,9 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
     def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry) -> None:
         self.config_entry = config_entry
         self._suspend_notify = False
+        # node_id -> {path: (optimistic value, monotonic expiry)}. Holds optimistic
+        # writes authoritative until the cloud reflects them or they expire (#111).
+        self._overrides: dict[str, dict[tuple, tuple[Any, float]]] = {}
         self.api = EnkiAPI(
             config_entry.data[CONF_USERNAME],
             config_entry.data[CONF_PASSWORD],
@@ -72,7 +120,7 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
                     err,
                     exc_info=LOGGER.isEnabledFor(logging.DEBUG),
                 )
-            return devices
+            return self._apply_optimistic_overrides(devices)
 
     async def _async_sync_maintenance_notification(self) -> None:
         """Re-check Enki maintenance flag each poll; dismiss when it clears."""
@@ -130,12 +178,19 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
             if not previous:
                 self._notify()
 
+    def _record_override(self, node_id: str, path: tuple, value: Any) -> None:
+        self._overrides.setdefault(node_id, {})[path] = (
+            value,
+            time.monotonic() + _OPTIMISTIC_HOLD_SECONDS,
+        )
+
     def update_cached_value(self, node_id: str, key: str, value: Any) -> None:
         """Optimistically patch cached state after a successful command."""
         device = self.get_device_by_node(node_id)
         if device is None or self.data is None:
             return
         device.last_reported_value[key] = value
+        self._record_override(node_id, ("top", key), value)
         self._notify()
 
     def update_cached_nested(self, node_id: str, parent_key: str, key: str, value: Any) -> None:
@@ -146,6 +201,7 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
         parent = device.last_reported_value.setdefault(parent_key, {})
         if isinstance(parent, dict):
             parent[key] = value
+        self._record_override(node_id, ("nested", parent_key, key), value)
         self._notify()
 
     def update_endpoint_power(self, node_id: str, endpoint_id: int, power: str) -> None:
@@ -159,4 +215,31 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
                 if isinstance(endpoint, dict) and endpoint.get("id") == endpoint_id:
                     endpoint["lastReportedValue"] = power
                     break
+        self._record_override(node_id, ("endpoint", endpoint_id), power)
         self._notify()
+
+    def _apply_optimistic_overrides(self, devices: list[EnkiDevice]) -> list[EnkiDevice]:
+        """Re-apply still-pending optimistic writes over freshly polled state.
+
+        The Enki cloud is eventually consistent: a poll within the propagation
+        window returns the pre-command value and would revert an optimistic
+        change (issue #111). For each held override, drop it once the cloud
+        agrees (or it expires) and otherwise re-apply it so the poll can't
+        stomp it.
+        """
+        now = time.monotonic()
+        for node_id in list(self._overrides):
+            paths = self._overrides[node_id]
+            device = next((item for item in devices if item.node_id == node_id), None)
+            if device is None:
+                del self._overrides[node_id]
+                continue
+            for path in list(paths):
+                value, expires_at = paths[path]
+                if now >= expires_at or _override_current(device, path) == value:
+                    del paths[path]
+                    continue
+                _override_apply(device, path, value)
+            if not paths:
+                del self._overrides[node_id]
+        return devices
