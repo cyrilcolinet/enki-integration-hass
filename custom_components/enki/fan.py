@@ -197,37 +197,59 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
     async def _set_speed(self, speed: int) -> None:
         home_id = self._device.home_id
         node_id = self._device.node_id
+        was_running = (self._device.reported.fan_speed or 0) > 0
         await self.coordinator.api.async_set_fan_speed(home_id, node_id, speed)
         self.coordinator.update_cached_value(node_id, "fan_speed", speed)
-        self._apply_cadix_light_coupling(starting=speed > 0)
+        now_running = speed > 0
+        if now_running and not was_running:
+            self._apply_cadix_light_coupling(starting=True)
+        elif was_running and not now_running:
+            self._apply_cadix_light_coupling(starting=False)
         # Fan start/stop couples other kits in firmware (Cadix ring/main) — reconcile.
         self.coordinator.request_reconcile()
+
+    def _cadix_light_endpoints(self) -> tuple[int, int] | None:
+        """(main, ambient) light endpoints for a Cadix layout, else None."""
+        profile = self._device.profile
+        labels = f"{profile.device_name} {profile.referentiel_i18n} {profile.referentiel_model}"
+        if "cadix" not in labels.lower():
+            return None
+        light_endpoints = profile.fan_light_endpoints
+        if len(light_endpoints) != 2:
+            return None
+        return light_endpoints[0], light_endpoints[1]
 
     def _apply_cadix_light_coupling(self, *, starting: bool) -> None:
         """Optimistically mirror the Cadix fan/light coupling (issue #106).
 
-        Starting the fan forces the ambient ring OFF (anti-strobe) and, when the
-        ring was lit, turns the main light ON so the room isn't left dark. These
-        firmware side effects otherwise only reach HA at the next cloud poll; the
-        optimistic guard (#111) keeps them from being reverted meanwhile. The
-        fan-stop restore is left to polling for now (it depends on the pre-start
-        state).
+        On start: remember the pre-fan light state, force the ambient ring OFF
+        (anti-strobe), and turn the main light ON when the ring was lit so the
+        room isn't left dark. On stop: restore that remembered configuration.
+        These firmware side effects otherwise only reach HA at the next cloud
+        poll; the optimistic guard (#111) keeps them from being reverted.
         """
-        if not starting:
+        endpoints = self._cadix_light_endpoints()
+        if endpoints is None:
             return
-        profile = self._device.profile
-        labels = f"{profile.device_name} {profile.referentiel_i18n} {profile.referentiel_model}"
-        if "cadix" not in labels.lower():
-            return
-        light_endpoints = profile.fan_light_endpoints
-        if len(light_endpoints) != 2:
-            return
-        main, ambient = light_endpoints[0], light_endpoints[1]
+        main, ambient = endpoints
         node_id = self._device.node_id
-        ring_was_on = self._device.reported.endpoint_power(ambient) == "ON"
-        self.coordinator.update_endpoint_power(node_id, ambient, "OFF")
-        if ring_was_on:
-            self.coordinator.update_endpoint_power(node_id, main, "ON")
+        reported = self._device.reported
+        if starting:
+            self.coordinator.remember_fan_light_state(
+                node_id,
+                {main: reported.endpoint_power(main), ambient: reported.endpoint_power(ambient)},
+            )
+            ring_was_on = reported.endpoint_power(ambient) == "ON"
+            self.coordinator.update_endpoint_power(node_id, ambient, "OFF")
+            if ring_was_on:
+                self.coordinator.update_endpoint_power(node_id, main, "ON")
+            return
+        saved = self.coordinator.pop_fan_light_state(node_id)
+        if not saved:
+            return
+        for endpoint, power in saved.items():
+            if power in ("ON", "OFF"):
+                self.coordinator.update_endpoint_power(node_id, endpoint, power)
 
     async def _set_motor_power(self, power: str) -> None:
         """ON/OFF fans without speed range — per-endpoint or global power API."""

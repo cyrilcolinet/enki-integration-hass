@@ -78,6 +78,9 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
         # node_id -> {path: (optimistic value, monotonic expiry)}. Holds optimistic
         # writes authoritative until the cloud reflects them or they expire (#111).
         self._overrides: dict[str, dict[tuple, tuple[Any, float]]] = {}
+        # node_id -> {endpoint: power} captured before a fan start, restored on stop
+        # to mirror the Cadix pre-fan light configuration optimistically (#106).
+        self._fan_light_restore: dict[str, dict[int, str | None]] = {}
         self.api = EnkiAPI(
             config_entry.data[CONF_USERNAME],
             config_entry.data[CONF_PASSWORD],
@@ -177,6 +180,14 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
             self._suspend_notify = previous
             if not previous:
                 self._notify()
+
+    def remember_fan_light_state(self, node_id: str, states: dict[int, str | None]) -> None:
+        """Snapshot light-endpoint power before a fan start (for stop-restore, #106)."""
+        self._fan_light_restore[node_id] = states
+
+    def pop_fan_light_state(self, node_id: str) -> dict[int, str | None] | None:
+        """Return and clear the pre-fan light snapshot, if any."""
+        return self._fan_light_restore.pop(node_id, None)
 
     def _record_override(self, node_id: str, path: tuple, value: Any) -> None:
         self._overrides.setdefault(node_id, {})[path] = (
