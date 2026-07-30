@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.11.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.10.0...v1.11.0) (2026-07-30)
+
+
+### Features
+
+* **fan:** mirror Cadix fan/light coupling optimistically on start ([6cf2ecf](https://github.com/cyrilcolinet/enki-integration-hass/commit/6cf2ecf6639109ea9821d3f5816f990062c4334a))
+
+
+### Bug Fixes
+
+* **coordinator:** hold optimistic writes against stale cloud polls ([3dd5a36](https://github.com/cyrilcolinet/enki-integration-hass/commit/3dd5a36799b99205f73d55cc4757df11beda5187))
+
 ## [1.10.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.9.1...v1.10.0) (2026-07-29)
 
 
