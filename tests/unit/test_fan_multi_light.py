@@ -157,6 +157,7 @@ def _bare_coordinator() -> EnkiCoordinator:
     """A coordinator instance without HA wiring, for cache-notify tests."""
     coordinator = object.__new__(EnkiCoordinator)
     coordinator._suspend_notify = False
+    coordinator._overrides = {}
     coordinator.data = [_cadix()]
     return coordinator
 
