@@ -74,9 +74,7 @@ def test_expired_override_lets_the_cloud_win() -> None:
 
 
 def test_endpoint_power_override_held_against_stale_poll() -> None:
-    coordinator = _coordinator(
-        _device(electrical_endpoints=[{"id": 3, "lastReportedValue": "ON"}])
-    )
+    coordinator = _coordinator(_device(electrical_endpoints=[{"id": 3, "lastReportedValue": "ON"}]))
     coordinator.update_endpoint_power("node", 3, "OFF")
 
     fresh = _device(electrical_endpoints=[{"id": 3, "lastReportedValue": "ON"}])
