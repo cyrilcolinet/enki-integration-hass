@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.11.0...v1.12.0) (2026-07-30)
+
+
+### Features
+
+* **fan:** restore Cadix pre-fan light state on stop ([423b57f](https://github.com/cyrilcolinet/enki-integration-hass/commit/423b57fe8bcf16bbbaa7282ef6a836f474d03942))
+
 ## [1.11.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.10.0...v1.11.0) (2026-07-30)
 
 
