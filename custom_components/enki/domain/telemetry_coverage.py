@@ -63,6 +63,7 @@ _CAPABILITY_PROBES: dict[str, str] = {
     "check_electrical_consumption": "supports_electrical_consumption",
     "check_fan_rotation_direction": "supports_fan_rotation",
     "check_fan_speed": "supports_fan_speed",
+    "check_bulb_state": "supports_light_state",
     "check_light_state": "supports_light_state",
     "check_motion_detection": "supports_motion_detection",
     "check_motion_detector_state": "supports_motion_detection",
