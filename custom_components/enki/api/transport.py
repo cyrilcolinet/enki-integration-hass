@@ -126,7 +126,7 @@ class EnkiHttpClient:
                 )
             # Some Enki GET endpoints occasionally answer 200 with an empty or
             # non-JSON body; response.json() would raise on those, so read text
-            # and decode defensively (mirrors StephaneBranly/ha-enki#23).
+            # and decode defensively.
             body = (await response.text()).strip()
             if not body:
                 return {}
