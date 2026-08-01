@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import uuid
 from collections.abc import Awaitable, Callable
 from typing import Any
@@ -123,7 +124,17 @@ class EnkiHttpClient:
                     status=response.status,
                     service=service,
                 )
-            payload = await response.json()
+            # Some Enki GET endpoints occasionally answer 200 with an empty or
+            # non-JSON body; response.json() would raise on those, so read text
+            # and decode defensively (mirrors StephaneBranly/ha-enki#23).
+            body = (await response.text()).strip()
+            if not body:
+                return {}
+            try:
+                payload = json.loads(body)
+            except json.JSONDecodeError:
+                LOGGER.warning("Non-JSON body on GET %s (HTTP %s)", path, response.status)
+                return {}
             return payload if isinstance(payload, dict) else {}
 
     async def post_command(
