@@ -49,14 +49,15 @@ The **Enki** app controls hundreds of products (Lexman, Equation, Inspire, Edisi
 
 ### Supported
 
-- **Ventilation** (Inspire Siroco+, Cadix, Radix, …) — `fan`, `light` (LED kit)
+- **Ventilation** (Inspire Siroco+, Cadix, Radix, …) — `fan`, `light` (LED kit); the **Cadix** exposes its main light and ambient ring as separate lights with optimistic fan/light coupling (since **v1.11**)
 - **Lighting** (Eglo, Lexman, dimmables, RGB) — `light`
 - **Outlets & relays** (Edisio, Equation ON/OFF) — `light` / ON-OFF power
+- **Water heater relay** (Lexman/Nodon on-off relay re-typed as boiler) — `switch`
 - **Solar** (Envertech-Lexman) — `sensor` (production W)
 - **Sensors** (Lexman, Sedea, …) — `binary_sensor`, `sensor`
 - **Siren** (Lexman) — `switch`
 - **Heating** (Noirot radiator, Equation pilot wire) — `climate`, `select` (stable since **v1.6.8**)
-- **Gate / garage dry contact** (Lexman 83424576, Nodon SIN-4-1-20) — `button` impulse (stable since **v1.6.17**, [#56](https://github.com/cyrilcolinet/enki-integration-hass/issues/56))
+- **Gate / garage / electric-strike dry contact** (Lexman 83424576, Nodon SIN-4-1-20, Evology) — `button` impulse (stable since **v1.6.17**) + `binary_sensor` contact state (since **v1.13**)
 
 ### Beta
 
