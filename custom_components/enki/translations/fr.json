@@ -129,6 +129,9 @@
       "contact": {
         "name": "Contact"
       },
+      "dry_contact": {
+        "name": "Contact sec"
+      },
       "water_leak": {
         "name": "Fuite d'eau"
       },

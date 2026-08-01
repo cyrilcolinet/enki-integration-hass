@@ -274,6 +274,14 @@ class EnkiCapabilityProfile:
         )
 
     @property
+    def supports_dry_contact_state(self) -> bool:
+        return _supports(
+            self.capabilities,
+            self.possible_values,
+            "check_dry_contact_for_electric_strike_state",
+        )
+
+    @property
     def supports_vibration_detection_activation(self) -> bool:
         return _supports(
             self.capabilities,
@@ -485,6 +493,7 @@ class EnkiCapabilityProfile:
             or self.supports_water_leak
             or self.supports_window_open_detection
             or self.supports_occupancy
+            or self.supports_dry_contact_state
         )
 
     @property
