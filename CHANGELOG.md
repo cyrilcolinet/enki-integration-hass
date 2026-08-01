@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.13.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.12.0...v1.13.0) (2026-08-01)
+
+
+### Features
+
+* **binary_sensor:** expose dry-contact electric-strike state ([e83a4f7](https://github.com/cyrilcolinet/enki-integration-hass/commit/e83a4f77ee893a321bebd734fad2d4d78478178c)), closes [#121](https://github.com/cyrilcolinet/enki-integration-hass/issues/121)
+
+
+### Bug Fixes
+
+* **api:** tolerate empty and non-JSON GET responses ([01e553a](https://github.com/cyrilcolinet/enki-integration-hass/commit/01e553a7eb260660a30930426b95fe92c151c0f7))
+* **telemetry:** mark check_bulb_state as covered ([3338472](https://github.com/cyrilcolinet/enki-integration-hass/commit/3338472e5dbcc31263b0143fb871ca3bf9237b68)), closes [#122](https://github.com/cyrilcolinet/enki-integration-hass/issues/122)
+
 ## [1.12.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.11.0...v1.12.0) (2026-07-30)
 
 
