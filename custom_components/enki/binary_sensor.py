@@ -64,6 +64,13 @@ _BINARY_SENSOR_SPECS: tuple[dict[str, str | BinarySensorDeviceClass], ...] = (
         "device_class": BinarySensorDeviceClass.OPENING,
     },
     {
+        "capability": "check_dry_contact_for_electric_strike_state",
+        "state_key": "dry_contact_state",
+        "suffix": "dry_contact",
+        "translation_key": "dry_contact",
+        "device_class": BinarySensorDeviceClass.OPENING,
+    },
+    {
         "capability": "check_water_sensor_state",
         "state_key": "water_sensor_state",
         "suffix": "water_leak",

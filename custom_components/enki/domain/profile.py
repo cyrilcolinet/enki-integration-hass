@@ -71,6 +71,7 @@ _POLL_STATE_EXPORT_KEYS = frozenset(
         "motion_detector_state",
         "vibration_detection",
         "contact_sensor_state",
+        "dry_contact_state",
         "vibration_detection_activation",
         "contact_detection_activation",
         "vibration_sensibility_level",

@@ -55,6 +55,7 @@ _CAPABILITY_PROBES: dict[str, str] = {
     "check_color_temperature": "supports_color_temperature",
     "check_contact_detection_activation": "supports_contact_detection_activation",
     "check_contact_sensor_state": "supports_contact_sensor",
+    "check_dry_contact_for_electric_strike_state": "supports_dry_contact_state",
     "check_current_humidity": "supports_current_humidity",
     "check_current_temperature": "supports_current_temperature",
     "check_illuminance_level": "supports_illuminance_level",
