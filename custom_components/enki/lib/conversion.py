@@ -147,7 +147,7 @@ def merge_light_state_payload(
 
     Enki requires the full lastReportedValue object on every POST. When turning ON,
     the API also expects ``power: ON`` even if the caller only asked for brightness
-    or color temperature — otherwise Siroco+ kits ignore the command (#71).
+    or color temperature — otherwise Siroco+ kits ignore the command.
     """
     payload = dict(current)
     if changes.get("power") == "OFF":
