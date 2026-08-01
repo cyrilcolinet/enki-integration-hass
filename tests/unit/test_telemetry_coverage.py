@@ -234,3 +234,27 @@ def test_lexman_shutter_capabilities_are_covered() -> None:
     assert capability_is_covered("check_roller_shutter_state", profile) is True
     assert capability_is_covered("change_roller_shutter_mode", profile) is True
     assert capability_is_covered("execute_preset", profile) is True
+
+
+def test_check_bulb_state_covered_for_cct_bulb() -> None:
+    # Eglo EG-FWCCT8-1 (issue #122): the bulb works as a light, so check_bulb_state
+    # is covered by the light entity and must not be flagged as a capability gap.
+    record = build_discovery_record(
+        device_type="lights",
+        bff_device_type="lights",
+        capabilities=[
+            "switch_electrical_power",
+            "change_light_state",
+            "check_light_state",
+            "change_brightness",
+            "change_color_temperature",
+            "check_bulb_state",
+        ],
+        possible_values={},
+        manufacturer="Eglo",
+        model="EG-FWCCT8-1",
+        firmware_version="2.0.0",
+        supported_by_integration=True,
+    )
+    profile = profile_from_record(record)
+    assert capability_is_covered("check_bulb_state", profile) is True
