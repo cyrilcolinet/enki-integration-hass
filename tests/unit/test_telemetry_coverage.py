@@ -258,3 +258,28 @@ def test_check_bulb_state_covered_for_cct_bulb() -> None:
     )
     profile = profile_from_record(record)
     assert capability_is_covered("check_bulb_state", profile) is True
+
+
+def test_check_multisensor_state_covered() -> None:
+    # Lexman 4-in-1 multisensor (issue #126): the composite check_multisensor_state
+    # has no dedicated entity — its channels are exposed individually — so it must
+    # not be flagged as a capability gap.
+    record = build_discovery_record(
+        device_type="sensors",
+        bff_device_type="sensors",
+        capabilities=[
+            "check_battery_health",
+            "check_current_humidity",
+            "check_current_temperature",
+            "check_illuminance_level",
+            "check_motion_detection",
+            "check_multisensor_state",
+        ],
+        possible_values={},
+        manufacturer="Lexman",
+        model="ref 651eb5245b3a",
+        firmware_version="2.0.0",
+        supported_by_integration=True,
+    )
+    profile = profile_from_record(record)
+    assert capability_is_covered("check_multisensor_state", profile) is True
