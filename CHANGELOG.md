@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.13.0...v1.13.1) (2026-08-04)
+
+
+### Bug Fixes
+
+* **telemetry:** mark check_multisensor_state as covered ([b893dfd](https://github.com/cyrilcolinet/enki-integration-hass/commit/b893dfdf6cdfa8580b2c156f2af8cb5e749c415c)), closes [#126](https://github.com/cyrilcolinet/enki-integration-hass/issues/126)
+
 ## [1.13.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.12.0...v1.13.0) (2026-08-01)
 
 
