@@ -56,3 +56,43 @@ jobs:
             ## Install
 
             HACS → Enki → Update, then restart Home Assistant.
+
+  close-released-issues:
+    name: close-released-issues
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    steps:
+      # Everything merged to main since the last release ships in this tag, so
+      # close every "pending release" issue, swap the label to "released", and
+      # note the version.
+      - uses: actions/github-script@v7
+        env:
+          TAG: ${{ needs.release-please.outputs.tag_name }}
+        with:
+          script: |
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              ...context.repo,
+              state: 'open',
+              labels: 'pending release',
+              per_page: 100,
+            });
+            for (const issue of issues) {
+              if (issue.pull_request) continue;
+              await github.rest.issues.removeLabel({
+                ...context.repo, issue_number: issue.number, name: 'pending release',
+              }).catch(() => {});
+              await github.rest.issues.addLabels({
+                ...context.repo, issue_number: issue.number, labels: ['released'],
+              });
+              await github.rest.issues.createComment({
+                ...context.repo, issue_number: issue.number, body: `Released in ${process.env.TAG}. 🎉`,
+              });
+              await github.rest.issues.update({
+                ...context.repo, issue_number: issue.number, state: 'closed', state_reason: 'completed',
+              });
+              core.info(`Closed #${issue.number} (released in ${process.env.TAG})`);
+            }
