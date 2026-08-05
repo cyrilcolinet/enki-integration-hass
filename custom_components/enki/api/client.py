@@ -232,7 +232,11 @@ class EnkiAPI:
             item: dict[str, Any],
         ) -> tuple[EnkiDevice | None, EnkiDiscoveryRecord | None]:
             async with semaphore:
-                return await self._discover_dashboard_item(http, home_id, item)
+                try:
+                    return await self._discover_dashboard_item(http, home_id, item)
+                except Exception as err:  # noqa: BLE001 — one item must not break discovery
+                    LOGGER.debug("Dashboard item skipped in home %s: %s", home_id, err)
+                    return None, None
 
         results = await asyncio.gather(*(discover_item(item) for item in items))
 
@@ -261,7 +265,7 @@ class EnkiAPI:
         item: dict[str, Any],
     ) -> tuple[EnkiDevice | None, EnkiDiscoveryRecord | None]:
         metadata = item.get("metadata", {})
-        if "nodeId" not in metadata:
+        if "nodeId" not in metadata or "deviceId" not in metadata:
             return None, None
 
         node_id = metadata["nodeId"]
