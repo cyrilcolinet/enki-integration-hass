@@ -69,7 +69,7 @@ jobs:
       # Everything merged to main since the last release ships in this tag, so
       # close every "pending release" issue, swap the label to "released", and
       # note the version.
-      - uses: actions/github-script@v7
+      - uses: actions/github-script@v9
         env:
           TAG: ${{ needs.release-please.outputs.tag_name }}
         with:
