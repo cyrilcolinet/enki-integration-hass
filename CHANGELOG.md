@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.2](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.13.1...v1.13.2) (2026-08-07)
+
+
+### Bug Fixes
+
+* **discovery:** skip dashboard items missing deviceId ([85ec525](https://github.com/cyrilcolinet/enki-integration-hass/commit/85ec525548cb40169aa872c6a0b8d1867a9dcf50)), closes [#131](https://github.com/cyrilcolinet/enki-integration-hass/issues/131)
+
 ## [1.13.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.13.0...v1.13.1) (2026-08-04)
 
 
