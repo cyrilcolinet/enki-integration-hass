@@ -23,3 +23,5 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["SIM117"]
+# Generated route catalog — long URL literals are fine.
+"custom_components/enki/api/capability_routes_data.py" = ["E501"]
