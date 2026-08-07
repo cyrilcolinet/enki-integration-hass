@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from ..api.capability_routes_data import CAPABILITY_ROUTES
+from ..api.gateway_registry import ENKI_MICRO_SERVICES
 from .capabilities import EnkiCapabilityProfile
 from .models import EnkiDiscoveryRecord
 from .telemetry_coverage import (
@@ -14,6 +16,8 @@ from .telemetry_coverage import (
     discovery_record_telemetry_exclusion,
     profile_from_record,
 )
+
+_SERVICE_WIRED: dict[str, bool] = {svc.slug: svc.wired for svc in ENKI_MICRO_SERVICES}
 
 
 def ha_platforms_for_profile(profile: EnkiCapabilityProfile) -> list[str]:
@@ -61,6 +65,36 @@ def uncovered_capabilities(record: EnkiDiscoveryRecord) -> list[str]:
     return sorted(missing)
 
 
+def capability_routing_hints(capabilities: list[str]) -> dict[str, dict[str, Any]]:
+    """Map each capability to its APK-catalogued route(s), service, and wiring state.
+
+    Turns an "unsupported device" report into an actionable one: it says which
+    micro-service and path serve each capability and whether that service is
+    already wired, so the implementation effort is visible without a round-trip.
+    Route matching is by name, so absence is a hint (derived server-side or a
+    differently-named endpoint), not proof.
+    """
+    hints: dict[str, dict[str, Any]] = {}
+    for capability in capabilities:
+        routes = CAPABILITY_ROUTES.get(capability)
+        if not routes:
+            hints[capability] = {
+                "services": [],
+                "effort": "no direct route found — derived server-side or renamed endpoint",
+            }
+            continue
+        services = [
+            {"service": slug, "route": path, "wired": _SERVICE_WIRED.get(slug, False)}
+            for slug, path in sorted(routes.items())
+        ]
+        if any(service["wired"] for service in services):
+            effort = "service wired — add a CapabilityRead + entity"
+        else:
+            effort = "service not wired — wire the gateway service, then add a CapabilityRead"
+        hints[capability] = {"services": services, "effort": effort}
+    return hints
+
+
 def telemetry_notification_reason(
     record: EnkiDiscoveryRecord,
     *,
@@ -100,6 +134,7 @@ def enrich_telemetry_export(
     missing = uncovered_capabilities(record)
     if missing:
         enriched["uncovered_capabilities"] = missing
+        enriched["capability_routing"] = capability_routing_hints(missing)
 
     if last_poll_state:
         enriched["last_poll_state"] = dict(sorted(last_poll_state.items()))

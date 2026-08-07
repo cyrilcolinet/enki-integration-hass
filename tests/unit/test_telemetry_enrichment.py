@@ -9,7 +9,11 @@ from enki.domain.profile import (
     profile_to_export_dict,
 )
 from enki.domain.telemetry_coverage import discovery_record_needs_telemetry
-from enki.domain.telemetry_enrichment import enrich_telemetry_export, ha_platforms_for_profile
+from enki.domain.telemetry_enrichment import (
+    capability_routing_hints,
+    enrich_telemetry_export,
+    ha_platforms_for_profile,
+)
 
 
 def _noirot_record():
@@ -113,6 +117,49 @@ def test_github_issue_body_is_english_and_includes_api_errors() -> None:
     assert "API read errors (last poll)" in body
     assert "HTTP 500" in body
     assert "Profil appareil" not in body
+
+
+def test_capability_routing_hints_flags_wired_service() -> None:
+    hints = capability_routing_hints(["check_motion_detection"])
+    entry = hints["check_motion_detection"]
+    services = entry["services"]
+    assert len(services) == 1
+    assert services[0]["service"] == "api-enki-presence-detector-prod"
+    assert services[0]["wired"] is True
+    assert entry["effort"] == "service wired — add a CapabilityRead + entity"
+
+
+def test_capability_routing_hints_flags_unwired_service() -> None:
+    hints = capability_routing_hints(["check_camera_events"])
+    entry = hints["check_camera_events"]
+    assert entry["services"][0]["service"] == "api-enki-lexman-camera-meari-prod"
+    assert entry["services"][0]["wired"] is False
+    assert entry["effort"].startswith("service not wired")
+
+
+def test_capability_routing_hints_reports_missing_route() -> None:
+    hints = capability_routing_hints(["check_camera_last_event"])
+    entry = hints["check_camera_last_event"]
+    assert entry["services"] == []
+    assert entry["effort"].startswith("no direct route")
+
+
+def test_enrich_export_adds_capability_routing_for_uncovered() -> None:
+    record = build_discovery_record(
+        device_type="cameras",
+        bff_device_type="cameras",
+        capabilities=["check_camera_events"],
+        possible_values={},
+        manufacturer="Meari",
+        model="camera",
+        firmware_version="1.0.0",
+        supported_by_integration=False,
+    )
+    export = profile_to_export_dict(record, integration_version="1.13.2", ha_version="2025.1")
+    enriched = enrich_telemetry_export(export, record)
+    assert "check_camera_events" in enriched["uncovered_capabilities"]
+    routing = enriched["capability_routing"]["check_camera_events"]
+    assert routing["services"][0]["service"] == "api-enki-lexman-camera-meari-prod"
 
 
 def test_ha_platforms_include_button_for_shutter_presets() -> None:
