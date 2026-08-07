@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.13.2...v1.14.0) (2026-08-07)
+
+
+### Features
+
+* **diagnostics:** map uncovered capabilities to APK routes ([9351d5f](https://github.com/cyrilcolinet/enki-integration-hass/commit/9351d5f391b046b92e0caaaa92cca1934b86b0c3)), closes [#135](https://github.com/cyrilcolinet/enki-integration-hass/issues/135)
+
 ## [1.13.2](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.13.1...v1.13.2) (2026-08-07)
 
 
