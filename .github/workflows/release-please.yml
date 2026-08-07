@@ -57,8 +57,8 @@ jobs:
 
             HACS → Enki → Update, then restart Home Assistant.
 
-  close-released-issues:
-    name: close-released-issues
+  mark-released-issues:
+    name: mark-released-issues
     needs: release-please
     if: ${{ needs.release-please.outputs.release_created == 'true' }}
     runs-on: ubuntu-latest
@@ -67,8 +67,8 @@ jobs:
       issues: write
     steps:
       # Everything merged to main since the last release ships in this tag, so
-      # close every "pending release" issue, swap the label to "released", and
-      # note the version.
+      # swap "pending release" → "released" and note the version. Issues stay
+      # OPEN on purpose — closing them is left to the maintainer.
       - uses: actions/github-script@v9
         env:
           TAG: ${{ needs.release-please.outputs.tag_name }}
@@ -91,8 +91,5 @@ jobs:
               await github.rest.issues.createComment({
                 ...context.repo, issue_number: issue.number, body: `Released in ${process.env.TAG}. 🎉`,
               });
-              await github.rest.issues.update({
-                ...context.repo, issue_number: issue.number, state: 'closed', state_reason: 'completed',
-              });
-              core.info(`Closed #${issue.number} (released in ${process.env.TAG})`);
+              core.info(`#${issue.number} → released (${process.env.TAG})`);
             }
