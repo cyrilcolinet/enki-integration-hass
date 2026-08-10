@@ -62,3 +62,15 @@ async def test_get_json_error_without_body_keeps_status_only() -> None:
     with pytest.raises(EnkiConnectionError) as exc:
         await _get_json(status=500, body="")
     assert str(exc.value).endswith("HTTP 500")
+
+
+@pytest.mark.asyncio
+async def test_get_json_error_attaches_anonymized_report() -> None:
+    with pytest.raises(EnkiConnectionError) as exc:
+        await _get_json(status=400, body='{"message": "invalid nodeId"}')
+    report = exc.value.report
+    assert report is not None
+    assert report["method"] == "GET"
+    assert report["status"] == 400
+    assert report["request_headers"]["Authorization"] == "***"
+    assert report["response_body"] == {"message": "invalid nodeId"}

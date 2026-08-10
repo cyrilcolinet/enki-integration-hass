@@ -66,9 +66,11 @@ class EnkiAPI:
         self._scenarios: tuple[EnkiScenario, ...] = ()
         self._node_fingerprints: dict[str, str] = {}
         self._profile_read_errors: dict[str, dict[str, str]] = {}
+        self._profile_read_reports: dict[str, dict[str, dict[str, Any]]] = {}
         self._profile_poll_state: dict[str, dict[str, Any]] = {}
         self._pending_fingerprints: dict[str, str] = {}
         self._pending_read_errors: dict[str, dict[str, str]] = {}
+        self._pending_read_reports: dict[str, dict[str, dict[str, Any]]] = {}
         self._pending_poll_state: dict[str, dict[str, Any]] = {}
 
     async def async_close(self) -> None:
@@ -122,6 +124,7 @@ class EnkiAPI:
         # good whenever a poll raised after the reset.
         self._pending_fingerprints = {}
         self._pending_read_errors = {}
+        self._pending_read_reports = {}
         self._pending_poll_state = {}
 
         devices: list[EnkiDevice] = []
@@ -134,6 +137,7 @@ class EnkiAPI:
         self._discovery_records = records
         self._node_fingerprints = self._pending_fingerprints
         self._profile_read_errors = self._pending_read_errors
+        self._profile_read_reports = self._pending_read_reports
         self._profile_poll_state = self._pending_poll_state
         return devices
 
@@ -144,6 +148,10 @@ class EnkiAPI:
     def read_errors_for_fingerprint(self, fingerprint: str) -> dict[str, str]:
         """Anonymized API read failures from the last poll (no node or home ids)."""
         return dict(self._profile_read_errors.get(fingerprint, {}))
+
+    def read_reports_for_fingerprint(self, fingerprint: str) -> dict[str, dict[str, Any]]:
+        """Anonymized full request/response reports for the last poll's read failures."""
+        return dict(self._profile_read_reports.get(fingerprint, {}))
 
     def poll_state_for_fingerprint(self, fingerprint: str) -> dict[str, Any]:
         """Anonymized state values merged from the last poll (no node or home ids)."""
@@ -176,6 +184,9 @@ class EnkiAPI:
         label = f"HTTP {status}" if status else err.__class__.__name__
         key = f"{service}/{capability}"
         self._pending_read_errors.setdefault(fingerprint, {})[key] = label
+        report = getattr(err, "report", None)
+        if report:
+            self._pending_read_reports.setdefault(fingerprint, {})[key] = report
 
     @property
     def scenarios(self) -> tuple[EnkiScenario, ...]:

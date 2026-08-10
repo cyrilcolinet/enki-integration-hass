@@ -122,6 +122,7 @@ def enrich_telemetry_export(
     record: EnkiDiscoveryRecord,
     *,
     api_read_errors: dict[str, str] | None = None,
+    api_read_reports: dict[str, dict[str, Any]] | None = None,
     last_poll_state: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Add non-fingerprint fields for diagnostics and GitHub prefill."""
@@ -141,6 +142,9 @@ def enrich_telemetry_export(
 
     if api_read_errors:
         enriched["api_read_errors"] = dict(sorted(api_read_errors.items()))
+
+    if api_read_reports:
+        enriched["api_read_reports"] = dict(sorted(api_read_reports.items()))
 
     reason = telemetry_notification_reason(
         record,

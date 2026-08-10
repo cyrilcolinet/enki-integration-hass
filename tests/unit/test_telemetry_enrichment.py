@@ -162,6 +162,26 @@ def test_enrich_export_adds_capability_routing_for_uncovered() -> None:
     assert routing["services"][0]["service"] == "api-enki-lexman-camera-meari-prod"
 
 
+def test_enrich_export_includes_api_read_reports_when_provided() -> None:
+    record = _noirot_record()
+    export = profile_to_export_dict(record, integration_version="1.14.0", ha_version="2026.8")
+    reports = {
+        "lighting/check-light-state": {
+            "method": "GET",
+            "path": "/api-enki-lighting-prod/v1/lighting/{id}/check-light-state",
+            "status": 400,
+            "response_body": {"message": "invalid request"},
+        }
+    }
+    enriched = enrich_telemetry_export(
+        export,
+        record,
+        api_read_errors={"lighting/check-light-state": "HTTP 400"},
+        api_read_reports=reports,
+    )
+    assert enriched["api_read_reports"]["lighting/check-light-state"]["status"] == 400
+
+
 def test_ha_platforms_include_button_for_shutter_presets() -> None:
     profile = EnkiCapabilityProfile(
         device_type="access_and_motorizations",
