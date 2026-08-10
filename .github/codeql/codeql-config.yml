@@ -1,0 +1,10 @@
+name: CodeQL config
+
+# Broader security query pack than the default suite.
+queries:
+  - uses: security-extended
+
+# Analyze the integration and its tooling; tests are excluded.
+paths:
+  - custom_components/enki
+  - scripts
