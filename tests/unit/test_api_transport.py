@@ -7,6 +7,7 @@ import pytest
 from aioresponses import aioresponses
 from enki.api.transport import EnkiHttpClient
 from enki.const import ENKI_BASE_URL
+from enki.exceptions import EnkiConnectionError
 
 
 class _FakeAuth:
@@ -45,3 +46,19 @@ async def test_get_json_parses_a_normal_json_body() -> None:
     assert await _get_json(status=200, body='{"lastReportedValue": "ON"}') == {
         "lastReportedValue": "ON"
     }
+
+
+@pytest.mark.asyncio
+async def test_get_json_error_includes_response_body_reason() -> None:
+    with pytest.raises(EnkiConnectionError) as exc:
+        await _get_json(status=400, body='{"message": "invalid nodeId"}')
+    assert exc.value.status == 400
+    assert "HTTP 400" in str(exc.value)
+    assert "invalid nodeId" in str(exc.value)
+
+
+@pytest.mark.asyncio
+async def test_get_json_error_without_body_keeps_status_only() -> None:
+    with pytest.raises(EnkiConnectionError) as exc:
+        await _get_json(status=500, body="")
+    assert str(exc.value).endswith("HTTP 500")

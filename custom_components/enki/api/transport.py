@@ -22,6 +22,23 @@ from .auth import EnkiAuthSession
 from .gateway_keys import GatewayKeyStore
 from .gateway_registry import OPTIONAL_KEY_TRANSPORT_IDS, WIRED_PATH_PREFIXES
 
+_ERROR_BODY_MAX = 200
+
+
+def _http_error_message(method: str, path: str, status: int, body: str) -> str:
+    """Build an error message that carries the response body's reason, if any.
+
+    Enki's gateway returns the actual cause (e.g. a validation message) in the
+    body; surfacing a trimmed snippet turns an opaque "HTTP 400" into something
+    actionable in the Home Assistant logbook. The snippet stays in the exception
+    message only — read-error telemetry keeps just the status code.
+    """
+    message = f"{method} {path} failed: HTTP {status}"
+    detail = " ".join(body.split())
+    if detail:
+        message = f"{message}: {detail[:_ERROR_BODY_MAX]}"
+    return message
+
 
 class EnkiHttpClient:
     """Authenticated requests against Enki cloud micro-services.
@@ -120,7 +137,7 @@ class EnkiHttpClient:
                 raise EnkiApiNotFoundError(f"GET {path} not found", status=404)
             if response.status != 200:
                 raise EnkiConnectionError(
-                    f"GET {path} failed: HTTP {response.status}",
+                    _http_error_message("GET", path, response.status, await response.text()),
                     status=response.status,
                     service=service,
                 )
@@ -164,7 +181,7 @@ class EnkiHttpClient:
                 raise EnkiApiNotFoundError(f"POST {path} not found", status=404)
             if not is_command_success_status(response.status):
                 raise EnkiConnectionError(
-                    f"POST {path} failed: HTTP {response.status}",
+                    _http_error_message("POST", path, response.status, await response.text()),
                     status=response.status,
                     service=service,
                 )
