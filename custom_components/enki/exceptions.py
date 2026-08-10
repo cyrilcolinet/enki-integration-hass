@@ -18,10 +18,12 @@ class EnkiConnectionError(EnkiError):
         *,
         status: int | None = None,
         service: str | None = None,
+        report: dict[str, object] | None = None,
     ) -> None:
         super().__init__(message)
         self.status = status
         self.service = service
+        self.report = report
 
 
 class EnkiApiNotFoundError(EnkiConnectionError):

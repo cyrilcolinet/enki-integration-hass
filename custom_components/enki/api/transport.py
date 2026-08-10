@@ -18,6 +18,7 @@ from ..lib.command_override import (
     override_end_time_iso,
 )
 from ..lib.conversion import is_command_success_status
+from ..lib.request_report import build_request_report
 from .auth import EnkiAuthSession
 from .gateway_keys import GatewayKeyStore
 from .gateway_registry import OPTIONAL_KEY_TRANSPORT_IDS, WIRED_PATH_PREFIXES
@@ -136,10 +137,19 @@ class EnkiHttpClient:
             if response.status == 404:
                 raise EnkiApiNotFoundError(f"GET {path} not found", status=404)
             if response.status != 200:
+                body = await response.text()
                 raise EnkiConnectionError(
-                    _http_error_message("GET", path, response.status, await response.text()),
+                    _http_error_message("GET", path, response.status, body),
                     status=response.status,
                     service=service,
+                    report=build_request_report(
+                        "GET",
+                        path,
+                        self._headers(service, home_id),
+                        params,
+                        response.status,
+                        body,
+                    ),
                 )
             # Some Enki GET endpoints occasionally answer 200 with an empty or
             # non-JSON body; response.json() would raise on those, so read text
@@ -180,10 +190,19 @@ class EnkiHttpClient:
             if response.status == 404 and not_found_ok:
                 raise EnkiApiNotFoundError(f"POST {path} not found", status=404)
             if not is_command_success_status(response.status):
+                body = await response.text()
                 raise EnkiConnectionError(
-                    _http_error_message("POST", path, response.status, await response.text()),
+                    _http_error_message("POST", path, response.status, body),
                     status=response.status,
                     service=service,
+                    report=build_request_report(
+                        "POST",
+                        path,
+                        self._headers(service, home_id),
+                        json,
+                        response.status,
+                        body,
+                    ),
                 )
 
     async def get_homes(self) -> list[str]:

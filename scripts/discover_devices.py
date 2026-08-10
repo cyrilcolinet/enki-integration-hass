@@ -75,6 +75,7 @@ async def main(username: str, password: str, export_json: bool) -> None:
                 profile_export,
                 record,
                 api_read_errors=api.read_errors_for_fingerprint(fingerprint) or None,
+                api_read_reports=api.read_reports_for_fingerprint(fingerprint) or None,
                 last_poll_state=api.poll_state_for_fingerprint(fingerprint) or None,
             )
         )
