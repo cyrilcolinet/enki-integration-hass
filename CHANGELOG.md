@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.15.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.14.0...v1.15.0) (2026-08-10)
+
+
+### Features
+
+* **diagnostics:** attach anonymized request report on API failures ([4583557](https://github.com/cyrilcolinet/enki-integration-hass/commit/45835579ca7d201f60786b83d15ea4d9aebe585d))
+
+
+### Bug Fixes
+
+* **api:** surface response body in failed request errors ([333a1e2](https://github.com/cyrilcolinet/enki-integration-hass/commit/333a1e297f6b247e497e62d3d81172eee60cdf26))
+
 ## [1.14.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.13.2...v1.14.0) (2026-08-07)
 
 
