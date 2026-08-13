@@ -908,6 +908,32 @@ class EnkiAPI:
             {"power": "ON" if on else "OFF"},
         )
 
+    async def _current_light_base(
+        self,
+        http: EnkiHttpClient,
+        home_id: str,
+        node_id: str,
+    ) -> dict[str, Any]:
+        """Last reported light state to merge a change onto, tolerant of a read failure.
+
+        change-light-state is a read-modify-write: it echoes the full
+        lastReportedValue back on every POST. Some devices (e.g. the Lexman
+        connected light CCT v2, #143) reject check-light-state with a business
+        error, which must not block the command — fall back to an empty base so
+        the write still carries the requested fields instead of raising.
+        """
+        try:
+            current = await http.get_light_state(home_id, node_id)
+        except EnkiConnectionError as err:
+            LOGGER.debug(
+                "check-light-state unavailable for node %s; sending partial payload: %s",
+                node_id,
+                err,
+            )
+            return {}
+        base = current.get("lastReportedValue", {})
+        return base if isinstance(base, dict) else {}
+
     async def async_change_light_state(
         self,
         home_id: str,
@@ -916,11 +942,8 @@ class EnkiAPI:
     ) -> None:
         """Apply one or more lighting fields in a single change-light-state call."""
         http = await self._get_http()
-        current = await http.get_light_state(home_id, node_id)
-        payload = merge_light_state_payload(
-            current.get("lastReportedValue", {}),
-            changes,
-        )
+        base = await self._current_light_base(http, home_id, node_id)
+        payload = merge_light_state_payload(base, changes)
         await http.change_light_state(home_id, node_id, payload)
 
     async def async_change_light_color(
@@ -932,9 +955,9 @@ class EnkiAPI:
     ) -> None:
         """Set an HS colour and switch the bulb into colour mode."""
         http = await self._get_http()
-        current = await http.get_light_state(home_id, node_id)
+        base = await self._current_light_base(http, home_id, node_id)
         payload = merge_light_state_payload(
-            current.get("lastReportedValue", {}),
+            base,
             {"colorMode": "hs", "hue": hue, "saturation": saturation},
         )
         payload.pop("colorTemperature", None)
