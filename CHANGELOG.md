@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.15.0...v1.15.1) (2026-08-13)
+
+
+### Bug Fixes
+
+* **light:** don't let a failed state read block light commands ([b900d97](https://github.com/cyrilcolinet/enki-integration-hass/commit/b900d97d6174339b277a04f651aaa8b971aa1961)), closes [#143](https://github.com/cyrilcolinet/enki-integration-hass/issues/143)
+
 ## [1.15.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.14.0...v1.15.0) (2026-08-10)
 
 
