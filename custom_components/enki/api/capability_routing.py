@@ -55,6 +55,8 @@ CAPABILITY_READS: tuple[CapabilityRead, ...] = (
         "check_dry_contact_for_electric_strike_state",
         "dry_contact_state",
     ),
+    CapabilityRead("power", "check_channel1_electrical_power", "channel1_electrical_power"),
+    CapabilityRead("power", "check_channel2_electrical_power", "channel2_electrical_power"),
     CapabilityRead("siren", "check_siren_global_state", "siren_global_state"),
     CapabilityRead("water_sensor", "check_water_sensor_state", "water_sensor_state"),
     CapabilityRead("thermostat", "check_pilot_wire_state", "pilot_wire_state"),

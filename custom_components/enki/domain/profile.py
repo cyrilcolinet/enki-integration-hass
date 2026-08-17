@@ -85,6 +85,8 @@ _POLL_STATE_EXPORT_KEYS = frozenset(
         "occupancy",
         "occupancy_mode",
         "presence_detection",
+        "channel1_electrical_power",
+        "channel2_electrical_power",
         "firmware_version",
         "firmware_latest_version",
         "firmware_update_available",

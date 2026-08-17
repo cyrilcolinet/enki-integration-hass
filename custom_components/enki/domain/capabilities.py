@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import Any
 
@@ -18,6 +19,8 @@ from ..lib.fan_endpoints import (
     infer_fan_motor_endpoints,
 )
 from .models import EnkiDevice
+
+_CHANNEL_SWITCH_RE = re.compile(r"switch_channel(\d+)_electrical_power")
 
 
 def capabilities_set(capabilities: list[str] | dict[str, Any] | None) -> set[str]:
@@ -119,6 +122,26 @@ class EnkiCapabilityProfile:
             "switch_electrical_power",
             "check_electrical_power",
         )
+
+    @property
+    def channel_power_indices(self) -> list[int]:
+        """1-based channel numbers of a multi-channel in-wall power module.
+
+        Evology in-wall modules expose per-channel relays as
+        ``switch_channel1_electrical_power`` / ``switch_channel2_electrical_power``
+        (read back via ``check_channelN_electrical_power``) rather than the plain
+        ``switch_electrical_power`` an outlet uses.
+        """
+        indices = {
+            int(match.group(1))
+            for capability in self.capabilities
+            if (match := _CHANNEL_SWITCH_RE.fullmatch(capability))
+        }
+        return sorted(indices)
+
+    @property
+    def supports_channel_power(self) -> bool:
+        return bool(self.channel_power_indices)
 
     @property
     def supports_electrical_consumption(self) -> bool:

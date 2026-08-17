@@ -81,9 +81,20 @@ def _build_switch_entities(
 ) -> list[SwitchEntity]:
     entities: list[SwitchEntity] = []
     entities.extend(_build_outlet_switches(coordinator, device))
+    entities.extend(_build_channel_switches(coordinator, device))
     entities.extend(_build_boiler_switches(coordinator, device))
     entities.extend(_build_config_switches(coordinator, device))
     return entities
+
+
+def _build_channel_switches(
+    coordinator: EnkiCoordinator,
+    device: EnkiDevice,
+) -> list[EnkiChannelSwitch]:
+    return [
+        EnkiChannelSwitch(coordinator, device, channel=channel)
+        for channel in device.profile.channel_power_indices
+    ]
 
 
 def _build_boiler_switches(
@@ -200,6 +211,55 @@ class EnkiOutletSwitch(EnkiEntity, SwitchEntity):
             return
         self.coordinator.update_cached_value(node_id, "electrical_power", power)
         self.coordinator.update_cached_value(node_id, "power", power)
+
+
+class EnkiChannelSwitch(EnkiEntity, SwitchEntity):
+    """One relay of a multi-channel in-wall module (api-enki-power-prod)."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "channel"
+    _attr_device_class = SwitchDeviceClass.SWITCH
+
+    def __init__(
+        self,
+        coordinator: EnkiCoordinator,
+        device: EnkiDevice,
+        *,
+        channel: int,
+    ) -> None:
+        super().__init__(coordinator, device)
+        self._channel = channel
+        self._state_key = f"channel{channel}_electrical_power"
+        self._switch_capability = f"switch_channel{channel}_electrical_power"
+        self._attr_translation_placeholders = {"channel": str(channel)}
+        self._attr_unique_id = f"{DOMAIN}-{device.node_id}-channel{channel}"
+
+    @property
+    def is_on(self) -> bool | None:
+        value = self._device.last_reported_value.get(self._state_key)
+        if isinstance(value, str):
+            normalized = value.upper()
+            if normalized == "ON":
+                return True
+            if normalized == "OFF":
+                return False
+        return None
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        await self._set_power("ON")
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        await self._set_power("OFF")
+
+    async def _set_power(self, value: str) -> None:
+        await self.coordinator.api.async_set_capability_value(
+            self._device.home_id,
+            self._device.node_id,
+            "power",
+            self._switch_capability,
+            value,
+        )
+        self.coordinator.update_cached_value(self.node_id, self._state_key, value)
 
 
 class EnkiBoilerSwitch(EnkiOutletSwitch):
