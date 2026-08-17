@@ -63,6 +63,8 @@ _CAPABILITY_PROBES: dict[str, str] = {
     "check_current_humidity": "supports_current_humidity",
     "check_current_temperature": "supports_current_temperature",
     "check_illuminance_level": "supports_illuminance_level",
+    "check_brightness_level": "supports_illuminance_level",
+    "check_presence_detection": "supports_presence_detection",
     "check_electrical_power": "supports_electrical_power",
     "check_electrical_consumption": "supports_electrical_consumption",
     "check_fan_rotation_direction": "supports_fan_rotation",

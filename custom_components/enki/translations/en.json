@@ -141,6 +141,9 @@
       "occupancy": {
         "name": "Occupancy"
       },
+      "presence": {
+        "name": "Presence"
+      },
       "connectivity": {
         "name": "Connectivity"
       },

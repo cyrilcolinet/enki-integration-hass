@@ -140,6 +140,9 @@
       },
       "occupancy": {
         "name": "Occupancy"
+      },
+      "presence": {
+        "name": "Presence"
       }
     },
     "switch": {
