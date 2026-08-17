@@ -155,6 +155,9 @@
       "outlet": {
         "name": "Prise"
       },
+      "channel": {
+        "name": "Canal {channel}"
+      },
       "boiler": {
         "name": "Chauffe-eau"
       },
