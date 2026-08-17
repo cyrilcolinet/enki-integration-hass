@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.16.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.15.1...v1.16.0) (2026-08-17)
+
+
+### Features
+
+* **sensor:** add brightness and presence to Evology multisensor ([e3fdd95](https://github.com/cyrilcolinet/enki-integration-hass/commit/e3fdd95a91994f888690a1049d8036c0a390759b)), closes [#153](https://github.com/cyrilcolinet/enki-integration-hass/issues/153)
+* **switch:** support Evology 2-channel in-wall module ([1852af1](https://github.com/cyrilcolinet/enki-integration-hass/commit/1852af1a5a50e153460f3ba9f698948f346eef07)), closes [#152](https://github.com/cyrilcolinet/enki-integration-hass/issues/152)
+
 ## [1.15.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.15.0...v1.15.1) (2026-08-13)
 
 
