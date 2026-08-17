@@ -246,6 +246,7 @@ class EnkiCapabilityProfile:
             self.capabilities,
             self.possible_values,
             "check_illuminance_level",
+            "check_brightness_level",
         )
 
     @property
@@ -357,6 +358,14 @@ class EnkiCapabilityProfile:
             self.capabilities,
             self.possible_values,
             "check_occupancy",
+        )
+
+    @property
+    def supports_presence_detection(self) -> bool:
+        return _supports(
+            self.capabilities,
+            self.possible_values,
+            "check_presence_detection",
         )
 
     @property
@@ -493,6 +502,7 @@ class EnkiCapabilityProfile:
             or self.supports_water_leak
             or self.supports_window_open_detection
             or self.supports_occupancy
+            or self.supports_presence_detection
             or self.supports_dry_contact_state
         )
 
