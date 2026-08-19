@@ -61,6 +61,31 @@ class EnkiDeviceState:
         return self.global_power
 
     @property
+    def camera_last_event_type(self) -> str | None:
+        value = self._data.get("camera_last_event_type")
+        return str(value) if isinstance(value, str) else None
+
+    @property
+    def camera_last_event_at(self) -> str | None:
+        value = self._data.get("camera_last_event_at")
+        return str(value) if isinstance(value, str) else None
+
+    @property
+    def camera_last_motion_at(self) -> str | None:
+        value = self._data.get("camera_last_motion_at")
+        return str(value) if isinstance(value, str) else None
+
+    @property
+    def camera_last_image_url(self) -> str | None:
+        value = self._data.get("camera_last_image_url")
+        return str(value) if isinstance(value, str) else None
+
+    @property
+    def camera_sd_removed(self) -> bool | None:
+        value = self._data.get("camera_sd_removed")
+        return bool(value) if isinstance(value, bool) else None
+
+    @property
     def global_power(self) -> str | None:
         value = self._data.get("power")
         return str(value) if isinstance(value, str) else None

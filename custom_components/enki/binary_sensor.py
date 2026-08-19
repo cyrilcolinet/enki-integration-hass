@@ -100,6 +100,13 @@ _BINARY_SENSOR_SPECS: tuple[dict[str, str | BinarySensorDeviceClass], ...] = (
         "translation_key": "presence",
         "device_class": BinarySensorDeviceClass.OCCUPANCY,
     },
+    {
+        "capability": "check_camera_events",
+        "state_key": "camera_sd_removed",
+        "suffix": "sd_card",
+        "translation_key": "sd_card",
+        "device_class": BinarySensorDeviceClass.PROBLEM,
+    },
 )
 
 
@@ -121,7 +128,11 @@ def _build_binary_sensor_entities(
     device: EnkiDevice,
 ) -> list[EnkiBinarySensor]:
     profile = device.profile
-    if not profile.is_binary_sensor and not _device_has_metadata_sensors(device):
+    if (
+        not profile.is_binary_sensor
+        and not profile.is_camera
+        and not _device_has_metadata_sensors(device)
+    ):
         return []
 
     capabilities = profile.capabilities

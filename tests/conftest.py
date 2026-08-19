@@ -60,8 +60,10 @@ _HA_STUBS = [
     "homeassistant.components.climate.const",
     "homeassistant.components.switch",
     "homeassistant.components.binary_sensor",
+    "homeassistant.components.camera",
     "homeassistant.components.number",
     "homeassistant.components.select",
+    "homeassistant.helpers.aiohttp_client",
     "homeassistant.util",
 ]
 
@@ -272,6 +274,24 @@ _switch.SwitchDeviceClass = MagicMock()
 _binary_sensor = sys.modules["homeassistant.components.binary_sensor"]
 _binary_sensor.BinarySensorEntity = _HaEntity
 _binary_sensor.BinarySensorDeviceClass = MagicMock()
+
+_camera = sys.modules["homeassistant.components.camera"]
+_camera.Camera = _HaEntity
+
+# Give homeassistant.util.dt a real-ish parse_datetime so timestamp sensors work.
+import datetime as _datetime  # noqa: E402
+
+
+def _parse_datetime(value: object) -> _datetime.datetime | None:
+    try:
+        return _datetime.datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return None
+
+
+_util = sys.modules["homeassistant.util"]
+_util.dt = MagicMock()
+_util.dt.parse_datetime = _parse_datetime
 
 _number = sys.modules["homeassistant.components.number"]
 _number.NumberEntity = _HaEntity

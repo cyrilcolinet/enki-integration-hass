@@ -273,10 +273,10 @@ ENKI_MICRO_SERVICES: tuple[EnkiMicroService, ...] = (
     EnkiMicroService(
         "api-enki-lexman-camera-prod",
         "ENKI_LEXMAN_CAMERA_API_KEY",
-        "",
-        "/api-enki-lexman-camera-prod/v1/lexman-camera",
-        wired=False,
-        notes="",
+        "camera",
+        "/api-enki-lexman-camera-prod/v1",
+        wired=True,
+        notes="Event list (motion / SD) for Lexman cameras — GET /events?nodeId=.",
     ),
     EnkiMicroService(
         "api-enki-lexman-chargepoint-prod",

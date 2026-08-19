@@ -49,6 +49,8 @@ def ha_platforms_for_profile(profile: EnkiCapabilityProfile) -> list[str]:
         platforms.append("switch")
     if profile.supports_vibration_sensibility:
         platforms.append("number")
+    if profile.is_camera:
+        platforms.extend(["camera", "sensor", "binary_sensor"])
     return sorted(dict.fromkeys(platforms))
 
 

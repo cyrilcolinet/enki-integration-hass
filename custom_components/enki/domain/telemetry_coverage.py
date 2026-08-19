@@ -24,6 +24,7 @@ _TELEMETRY_IGNORED_CAPABILITIES = frozenset(
         "check_esdk_certificate_renewal",
         "check_in_wall_plug_2_channels_state",
         "check_multisensor_state",
+        "remove_camera_events",
         "check_sdk_firmware_upgrade",
         "execute_generic_ota_command",
         "node_connected",
@@ -101,6 +102,8 @@ _CAPABILITY_PROBES: dict[str, str] = {
     "check_window_open_detection": "supports_window_open_detection",
     "check_occupancy": "supports_occupancy",
     "check_water_sensor_state": "supports_water_leak",
+    "check_camera_events": "is_camera",
+    "check_camera_last_event": "is_camera",
 }
 
 # Referentiel capabilities with no HA entity planned (timers, energy totals, …).
