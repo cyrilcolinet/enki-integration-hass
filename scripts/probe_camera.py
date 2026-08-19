@@ -27,8 +27,10 @@ import contextlib
 import json
 import sys
 import uuid
+from datetime import date
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlencode
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -52,6 +54,12 @@ mask_ids = report_mod.mask_ids
 
 # Stream/session endpoints hand back signed URLs or tokens — never probe them.
 _SKIP_CAPABILITIES = {"check_camera_connect_wss"}
+
+# Required query params per capability (from the APK Retrofit signatures).
+# check-camera-events declares @Query("day") — omitting it returns HTTP 400.
+_REQUIRED_QUERY: dict[str, Any] = {
+    "check_camera_events": lambda: {"day": date.today().isoformat()},
+}
 
 
 async def _get(http: Any, home_id: str, path: str, api_key: str) -> tuple[int, Any]:
@@ -120,6 +128,8 @@ async def _probe_camera(http: Any, home_id: str, node_id: str, info: dict[str, A
                 print(f"    {cap} [{slug}]: no gateway key shipped")
                 continue
             full_path = path.replace("{nodeId}", node_id)
+            if cap in _REQUIRED_QUERY:
+                full_path += "?" + urlencode(_REQUIRED_QUERY[cap]())
             try:
                 status, parsed = await _get(http, home_id, full_path, api_key)
             except Exception as err:  # noqa: BLE001 - report, never crash the sweep
