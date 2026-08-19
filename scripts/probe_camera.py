@@ -61,6 +61,18 @@ _SKIP_CAPABILITIES = {"check_camera_connect_wss"}
 _DAY_QUERY_CAPS = frozenset({"check_camera_events"})
 
 
+# The second (non-meari) camera service exposes GET /v1/events?nodeId=… with no
+# day param — a code path the capability catalog doesn't map to a check_* name.
+# Try it directly in case the events actually live there.
+_EXTRA_GETS = [
+    (
+        "events [api-enki-lexman-camera-prod]",
+        "ENKI_LEXMAN_CAMERA_API_KEY",
+        "/api-enki-lexman-camera-prod/v1/events?nodeId={nodeId}",
+    ),
+]
+
+
 def _day_formats(day: str) -> list[str]:
     try:
         parsed = date.fromisoformat(day)
@@ -121,14 +133,19 @@ async def _probe_camera(
     print(f"    manufacturer={info['manufacturer']!r} model={info['model']!r}")
     print(f"    type={info['type']!r} i18n={info['i18n']!r}")
 
-    # Also try check-camera-status even if the referentiel doesn't advertise it:
-    # it needs no day param and would expose SD-card / connection state.
+    # Force-try every meari camera GET even if the referentiel doesn't advertise
+    # it — status/detection-zone/firmware need no day param and might return data.
     advertised = {
         cap
         for cap in info["capabilities"]
         if cap.startswith("check_") and cap not in _SKIP_CAPABILITIES
     }
-    read_caps = sorted(advertised | {"check_camera_status"})
+    forced = {
+        "check_camera_status",
+        "check_detection_zone",
+        "check_firmware_update_status",
+    }
+    read_caps = sorted(advertised | forced)
     if not read_caps:
         print("    no readable check_* capabilities advertised")
         return
@@ -164,10 +181,25 @@ async def _probe_camera(
                 print(f"    {cap} [{slug}]{label}: HTTP {status}{suffix}")
                 (authorized if status == 200 else rejected).add(slug)
 
+    for label, const_key, template in _EXTRA_GETS:
+        api_key = getattr(keys_mod, const_key, "")
+        if not api_key:
+            continue
+        try:
+            status, parsed = await _get(
+                http, home_id, template.replace("{nodeId}", node_id), api_key
+            )
+        except Exception as err:  # noqa: BLE001 - report, never crash the sweep
+            print(f"    {label}: ERROR {type(err).__name__}: {err}")
+            continue
+        suffix = f"  {json.dumps(parsed)}" if parsed is not None else ""
+        print(f"    {label}: HTTP {status}{suffix}")
+        (authorized if status == 200 else rejected).add(label)
+
     if authorized:
-        print(f"    => authorized service(s): {', '.join(sorted(authorized))}")
+        print(f"    => authorized: {', '.join(sorted(authorized))}")
     elif rejected:
-        print(f"    => all reads rejected (services tried: {', '.join(sorted(rejected))})")
+        print(f"    => all reads rejected (tried: {', '.join(sorted(rejected))})")
 
 
 async def sweep(username: str, password: str, day: str) -> None:
