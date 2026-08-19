@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.16.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.16.0...v1.16.1) (2026-08-19)
+
+
+### Bug Fixes
+
+* **apk:** auto-detect DI classes and correct camera-meari key ([9d93863](https://github.com/cyrilcolinet/enki-integration-hass/commit/9d938634df2c3a92864c534c70a09871238697e0))
+* **fan:** read power-only fan on/off from electrical power ([582521e](https://github.com/cyrilcolinet/enki-integration-hass/commit/582521e78623f18650c6c5255318b343bb06142c)), closes [#157](https://github.com/cyrilcolinet/enki-integration-hass/issues/157)
+
 ## [1.16.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.15.1...v1.16.0) (2026-08-17)
 
 
