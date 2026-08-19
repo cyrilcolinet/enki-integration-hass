@@ -56,8 +56,23 @@ mask_ids = report_mod.mask_ids
 _SKIP_CAPABILITIES = {"check_camera_connect_wss"}
 
 # Capabilities whose APK Retrofit signature declares a required @Query("day").
-# Omitting it returns HTTP 400; a day with no events returns HTTP 404.
+# Omitting it returns HTTP 400; the exact date format isn't obvious from the
+# APK, so we try a few and let the 200 tell us which one the API wants.
 _DAY_QUERY_CAPS = frozenset({"check_camera_events"})
+
+
+def _day_formats(day: str) -> list[str]:
+    try:
+        parsed = date.fromisoformat(day)
+    except ValueError:
+        return [day]
+    return [
+        parsed.isoformat(),  # 2026-08-09
+        parsed.strftime("%Y%m%d"),  # 20260809
+        parsed.strftime("%Y/%m/%d"),  # 2026/08/09
+        parsed.strftime("%d-%m-%Y"),  # 09-08-2026
+        parsed.strftime("%d/%m/%Y"),  # 09/08/2026
+    ]
 
 
 async def _get(http: Any, home_id: str, path: str, api_key: str) -> tuple[int, Any]:
@@ -127,18 +142,24 @@ async def _probe_camera(
             if not api_key:
                 print(f"    {cap} [{slug}]: no gateway key shipped")
                 continue
-            full_path = path.replace("{nodeId}", node_id)
+            base_path = path.replace("{nodeId}", node_id)
             if cap in _DAY_QUERY_CAPS:
-                full_path += "?" + urlencode({"day": day})
-            try:
-                status, parsed = await _get(http, home_id, full_path, api_key)
-            except Exception as err:  # noqa: BLE001 - report, never crash the sweep
-                print(f"    {cap} [{slug}]: ERROR {type(err).__name__}: {err}")
-                continue
-            # Show the body for any status — a 403/4xx reason is the whole point.
-            suffix = f"  {json.dumps(parsed)}" if parsed is not None else ""
-            print(f"    {cap} [{slug}]: HTTP {status}{suffix}")
-            (authorized if status == 200 else rejected).add(slug)
+                attempts = [
+                    (f" day={fmt}", f"{base_path}?{urlencode({'day': fmt})}")
+                    for fmt in _day_formats(day)
+                ]
+            else:
+                attempts = [("", base_path)]
+            for label, full_path in attempts:
+                try:
+                    status, parsed = await _get(http, home_id, full_path, api_key)
+                except Exception as err:  # noqa: BLE001 - report, never crash the sweep
+                    print(f"    {cap} [{slug}]{label}: ERROR {type(err).__name__}: {err}")
+                    continue
+                # Show the body for any status — a 4xx reason is the whole point.
+                suffix = f"  {json.dumps(parsed)}" if parsed is not None else ""
+                print(f"    {cap} [{slug}]{label}: HTTP {status}{suffix}")
+                (authorized if status == 200 else rejected).add(slug)
 
     if authorized:
         print(f"    => authorized service(s): {', '.join(sorted(authorized))}")
