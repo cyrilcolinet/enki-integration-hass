@@ -121,11 +121,14 @@ async def _probe_camera(
     print(f"    manufacturer={info['manufacturer']!r} model={info['model']!r}")
     print(f"    type={info['type']!r} i18n={info['i18n']!r}")
 
-    read_caps = sorted(
+    # Also try check-camera-status even if the referentiel doesn't advertise it:
+    # it needs no day param and would expose SD-card / connection state.
+    advertised = {
         cap
         for cap in info["capabilities"]
         if cap.startswith("check_") and cap not in _SKIP_CAPABILITIES
-    )
+    }
+    read_caps = sorted(advertised | {"check_camera_status"})
     if not read_caps:
         print("    no readable check_* capabilities advertised")
         return
