@@ -55,11 +55,9 @@ mask_ids = report_mod.mask_ids
 # Stream/session endpoints hand back signed URLs or tokens — never probe them.
 _SKIP_CAPABILITIES = {"check_camera_connect_wss"}
 
-# Required query params per capability (from the APK Retrofit signatures).
-# check-camera-events declares @Query("day") — omitting it returns HTTP 400.
-_REQUIRED_QUERY: dict[str, Any] = {
-    "check_camera_events": lambda: {"day": date.today().isoformat()},
-}
+# Capabilities whose APK Retrofit signature declares a required @Query("day").
+# Omitting it returns HTTP 400; a day with no events returns HTTP 404.
+_DAY_QUERY_CAPS = frozenset({"check_camera_events"})
 
 
 async def _get(http: Any, home_id: str, path: str, api_key: str) -> tuple[int, Any]:
@@ -102,7 +100,9 @@ async def _identify(http: Any, home_id: str, node_id: str, device_id: str) -> di
     }
 
 
-async def _probe_camera(http: Any, home_id: str, node_id: str, info: dict[str, Any]) -> None:
+async def _probe_camera(
+    http: Any, home_id: str, node_id: str, info: dict[str, Any], day: str
+) -> None:
     print(f"    manufacturer={info['manufacturer']!r} model={info['model']!r}")
     print(f"    type={info['type']!r} i18n={info['i18n']!r}")
 
@@ -128,8 +128,8 @@ async def _probe_camera(http: Any, home_id: str, node_id: str, info: dict[str, A
                 print(f"    {cap} [{slug}]: no gateway key shipped")
                 continue
             full_path = path.replace("{nodeId}", node_id)
-            if cap in _REQUIRED_QUERY:
-                full_path += "?" + urlencode(_REQUIRED_QUERY[cap]())
+            if cap in _DAY_QUERY_CAPS:
+                full_path += "?" + urlencode({"day": day})
             try:
                 status, parsed = await _get(http, home_id, full_path, api_key)
             except Exception as err:  # noqa: BLE001 - report, never crash the sweep
@@ -146,7 +146,7 @@ async def _probe_camera(http: Any, home_id: str, node_id: str, info: dict[str, A
         print(f"    => all reads rejected (services tried: {', '.join(sorted(rejected))})")
 
 
-async def sweep(username: str, password: str) -> None:
+async def sweep(username: str, password: str, day: str) -> None:
     api = EnkiAPI(username, password)
     await api.async_connect()
     http = await api._get_http()
@@ -166,7 +166,7 @@ async def sweep(username: str, password: str) -> None:
                     continue
                 print(f"=== camera #{index} ===")
                 info = await _identify(http, home_id, node_id, device_id)
-                await _probe_camera(http, home_id, node_id, info)
+                await _probe_camera(http, home_id, node_id, info, day)
                 index += 1
 
     if index == 0:
@@ -179,9 +179,14 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Intelligent read-only Enki camera sweep")
     parser.add_argument("username")
     parser.add_argument("password")
+    parser.add_argument(
+        "--day",
+        default=date.today().isoformat(),
+        help="Day (YYYY-MM-DD) for check-camera-events; defaults to today",
+    )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    asyncio.run(sweep(args.username, args.password))
+    asyncio.run(sweep(args.username, args.password, args.day))
