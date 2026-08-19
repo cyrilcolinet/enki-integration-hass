@@ -141,6 +141,9 @@
       "occupancy": {
         "name": "Occupancy"
       },
+      "presence": {
+        "name": "Presence"
+      },
       "connectivity": {
         "name": "Connectivity"
       },
@@ -151,6 +154,9 @@
     "switch": {
       "outlet": {
         "name": "Outlet"
+      },
+      "channel": {
+        "name": "Channel {channel}"
       },
       "boiler": {
         "name": "Water heater"

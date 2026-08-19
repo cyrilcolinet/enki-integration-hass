@@ -25,7 +25,12 @@ DEFAULT_JADX_DIR = REPO_ROOT / ".apk-work" / "jadx"
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 from enki_bootstrap import bootstrap, load_module  # noqa: E402
-from extract_gateway_keys import BINDING_PATTERN, ensure_jadx, parse_bindings  # noqa: E402
+from extract_gateway_keys import (  # noqa: E402
+    BINDING_PATTERN,
+    ensure_jadx,
+    find_di_sources,
+    parse_bindings,
+)
 
 HTTP_METHODS = {
     "msa": "GET",
@@ -81,7 +86,7 @@ def parse_iface_routes(sources_dir: Path, slug: str, iface: str, base_url: str) 
 
 def extract_routes(apk_path: Path, jadx_dir: Path) -> list[ApiRoute]:
     sources_dir = ensure_jadx(apk_path, jadx_dir)
-    di_files = [sources_dir / "ag6.java", sources_dir / "zf6.java"]
+    di_files = find_di_sources(sources_dir)
     bindings = parse_bindings(di_files)
 
     slug_base: dict[str, str] = {}

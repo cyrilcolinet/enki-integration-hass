@@ -32,6 +32,8 @@ _ENUM_TO_BOOL = {
     "NO_WINDOW_OPEN": False,
     "OCCUPIED": True,
     "UNOCCUPIED": False,
+    "PRESENCE_DETECTED": True,
+    "NO_PRESENCE": False,
 }
 
 _BINARY_SENSOR_SPECS: tuple[dict[str, str | BinarySensorDeviceClass], ...] = (
@@ -89,6 +91,13 @@ _BINARY_SENSOR_SPECS: tuple[dict[str, str | BinarySensorDeviceClass], ...] = (
         "state_key": "occupancy",
         "suffix": "occupancy",
         "translation_key": "occupancy",
+        "device_class": BinarySensorDeviceClass.OCCUPANCY,
+    },
+    {
+        "capability": "check_presence_detection",
+        "state_key": "presence_detection",
+        "suffix": "presence",
+        "translation_key": "presence",
         "device_class": BinarySensorDeviceClass.OCCUPANCY,
     },
 )

@@ -136,6 +136,11 @@ class EnkiHttpClient:
                 return {}
             if response.status == 404:
                 raise EnkiApiNotFoundError(f"GET {path} not found", status=404)
+            if response.status in {202, 204}:
+                # Accepted / No Content: the value isn't available yet (e.g. the
+                # Evology multisensor battery/contact reads, #153). Treat as "no
+                # value" rather than a read error so it doesn't spam diagnostics.
+                return {}
             if response.status != 200:
                 body = await response.text()
                 raise EnkiConnectionError(

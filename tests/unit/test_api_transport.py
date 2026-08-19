@@ -49,6 +49,14 @@ async def test_get_json_parses_a_normal_json_body() -> None:
 
 
 @pytest.mark.asyncio
+async def test_get_json_treats_202_and_204_as_no_value() -> None:
+    # Evology multisensor battery/contact reads answer 202 Accepted (value not
+    # ready); this must be "no value", not a read error (#153).
+    assert await _get_json(status=202, body="") == {}
+    assert await _get_json(status=204, body="") == {}
+
+
+@pytest.mark.asyncio
 async def test_get_json_error_includes_response_body_reason() -> None:
     with pytest.raises(EnkiConnectionError) as exc:
         await _get_json(status=400, body='{"message": "invalid nodeId"}')

@@ -6,9 +6,10 @@ Usage:
     python scripts/extract_gateway_keys.py path/to/enki.apk --apply
     python scripts/extract_gateway_keys.py path/to/enki.apk --apply --update-known
 
-Decompiles the APK with jadx (cached under .apk-work/jadx), parses the DI
-module (ag6.java / zf6.java) for api-enki-*-prod bindings, then reads gateway
-keys from the repository wrapper classes (fo9, j0g, une, n1m, …).
+Decompiles the APK with jadx (cached under .apk-work/jadx), auto-detects the DI
+module classes by content (jadx renames them per build), parses their
+api-enki-*-prod bindings, then reads gateway keys from the repository wrapper
+classes (fo9, j0g, une, n1m, …).
 """
 
 from __future__ import annotations
@@ -42,8 +43,10 @@ for legacy_slug, canonical in LEGACY_SLUG_ALIASES.items():
 
 KEY_LITERAL = re.compile(r'"([A-Za-z0-9]{32})"')
 ASSIGN_PATTERN = re.compile(r'^(ENKI_[A-Z_]+)\s*=\s*"([^"]*)"')
+# The DI helper wrapping a base URL changes per build (ng4.e in 2.26.2,
+# i75.h in 2.26.3), so match on the URL + interface literal, not the caller.
 BINDING_PATTERN = re.compile(
-    r'ng4\.e\([^,]+,\s*"https://enki\.api\.devportal\.adeo\.cloud/(api-enki-[^/]+)/v1/",\s*(\w+)\.class\)'
+    r'"https://enki\.api\.devportal\.adeo\.cloud/(api-enki-[^/]+)/v1/",\s*(\w+)\.class'
 )
 G3C_BINDING_PATTERN = re.compile(
     r'\.a\("https://enki\.api\.devportal\.adeo\.cloud/(api-enki-[^/]+)/v1/"\)'
@@ -200,7 +203,7 @@ def parse_bindings(di_sources: Iterable[Path]) -> list[ServiceBinding]:
                     continue
                 wrappers = tuple(
                     name
-                    for name in WRAPPER_PATTERN.findall(line.split("ng4.e", 1)[0])
+                    for name in WRAPPER_PATTERN.findall(line[: match.start()])
                     if name not in SKIP_WRAPPERS
                 )
                 bindings.append(ServiceBinding(slug, iface, wrappers, source.name))
@@ -347,9 +350,20 @@ def resolve_key(
     return None, "unresolved"
 
 
+def find_di_sources(sources_dir: Path) -> list[Path]:
+    """DI module classes that declare api-enki-*-prod base URLs.
+
+    jadx assigns obfuscated class names that differ per build (ag6/zf6 in
+    2.26.2, ui6/ti6 in 2.26.3), so locate the binding classes by content
+    instead of by a hardcoded name.
+    """
+    marker = b"enki.api.devportal.adeo.cloud/api-enki-"
+    return sorted(path for path in sources_dir.glob("*.java") if marker in path.read_bytes())
+
+
 def extract_all_keys(apk_path: Path, jadx_dir: Path) -> dict[str, tuple[str | None, str]]:
     sources_dir = ensure_jadx(apk_path, jadx_dir)
-    di_files = [sources_dir / "ag6.java", sources_dir / "zf6.java"]
+    di_files = find_di_sources(sources_dir)
     bindings = parse_bindings(di_files)
 
     resolved: dict[str, tuple[str | None, str]] = {}

@@ -140,11 +140,17 @@
       },
       "occupancy": {
         "name": "Occupancy"
+      },
+      "presence": {
+        "name": "Presence"
       }
     },
     "switch": {
       "outlet": {
         "name": "Outlet"
+      },
+      "channel": {
+        "name": "Channel {channel}"
       },
       "boiler": {
         "name": "Water heater"
