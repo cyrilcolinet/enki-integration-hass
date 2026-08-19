@@ -80,6 +80,43 @@ def test_fan_is_on_ignores_electrical_power_when_speed_supported() -> None:
     assert entity.is_on is False
 
 
+def _power_only_fan(**overrides) -> EnkiDevice:
+    """Inspire Cadix variant with no writable fan-speed range (#157)."""
+    defaults = {
+        "home_id": "home-1",
+        "device_id": "AD_TCFL_1",
+        "node_id": "node-fan",
+        "device_name": "Inspire Cadix",
+        "device_type": "ceiling_fans",
+        "is_enabled": True,
+        "state": "ACTIVE",
+        "capabilities": [
+            "change_fan_speed",
+            "change_light_state",
+            "check_electrical_power",
+            "switch_electrical_power",
+        ],
+        "main_change_capability_id": "switch_electrical_power",
+        "main_change_capability_endpoints": [1, 3],
+        "possible_values": {},  # no fan-speed range → not speed-controlled
+    }
+    defaults.update(overrides)
+    return EnkiDevice(**defaults)
+
+
+def test_power_fan_is_on_from_power_despite_zero_speed() -> None:
+    # #157: the cloud keeps fan_speed at 0 for a power-only Cadix, so a
+    # just-started fan must read its ON state from electrical power, not speed.
+    device = _power_only_fan(last_reported_value={"fan_speed": 0, "electrical_power": "ON"})
+    assert device.profile.supports_fan_speed_control is False
+    assert EnkiFanEntity(MagicMock(), device).is_on is True
+
+
+def test_power_fan_is_off_when_power_off() -> None:
+    device = _power_only_fan(last_reported_value={"fan_speed": 0, "electrical_power": "OFF"})
+    assert EnkiFanEntity(MagicMock(), device).is_on is False
+
+
 @pytest.mark.asyncio
 async def test_fan_turn_on_uses_airflow_when_speed_state_missing() -> None:
     coordinator = MagicMock()

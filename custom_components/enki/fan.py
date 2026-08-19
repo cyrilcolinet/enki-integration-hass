@@ -101,17 +101,21 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
     def is_on(self) -> bool:
         profile = self._device.profile
         reported = self._device.reported
-        speed = reported.fan_speed
-        if speed is not None:
-            return speed > 0
+        # Speed-controlled fans report on/off through the fan speed.
         if profile.supports_fan_speed_control:
-            return False
+            speed = reported.fan_speed
+            return speed is not None and speed > 0
+        # Power-controlled fans (no writable speed range, e.g. Inspire Cadix,
+        # #157) toggle via electrical power, while the cloud keeps fan_speed at
+        # 0 — trusting fan_speed here reverted a just-started fan to OFF. Prefer
+        # the power signal, which turn-on marks optimistically.
         if profile.supports_electrical_power:
             if reported.global_power is not None:
                 return reported.global_power == "ON"
             if reported.electrical_power is not None:
                 return reported.electrical_power == "ON"
-        return False
+        speed = reported.fan_speed
+        return speed is not None and speed > 0
 
     @property
     def percentage(self) -> int | None:
