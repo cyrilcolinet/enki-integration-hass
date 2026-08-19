@@ -106,6 +106,17 @@
       },
       "electrical_consumption": {
         "name": "Consommation"
+      },
+      "camera_last_motion": {
+        "name": "Dernier mouvement"
+      },
+      "camera_last_event": {
+        "name": "Dernier événement"
+      }
+    },
+    "camera": {
+      "event_snapshot": {
+        "name": "Dernier événement"
       }
     },
     "button": {
@@ -143,6 +154,9 @@
       },
       "presence": {
         "name": "Détection de présence"
+      },
+      "sd_card": {
+        "name": "Problème carte SD"
       },
       "connectivity": {
         "name": "Connectivité"

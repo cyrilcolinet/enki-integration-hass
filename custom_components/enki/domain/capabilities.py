@@ -9,6 +9,7 @@ from typing import Any
 from ..const import (
     DEVICE_TYPE_ACCESS_MOTORIZATION,
     DEVICE_TYPE_BOILER,
+    DEVICE_TYPE_CAMERAS,
     DEVICE_TYPE_FANS,
     DEVICE_TYPE_INVERTERS,
     DEVICE_TYPE_LIGHTS,
@@ -497,6 +498,15 @@ class EnkiCapabilityProfile:
             self.device_type == DEVICE_TYPE_BOILER
             and not self.capabilities
             and self.main_change_capability_id is None
+        )
+
+    @property
+    def is_camera(self) -> bool:
+        """Lexman cameras — event list (motion / SD) via api-enki-lexman-camera-prod."""
+        return self.device_type == DEVICE_TYPE_CAMERAS or _supports(
+            self.capabilities,
+            self.possible_values,
+            "check_camera_events",
         )
 
     @property

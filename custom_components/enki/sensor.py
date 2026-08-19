@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
@@ -17,6 +19,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN
 from .coordinator import EnkiCoordinator
@@ -59,6 +62,9 @@ def _build_sensor_entities(
         entities.append(EnkiIlluminanceSensor(coordinator, device))
     if profile.supports_electrical_consumption:
         entities.append(EnkiElectricalConsumptionSensor(coordinator, device))
+    if profile.is_camera:
+        entities.append(EnkiCameraLastMotionSensor(coordinator, device))
+        entities.append(EnkiCameraLastEventSensor(coordinator, device))
 
     return entities
 
@@ -173,6 +179,36 @@ class EnkiIlluminanceSensor(EnkiEntity, SensorEntity):
     @property
     def native_value(self) -> float | None:
         return self._device.reported.illuminance_level
+
+
+class EnkiCameraLastMotionSensor(EnkiEntity, SensorEntity):
+    """Timestamp of the camera's most recent motion event."""
+
+    _attr_translation_key = "camera_last_motion"
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+
+    def __init__(self, coordinator: EnkiCoordinator, device: EnkiDevice) -> None:
+        super().__init__(coordinator, device)
+        self._attr_unique_id = f"{DOMAIN}-{device.node_id}-camera-last-motion"
+
+    @property
+    def native_value(self) -> datetime | None:
+        raw = self._device.reported.camera_last_motion_at
+        return dt_util.parse_datetime(raw) if raw else None
+
+
+class EnkiCameraLastEventSensor(EnkiEntity, SensorEntity):
+    """Type of the camera's most recent event (movement / SD state)."""
+
+    _attr_translation_key = "camera_last_event"
+
+    def __init__(self, coordinator: EnkiCoordinator, device: EnkiDevice) -> None:
+        super().__init__(coordinator, device)
+        self._attr_unique_id = f"{DOMAIN}-{device.node_id}-camera-last-event"
+
+    @property
+    def native_value(self) -> str | None:
+        return self._device.reported.camera_last_event_type
 
 
 class EnkiElectricalConsumptionSensor(EnkiEntity, SensorEntity):

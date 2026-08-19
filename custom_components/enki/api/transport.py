@@ -477,6 +477,19 @@ class EnkiHttpClient:
             json={"value": value},
         )
 
+    async def get_camera_events(self, home_id: str, node_id: str) -> dict[str, Any]:
+        """Camera event list (motion / SD) from api-enki-lexman-camera-prod."""
+        if not self._service_api_key("camera"):
+            return {}
+        prefix = WIRED_PATH_PREFIXES["camera"]
+        return await self.get_json(
+            "camera",
+            f"{prefix}/events",
+            home_id=home_id,
+            params={"nodeId": node_id},
+            not_found_ok=True,
+        )
+
     async def get_instant_consumption(self, home_id: str, node_id: str) -> dict[str, Any]:
         """Instant electrical consumption (Edisio / api-enki-consumption-prod)."""
         if not self._service_api_key("consumption"):

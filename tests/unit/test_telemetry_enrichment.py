@@ -148,7 +148,7 @@ def test_enrich_export_adds_capability_routing_for_uncovered() -> None:
     record = build_discovery_record(
         device_type="cameras",
         bff_device_type="cameras",
-        capabilities=["check_camera_events"],
+        capabilities=["check_camera_connect_wss"],
         possible_values={},
         manufacturer="Meari",
         model="camera",
@@ -157,8 +157,8 @@ def test_enrich_export_adds_capability_routing_for_uncovered() -> None:
     )
     export = profile_to_export_dict(record, integration_version="1.13.2", ha_version="2025.1")
     enriched = enrich_telemetry_export(export, record)
-    assert "check_camera_events" in enriched["uncovered_capabilities"]
-    routing = enriched["capability_routing"]["check_camera_events"]
+    assert "check_camera_connect_wss" in enriched["uncovered_capabilities"]
+    routing = enriched["capability_routing"]["check_camera_connect_wss"]
     assert routing["services"][0]["service"] == "api-enki-lexman-camera-meari-prod"
 
 

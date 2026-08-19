@@ -10,6 +10,7 @@ from typing import Any
 import aiohttp
 
 from ..const import DEVICE_TYPE_LIGHTS, LOGGER
+from ..domain.camera_events import parse_camera_events
 from ..domain.capabilities import EnkiCapabilityProfile
 from ..domain.models import EnkiDevice, EnkiDiscoveryRecord, EnkiScenario
 from ..domain.profile import (
@@ -428,6 +429,9 @@ class EnkiAPI:
         if profile.is_cover:
             return await self._read_shutter_state(http, device)
 
+        if profile.is_camera:
+            return await self._read_camera_state(http, home_id, node_id)
+
         state: dict[str, Any] = {}
 
         if profile.supports_light_state or device.device_type == DEVICE_TYPE_LIGHTS:
@@ -560,6 +564,27 @@ class EnkiAPI:
         for result in results:
             if result is not None:
                 state[result[0]] = result[1]
+
+    async def _read_camera_state(
+        self,
+        http: EnkiHttpClient,
+        home_id: str,
+        node_id: str,
+    ) -> dict[str, Any]:
+        """Motion / SD state derived from the Lexman camera event list."""
+        try:
+            data = await http.get_camera_events(home_id, node_id)
+        except EnkiConnectionError as err:
+            LOGGER.debug("Camera events skipped for node %s: %s", node_id, err)
+            self._note_read_error(
+                node_id,
+                service="camera",
+                capability="events",
+                err=err,
+            )
+            return {}
+        items = data.get("items", []) if isinstance(data, dict) else []
+        return parse_camera_events(items if isinstance(items, list) else [])
 
     async def _read_fan_state(
         self,
