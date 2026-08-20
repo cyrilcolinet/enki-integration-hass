@@ -63,7 +63,13 @@ The **Enki** app controls hundreds of products (Lexman, Equation, Inspire, Edisi
 
 - **Covers** (Evology, Nodon, …) — `cover`
 - **Water leak** (Lexman) — `binary_sensor`, `sensor` (on-site leak test pending — [#36](https://github.com/cyrilcolinet/enki-integration-hass/issues/36))
+- **Cameras** (Lexman/Meari) — `camera` (last-event snapshot), `sensor` (last motion, last event), `binary_sensor` (SD card); live video is not available (TUTK Kalay P2P native SDK) — [#135](https://github.com/cyrilcolinet/enki-integration-hass/issues/135)
 - **Scenarios** (Enki cloud) — `button`
+
+### Blueprints
+
+- **Camera motion notification** — notify with the last-event snapshot on motion.
+  Import: `blueprints/automation/enki/camera_motion_notification.yaml`
 
 Per-device detail: [docs/SUPPORTED_DEVICES.md](docs/SUPPORTED_DEVICES.md) · History: [docs/ROADMAP.md](docs/ROADMAP.md)
 
