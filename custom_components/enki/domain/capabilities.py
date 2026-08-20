@@ -581,6 +581,7 @@ class EnkiCapabilityProfile:
             or self.supports_vibration_sensibility
             or self.is_impulse_relay
             or self.is_boiler_switch
+            or self.is_camera
         )
 
     @property
