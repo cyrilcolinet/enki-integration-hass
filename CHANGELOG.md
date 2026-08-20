@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.17.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.16.1...v1.17.0) (2026-08-20)
+
+
+### Features
+
+* **camera:** add motion-notification blueprint + README ([7ece00f](https://github.com/cyrilcolinet/enki-integration-hass/commit/7ece00f040da5bee847577665e7b7696fd5fcba0)), closes [#135](https://github.com/cyrilcolinet/enki-integration-hass/issues/135)
+* **camera:** expose Lexman camera events as HA entities ([fa8bfc4](https://github.com/cyrilcolinet/enki-integration-hass/commit/fa8bfc41cee3e0d398f0a91e14b9d45cc2635d60)), closes [#135](https://github.com/cyrilcolinet/enki-integration-hass/issues/135)
+
+
+### Bug Fixes
+
+* **camera:** distinct FR name for the snapshot entity ([96421ab](https://github.com/cyrilcolinet/enki-integration-hass/commit/96421ab74fcd8e3617725c6348e1ac332057fa78)), closes [#135](https://github.com/cyrilcolinet/enki-integration-hass/issues/135)
+* **camera:** mark cameras as supported so discovery creates the device ([006c61b](https://github.com/cyrilcolinet/enki-integration-hass/commit/006c61b9cab2d20629bf30f1e1ed11c47dec5cfb)), closes [#135](https://github.com/cyrilcolinet/enki-integration-hass/issues/135)
+
 ## [1.16.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.16.0...v1.16.1) (2026-08-19)
 
 
