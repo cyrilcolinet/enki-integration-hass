@@ -1,0 +1,53 @@
+blueprint:
+  name: Enki camera – motion notification
+  description: >
+    Send a notification with the last-event snapshot whenever an Enki (Lexman)
+    camera detects motion. Uses the camera's "Last motion" timestamp sensor as
+    the trigger and its snapshot camera entity for the image.
+  domain: automation
+  author: cyrilcolinet
+  source_url: https://github.com/cyrilcolinet/enki-integration-hass/blob/main/blueprints/automation/enki/camera_motion_notification.yaml
+  input:
+    motion_sensor:
+      name: Motion timestamp sensor
+      description: The camera's "Last motion" sensor (device class timestamp).
+      selector:
+        entity:
+          filter:
+            - domain: sensor
+              device_class: timestamp
+    snapshot_camera:
+      name: Snapshot camera
+      description: The camera entity showing the last-event snapshot.
+      selector:
+        entity:
+          filter:
+            - domain: camera
+    notify_action:
+      name: Notification action
+      description: The notify action to call, e.g. notify.mobile_app_your_phone.
+      default: notify.notify
+      selector:
+        text:
+
+mode: single
+max_exceeded: silent
+
+variables:
+  snapshot_camera: !input snapshot_camera
+
+triggers:
+  - trigger: state
+    entity_id: !input motion_sensor
+
+conditions:
+  - condition: template
+    value_template: "{{ trigger.to_state.state not in ['unknown', 'unavailable', 'none'] }}"
+
+actions:
+  - action: !input notify_action
+    data:
+      title: Motion detected
+      message: "{{ now().strftime('%d/%m %H:%M') }}"
+      data:
+        image: "/api/camera_proxy/{{ snapshot_camera }}"
