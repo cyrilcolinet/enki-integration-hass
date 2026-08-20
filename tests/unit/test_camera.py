@@ -76,7 +76,10 @@ def test_parse_empty_returns_empty() -> None:
 
 
 def test_profile_is_camera() -> None:
-    assert _camera().profile.is_camera is True
+    profile = _camera().profile
+    assert profile.is_camera is True
+    # must be "supported" so discovery creates a device (not just a telemetry record)
+    assert profile.is_supported is True
 
 
 def test_camera_events_read_routes_via_camera_service() -> None:
