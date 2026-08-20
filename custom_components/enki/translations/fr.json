@@ -116,7 +116,7 @@
     },
     "camera": {
       "event_snapshot": {
-        "name": "Dernier événement"
+        "name": "Dernier aperçu"
       }
     },
     "button": {
