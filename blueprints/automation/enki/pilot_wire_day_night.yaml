@@ -1,0 +1,90 @@
+blueprint:
+  name: Enki pilot wire – day / night schedule
+  description: >
+    Switch an Enki pilot-wire heater between two modes at two times of day —
+    e.g. Comfort in the morning, Eco at night. Works with the pilot-wire select
+    entity (Equation, …).
+  domain: automation
+  author: cyrilcolinet
+  source_url: https://github.com/cyrilcolinet/enki-integration-hass/blob/main/blueprints/automation/enki/pilot_wire_day_night.yaml
+  input:
+    pilot_wire:
+      name: Pilot-wire heater
+      description: The Enki pilot-wire select entity.
+      selector:
+        entity:
+          filter:
+            - domain: select
+    day_time:
+      name: Day time
+      description: When to switch to the day mode.
+      default: "07:00:00"
+      selector:
+        time:
+    day_mode:
+      name: Day mode
+      default: comfort
+      selector:
+        select:
+          options:
+            - comfort
+            - comfort_1
+            - comfort_2
+            - eco
+            - frost_protection
+            - "off"
+    night_time:
+      name: Night time
+      description: When to switch to the night mode.
+      default: "22:00:00"
+      selector:
+        time:
+    night_mode:
+      name: Night mode
+      default: eco
+      selector:
+        select:
+          options:
+            - comfort
+            - comfort_1
+            - comfort_2
+            - eco
+            - frost_protection
+            - "off"
+
+mode: single
+max_exceeded: silent
+
+variables:
+  pilot_wire: !input pilot_wire
+  day_mode: !input day_mode
+  night_mode: !input night_mode
+
+triggers:
+  - trigger: time
+    at: !input day_time
+    id: day
+  - trigger: time
+    at: !input night_time
+    id: night
+
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: day
+        sequence:
+          - action: select.select_option
+            target:
+              entity_id: !input pilot_wire
+            data:
+              option: "{{ day_mode }}"
+      - conditions:
+          - condition: trigger
+            id: night
+        sequence:
+          - action: select.select_option
+            target:
+              entity_id: !input pilot_wire
+            data:
+              option: "{{ night_mode }}"
