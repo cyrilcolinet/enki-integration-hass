@@ -13,7 +13,7 @@ Your email and password stay in the existing config entry. No need to add Enki a
 
 ## HACS updates — automatic?
 
-Custom repositories do **not** update silently by default. HACS shows an **Update** badge when a new release is available — you still click **Update**, then restart HA.
+HACS does **not** update silently by default. It shows an **Update** badge when a new release is available — you still click **Update**, then restart HA.
 
 To enable automatic updates: **HACS** → **Integrations** → **Enki** → enable automatic updates (if available in your HACS version).
 
