@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.19.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.18.0...v1.19.0) (2026-08-21)
+
+
+### Features
+
+* **api:** debug-log accepted outbound commands ([6eeceea](https://github.com/cyrilcolinet/enki-integration-hass/commit/6eeceea8a7b9eb702723efa19d0c1caaebd66154))
+* **automation:** expose device triggers for binary sensors ([3781a0a](https://github.com/cyrilcolinet/enki-integration-hass/commit/3781a0a66d44cddc8cfaf71f2c2c60ab03e13b4c))
+
 ## [1.18.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.17.0...v1.18.0) (2026-08-21)
 
 
