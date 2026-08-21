@@ -1,0 +1,80 @@
+blueprint:
+  name: Enki solar – switch a load on surplus
+  description: >
+    Turn a switch on when your Envertech-Lexman solar production rises above a
+    threshold, and off when it falls back — e.g. run a water heater or a pump on
+    solar surplus. Two thresholds give a hysteresis band.
+  domain: automation
+  author: cyrilcolinet
+  source_url: https://github.com/cyrilcolinet/enki-integration-hass/blob/main/blueprints/automation/enki/solar_surplus_switch.yaml
+  input:
+    production_sensor:
+      name: Solar production sensor
+      description: The Enki production sensor (W).
+      selector:
+        entity:
+          filter:
+            - domain: sensor
+              device_class: power
+    switch_target:
+      name: Load switch
+      description: The switch to turn on/off with the surplus.
+      selector:
+        target:
+          entity:
+            - domain: switch
+    on_above:
+      name: Turn on above (W)
+      default: 800
+      selector:
+        number:
+          min: 100
+          max: 5000
+          step: 50
+          unit_of_measurement: W
+    off_below:
+      name: Turn off below (W)
+      default: 400
+      selector:
+        number:
+          min: 50
+          max: 5000
+          step: 50
+          unit_of_measurement: W
+    min_duration:
+      name: Sustained for
+      description: Production must hold above/below the threshold this long before switching.
+      default:
+        minutes: 3
+      selector:
+        duration:
+
+mode: single
+max_exceeded: silent
+
+triggers:
+  - trigger: numeric_state
+    entity_id: !input production_sensor
+    above: !input on_above
+    for: !input min_duration
+    id: surplus
+  - trigger: numeric_state
+    entity_id: !input production_sensor
+    below: !input off_below
+    for: !input min_duration
+    id: deficit
+
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: surplus
+        sequence:
+          - action: switch.turn_on
+            target: !input switch_target
+      - conditions:
+          - condition: trigger
+            id: deficit
+        sequence:
+          - action: switch.turn_off
+            target: !input switch_target

@@ -68,22 +68,34 @@ The **Enki** app controls hundreds of products (Lexman, Equation, Inspire, Edisi
 
 ### Blueprints
 
-Ready-made automations under `blueprints/automation/enki/` — import via **Settings → Automations & scenes → Blueprints → Import**:
+Ready-made automations under `blueprints/automation/enki/` — import via **Settings → Automations & scenes → Blueprints → Import**.
+
+**Security & alerts**
 
 - **Camera motion notification** — notify with the last-event snapshot on motion (`camera_motion_notification.yaml`)
-- **Water leak alert** — urgent notification on a leak, optional siren + power cut-off (`water_leak_alert.yaml`)
-- **Low battery alert** — notify when an Enki battery sensor drops below a threshold (`low_battery_alert.yaml`)
-- **Heating pause on open window** — turn a radiator off while a window is open, back on when it closes (`heating_pause_on_open_window.yaml`)
-- **Motion-activated light** — light on with motion, off after a delay, optionally only when dark (`motion_activated_light.yaml`)
-- **Fan auto by temperature** — run a ceiling fan from a temperature sensor with hysteresis (`fan_auto_temperature.yaml`)
-- **Covers sun schedule** — open shutters at sunrise, close them at sunset (`covers_sun_schedule.yaml`)
-- **Contact open reminder** — notify when a door/window stays open too long (`contact_open_reminder.yaml`)
-- **Siren on motion when armed** — sound the siren + notify on motion while an "armed" toggle is on (`siren_on_motion_when_armed.yaml`)
-- **Frost protection when away** — drop radiators to a frost temp on an away toggle, restore on return (`away_heating_frost.yaml`)
-- **Fan auto by humidity** — run a fan from a humidity sensor with hysteresis (bathroom, laundry) (`humidity_ventilation.yaml`)
-- **High consumption alert** — notify when a power sensor stays above a threshold (`high_consumption_alert.yaml`)
 - **Camera tamper alert** — notify when a camera reports its SD card removed (`camera_tamper_alert.yaml`)
+- **Water leak alert** — urgent notification on a leak, optional siren + power cut-off (`water_leak_alert.yaml`)
+- **Vibration / glass-break alert** — notify (+ optional siren) on a vibration sensor (`vibration_glass_break_alert.yaml`)
+- **Siren on motion when armed** — sound the siren + notify on motion while an "armed" toggle is on (`siren_on_motion_when_armed.yaml`)
+- **Contact open reminder** — notify when a door/window stays open too long (`contact_open_reminder.yaml`)
+- **Low battery alert** — notify when an Enki battery sensor drops below a threshold (`low_battery_alert.yaml`)
+- **High consumption alert** — notify when a power sensor stays above a threshold (`high_consumption_alert.yaml`)
+- **Device offline alert** — notify when a device goes offline or unavailable (`device_offline_alert.yaml`)
+- **Firmware update available** — notify when a device has an update (`firmware_update_notification.yaml`)
+
+**Comfort, energy & scheduling**
+
+- **Motion-activated light** — light on with motion, off after a delay, optionally only when dark (`motion_activated_light.yaml`)
+- **Lights on at sunset** — lights on at sunset, off at a set time (`lights_on_at_sunset.yaml`)
+- **Fan auto by temperature** — run a ceiling fan from a temperature sensor with hysteresis (`fan_auto_temperature.yaml`)
+- **Fan auto by humidity** — run a fan from a humidity sensor with hysteresis (bathroom, laundry) (`humidity_ventilation.yaml`)
+- **Covers sun schedule** — open shutters at sunrise, close them at sunset (`covers_sun_schedule.yaml`)
+- **Heating pause on open window** — turn a radiator off while a window is open, back on when it closes (`heating_pause_on_open_window.yaml`)
+- **Frost protection when away** — drop radiators to a frost temp on an away toggle, restore on return (`away_heating_frost.yaml`)
 - **Pilot-wire day/night schedule** — switch a pilot-wire heater between two modes at two times (`pilot_wire_day_night.yaml`)
+- **Turn everything off when away** — switch off chosen lights and outlets on an away toggle (`turn_off_when_away.yaml`)
+- **Solar surplus switch** — run a load when solar production exceeds a threshold (`solar_surplus_switch.yaml`)
+- **Run scenario on schedule** — press an Enki scenario at a time on chosen days (`run_scenario_on_schedule.yaml`)
 
 Per-device detail: [docs/SUPPORTED_DEVICES.md](docs/SUPPORTED_DEVICES.md) · History: [docs/ROADMAP.md](docs/ROADMAP.md)
 

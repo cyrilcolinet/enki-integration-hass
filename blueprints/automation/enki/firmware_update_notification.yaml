@@ -1,0 +1,39 @@
+blueprint:
+  name: Enki device – firmware update available
+  description: >
+    Notify when an Enki device reports a firmware update is available, so you
+    can update it from the Enki app.
+  domain: automation
+  author: cyrilcolinet
+  source_url: https://github.com/cyrilcolinet/enki-integration-hass/blob/main/blueprints/automation/enki/firmware_update_notification.yaml
+  input:
+    update_sensor:
+      name: Update sensor
+      description: The device's "update available" binary sensor.
+      selector:
+        entity:
+          filter:
+            - domain: binary_sensor
+              device_class: update
+    notify_action:
+      name: Notification action
+      description: The notify action to call, e.g. notify.mobile_app_your_phone.
+      default: notify.notify
+      selector:
+        text:
+
+mode: single
+max_exceeded: silent
+
+triggers:
+  - trigger: state
+    entity_id: !input update_sensor
+    to: "on"
+
+actions:
+  - action: !input notify_action
+    data:
+      title: 🔧 Firmware update available
+      message: >
+        {{ trigger.to_state.attributes.friendly_name }} has an update — install
+        it from the Enki app.

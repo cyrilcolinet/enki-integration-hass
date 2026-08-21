@@ -1,0 +1,62 @@
+blueprint:
+  name: Enki scenario – run on a schedule
+  description: >
+    Run an Enki scenario (exposed as a button) at a set time on chosen days —
+    e.g. "Wake up" every weekday morning, "Movie" at night.
+  domain: automation
+  author: cyrilcolinet
+  source_url: https://github.com/cyrilcolinet/enki-integration-hass/blob/main/blueprints/automation/enki/run_scenario_on_schedule.yaml
+  input:
+    scenario_button:
+      name: Scenario
+      description: The Enki scenario button to press.
+      selector:
+        entity:
+          filter:
+            - domain: button
+    at_time:
+      name: Time
+      description: When to run the scenario.
+      selector:
+        time:
+    weekdays:
+      name: Days
+      description: Days the schedule runs.
+      default:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+        - sat
+        - sun
+      selector:
+        select:
+          multiple: true
+          options:
+            - mon
+            - tue
+            - wed
+            - thu
+            - fri
+            - sat
+            - sun
+
+mode: single
+max_exceeded: silent
+
+variables:
+  weekdays: !input weekdays
+
+triggers:
+  - trigger: time
+    at: !input at_time
+
+conditions:
+  - condition: template
+    value_template: "{{ now().strftime('%a').lower() in weekdays }}"
+
+actions:
+  - action: button.press
+    target:
+      entity_id: !input scenario_button

@@ -1,0 +1,58 @@
+blueprint:
+  name: Enki device – offline alert
+  description: >
+    Notify when an Enki device goes offline — a ceiling fan's connectivity
+    sensor dropping, or any Enki entity that becomes unavailable for a while
+    (hub down, Wi-Fi lost, cloud unreachable).
+  domain: automation
+  author: cyrilcolinet
+  source_url: https://github.com/cyrilcolinet/enki-integration-hass/blob/main/blueprints/automation/enki/device_offline_alert.yaml
+  input:
+    watched_entity:
+      name: Entity to watch
+      description: >
+        A connectivity binary sensor (goes off when offline), or any Enki entity
+        (alerts when it becomes unavailable).
+      selector:
+        entity: {}
+    offline_for:
+      name: Offline for
+      description: How long it must stay offline before notifying.
+      default:
+        minutes: 10
+      selector:
+        duration:
+    notify_action:
+      name: Notification action
+      description: The notify action to call, e.g. notify.mobile_app_your_phone.
+      default: notify.notify
+      selector:
+        text:
+
+mode: single
+max_exceeded: silent
+
+triggers:
+  - trigger: state
+    entity_id: !input watched_entity
+    to: "unavailable"
+    for: !input offline_for
+    id: unavailable
+  - trigger: state
+    entity_id: !input watched_entity
+    to: "off"
+    for: !input offline_for
+    id: disconnected
+
+conditions:
+  # Only treat "off" as offline for connectivity sensors (on = connected).
+  - condition: template
+    value_template: >
+      {{ trigger.id == 'unavailable'
+         or trigger.to_state.attributes.device_class == 'connectivity' }}
+
+actions:
+  - action: !input notify_action
+    data:
+      title: 📴 Device offline
+      message: "{{ trigger.to_state.attributes.friendly_name }} is offline."
