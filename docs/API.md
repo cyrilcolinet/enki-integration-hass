@@ -108,7 +108,7 @@ RTS models (Somfy, `tr_device_rts_roller_shutter_motorization_label`) expose onl
 position and no `check-*` feedback. The cover entity reports `assumed_state`.
 Path segment unconfirmed against real hardware — see #96.
 
-Gateway key: `ENKI_ACCESS_MOTORIZATION_API_KEY` in `const.py`. Legacy path `api-enki-access-and-motorizations-prod` is obsolete. See [BETA_VOLETS_KEY.md](BETA_VOLETS_KEY.md) for validation with mitmproxy.
+Gateway key: `ENKI_ACCESS_MOTORIZATION_API_KEY` in `const.py`. Legacy path `api-enki-access-and-motorizations-prod` is obsolete. See [DEVELOPMENT.md](DEVELOPMENT.md#capturing-a-gateway-key-with-mitmproxy-fallback) for validating a key with mitmproxy.
 
 ### Dry-contact gate / garage receiver (Lexman 83424576, Nodon SIN-4-1-20)
 

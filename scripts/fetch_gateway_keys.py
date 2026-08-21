@@ -6,8 +6,9 @@ That endpoint returns app version flags (minIOSVersion, maintenance, …) — it
 **not** expose X-Gateway-APIKey values for heating, water leak, or rolling.
 
 For missing keys (ENKI_HEATING_API_KEY, ENKI_WATER_SENSOR_API_KEY,
-ENKI_ACCESS_MOTORIZATION_API_KEY), use mitmproxy — see docs/BETA_VOLETS_KEY.md —
-or scan an APK with scripts/extract_gateway_keys.py.
+ENKI_ACCESS_MOTORIZATION_API_KEY), scan an APK with
+scripts/extract_gateway_keys.py, or use the mitmproxy fallback — see
+docs/DEVELOPMENT.md.
 
 Usage:
     python scripts/fetch_gateway_keys.py
@@ -84,7 +85,7 @@ def print_missing_key_help() -> None:
     for key in empty:
         print(f"  - {key}", file=sys.stderr)
     print(
-        "\nCapture X-Gateway-APIKey from the Enki app (mitmproxy): docs/BETA_VOLETS_KEY.md",
+        "\nCapture X-Gateway-APIKey from the Enki app (mitmproxy): docs/DEVELOPMENT.md",
         file=sys.stderr,
     )
     print(
