@@ -1,0 +1,73 @@
+blueprint:
+  name: Enki heating – frost protection when away
+  description: >
+    Drop your Enki radiators to a frost-protection temperature when an "away"
+    toggle turns on, and back to a comfort temperature when you come home. One
+    toggle, every radiator handled.
+  domain: automation
+  author: cyrilcolinet
+  source_url: https://github.com/cyrilcolinet/enki-integration-hass/blob/main/blueprints/automation/enki/away_heating_frost.yaml
+  input:
+    away_toggle:
+      name: Away toggle
+      description: The input_boolean that is on while you're away.
+      selector:
+        entity:
+          domain: input_boolean
+    climates:
+      name: Radiators
+      description: The Enki climate entities to manage.
+      selector:
+        target:
+          entity:
+            - domain: climate
+    frost_temp:
+      name: Away temperature (°C)
+      default: 12
+      selector:
+        number:
+          min: 7
+          max: 18
+          step: 0.5
+          unit_of_measurement: "°C"
+    comfort_temp:
+      name: Home temperature (°C)
+      default: 19
+      selector:
+        number:
+          min: 15
+          max: 24
+          step: 0.5
+          unit_of_measurement: "°C"
+
+mode: single
+max_exceeded: silent
+
+triggers:
+  - trigger: state
+    entity_id: !input away_toggle
+    to: "on"
+    id: away
+  - trigger: state
+    entity_id: !input away_toggle
+    to: "off"
+    id: home
+
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: away
+        sequence:
+          - action: climate.set_temperature
+            target: !input climates
+            data:
+              temperature: !input frost_temp
+      - conditions:
+          - condition: trigger
+            id: home
+        sequence:
+          - action: climate.set_temperature
+            target: !input climates
+            data:
+              temperature: !input comfort_temp

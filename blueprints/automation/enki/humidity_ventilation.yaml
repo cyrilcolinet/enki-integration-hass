@@ -1,0 +1,84 @@
+blueprint:
+  name: Enki fan – auto by humidity
+  description: >
+    Run a fan / ventilation from a humidity sensor: on above one threshold, off
+    below another. Great for a bathroom or laundry room using an Enki humidity
+    sensor and an Inspire fan. The two thresholds give a hysteresis band.
+  domain: automation
+  author: cyrilcolinet
+  source_url: https://github.com/cyrilcolinet/enki-integration-hass/blob/main/blueprints/automation/enki/humidity_ventilation.yaml
+  input:
+    humidity_sensor:
+      name: Humidity sensor
+      description: The Enki humidity sensor driving the fan.
+      selector:
+        entity:
+          filter:
+            - domain: sensor
+              device_class: humidity
+    fan_entity:
+      name: Fan
+      description: The Enki fan / ventilation to control.
+      selector:
+        entity:
+          filter:
+            - domain: fan
+    on_above:
+      name: Turn on above (%)
+      default: 65
+      selector:
+        number:
+          min: 40
+          max: 95
+          step: 1
+          unit_of_measurement: "%"
+    off_below:
+      name: Turn off below (%)
+      default: 55
+      selector:
+        number:
+          min: 30
+          max: 90
+          step: 1
+          unit_of_measurement: "%"
+    fan_percentage:
+      name: Fan speed when on (%)
+      default: 100
+      selector:
+        number:
+          min: 1
+          max: 100
+          step: 1
+          unit_of_measurement: "%"
+
+mode: single
+max_exceeded: silent
+
+triggers:
+  - trigger: numeric_state
+    entity_id: !input humidity_sensor
+    above: !input on_above
+    id: humid
+  - trigger: numeric_state
+    entity_id: !input humidity_sensor
+    below: !input off_below
+    id: dry
+
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: humid
+        sequence:
+          - action: fan.turn_on
+            target:
+              entity_id: !input fan_entity
+            data:
+              percentage: !input fan_percentage
+      - conditions:
+          - condition: trigger
+            id: dry
+        sequence:
+          - action: fan.turn_off
+            target:
+              entity_id: !input fan_entity

@@ -79,6 +79,11 @@ Ready-made automations under `blueprints/automation/enki/` — import via **Sett
 - **Covers sun schedule** — open shutters at sunrise, close them at sunset (`covers_sun_schedule.yaml`)
 - **Contact open reminder** — notify when a door/window stays open too long (`contact_open_reminder.yaml`)
 - **Siren on motion when armed** — sound the siren + notify on motion while an "armed" toggle is on (`siren_on_motion_when_armed.yaml`)
+- **Frost protection when away** — drop radiators to a frost temp on an away toggle, restore on return (`away_heating_frost.yaml`)
+- **Fan auto by humidity** — run a fan from a humidity sensor with hysteresis (bathroom, laundry) (`humidity_ventilation.yaml`)
+- **High consumption alert** — notify when a power sensor stays above a threshold (`high_consumption_alert.yaml`)
+- **Camera tamper alert** — notify when a camera reports its SD card removed (`camera_tamper_alert.yaml`)
+- **Pilot-wire day/night schedule** — switch a pilot-wire heater between two modes at two times (`pilot_wire_day_night.yaml`)
 
 Per-device detail: [docs/SUPPORTED_DEVICES.md](docs/SUPPORTED_DEVICES.md) · History: [docs/ROADMAP.md](docs/ROADMAP.md)
 

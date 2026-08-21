@@ -1,0 +1,57 @@
+blueprint:
+  name: Enki power – high consumption alert
+  description: >
+    Notify when an Enki power sensor stays above a threshold for a while — a
+    water heater running too long, an outlet drawing more than expected. Uses
+    the instant-consumption sensor exposed on Enki outlets and relays.
+  domain: automation
+  author: cyrilcolinet
+  source_url: https://github.com/cyrilcolinet/enki-integration-hass/blob/main/blueprints/automation/enki/high_consumption_alert.yaml
+  input:
+    power_sensor:
+      name: Power sensor
+      description: The Enki instant-consumption sensor (device class power, W).
+      selector:
+        entity:
+          filter:
+            - domain: sensor
+              device_class: power
+    threshold:
+      name: Threshold (W)
+      default: 2000
+      selector:
+        number:
+          min: 50
+          max: 5000
+          step: 50
+          unit_of_measurement: W
+    sustained_for:
+      name: Sustained for
+      description: The sensor must stay above the threshold this long before notifying.
+      default:
+        minutes: 15
+      selector:
+        duration:
+    notify_action:
+      name: Notification action
+      description: The notify action to call, e.g. notify.mobile_app_your_phone.
+      default: notify.notify
+      selector:
+        text:
+
+mode: single
+max_exceeded: silent
+
+triggers:
+  - trigger: numeric_state
+    entity_id: !input power_sensor
+    above: !input threshold
+    for: !input sustained_for
+
+actions:
+  - action: !input notify_action
+    data:
+      title: ⚡ High consumption
+      message: >
+        {{ trigger.to_state.attributes.friendly_name }} at
+        {{ trigger.to_state.state }} W.

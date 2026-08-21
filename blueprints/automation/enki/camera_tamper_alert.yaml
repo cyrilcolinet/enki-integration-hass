@@ -1,0 +1,38 @@
+blueprint:
+  name: Enki camera – tamper / SD removed alert
+  description: >
+    Notify when an Enki (Lexman) camera reports its SD card removed — a common
+    sign of tampering. Uses the camera's SD-card binary sensor.
+  domain: automation
+  author: cyrilcolinet
+  source_url: https://github.com/cyrilcolinet/enki-integration-hass/blob/main/blueprints/automation/enki/camera_tamper_alert.yaml
+  input:
+    sd_sensor:
+      name: SD-card sensor
+      description: The camera's "SD card removed" binary sensor.
+      selector:
+        entity:
+          filter:
+            - domain: binary_sensor
+    notify_action:
+      name: Notification action
+      description: The notify action to call, e.g. notify.mobile_app_your_phone.
+      default: notify.notify
+      selector:
+        text:
+
+mode: single
+max_exceeded: silent
+
+triggers:
+  - trigger: state
+    entity_id: !input sd_sensor
+    to: "on"
+
+actions:
+  - action: !input notify_action
+    data:
+      title: 📷 Camera tamper
+      message: >
+        {{ trigger.to_state.attributes.friendly_name }} — SD card removed
+        at {{ now().strftime('%d/%m %H:%M') }}.
