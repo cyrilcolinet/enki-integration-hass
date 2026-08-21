@@ -12,8 +12,6 @@
   "loggers": [
     "enki"
   ],
-  "requirements": [
-    "aiohttp>=3.9"
-  ],
+  "requirements": [],
   "version": "1.19.0"
 }
