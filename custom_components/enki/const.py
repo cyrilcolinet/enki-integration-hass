@@ -56,7 +56,9 @@ DEVICE_TYPE_SENSORS = "sensors"
 DEVICE_TYPE_CAMERAS = "cameras"
 DEVICE_TYPE_BOILER = "boiler"
 
-REFERENTIEL_VERSION = "2.23.0"
+# Sent as ?version= on the referentiel endpoint. A stale value returns an older,
+# thinner capability set — keep it in step with the Enki app (2.26.3 sends 2.26.0).
+REFERENTIEL_VERSION = "2.26.0"
 
 FAN_SPEED_MIN = 1
 FAN_SPEED_MAX = 6
