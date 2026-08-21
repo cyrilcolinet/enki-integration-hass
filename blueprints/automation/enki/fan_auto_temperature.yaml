@@ -1,0 +1,85 @@
+blueprint:
+  name: Enki fan – auto by temperature
+  description: >
+    Run an Inspire ceiling fan automatically from a temperature sensor: turn it
+    on (at a chosen speed) above one threshold, off below another. The two
+    thresholds give a hysteresis band so the fan doesn't chatter around a single
+    value.
+  domain: automation
+  author: cyrilcolinet
+  source_url: https://github.com/cyrilcolinet/enki-integration-hass/blob/main/blueprints/automation/enki/fan_auto_temperature.yaml
+  input:
+    temp_sensor:
+      name: Temperature sensor
+      description: The room temperature sensor driving the fan.
+      selector:
+        entity:
+          filter:
+            - domain: sensor
+              device_class: temperature
+    fan_entity:
+      name: Fan
+      description: The Enki ceiling fan to control.
+      selector:
+        entity:
+          filter:
+            - domain: fan
+    on_above:
+      name: Turn on above (°C)
+      default: 26
+      selector:
+        number:
+          min: 15
+          max: 35
+          step: 0.5
+          unit_of_measurement: "°C"
+    off_below:
+      name: Turn off below (°C)
+      default: 24
+      selector:
+        number:
+          min: 15
+          max: 35
+          step: 0.5
+          unit_of_measurement: "°C"
+    fan_percentage:
+      name: Fan speed when on (%)
+      default: 66
+      selector:
+        number:
+          min: 1
+          max: 100
+          step: 1
+          unit_of_measurement: "%"
+
+mode: single
+max_exceeded: silent
+
+triggers:
+  - trigger: numeric_state
+    entity_id: !input temp_sensor
+    above: !input on_above
+    id: hot
+  - trigger: numeric_state
+    entity_id: !input temp_sensor
+    below: !input off_below
+    id: cool
+
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: hot
+        sequence:
+          - action: fan.turn_on
+            target:
+              entity_id: !input fan_entity
+            data:
+              percentage: !input fan_percentage
+      - conditions:
+          - condition: trigger
+            id: cool
+        sequence:
+          - action: fan.turn_off
+            target:
+              entity_id: !input fan_entity

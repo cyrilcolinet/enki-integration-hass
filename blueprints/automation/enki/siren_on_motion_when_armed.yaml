@@ -1,0 +1,74 @@
+blueprint:
+  name: Enki siren – on motion when armed
+  description: >
+    Sound an Enki siren and notify when motion is detected, but only while an
+    "armed" toggle is on (an input_boolean you flip when leaving). The siren
+    turns itself off after a delay.
+  domain: automation
+  author: cyrilcolinet
+  source_url: https://github.com/cyrilcolinet/enki-integration-hass/blob/main/blueprints/automation/enki/siren_on_motion_when_armed.yaml
+  input:
+    motion_sensors:
+      name: Motion sensors
+      description: One or more Enki motion sensors to watch.
+      selector:
+        entity:
+          multiple: true
+          filter:
+            - domain: binary_sensor
+              device_class: motion
+            - domain: binary_sensor
+              device_class: occupancy
+    armed_toggle:
+      name: Armed toggle
+      description: The automation only fires while this is on (e.g. an input_boolean "Away").
+      selector:
+        entity:
+          domain: input_boolean
+    siren:
+      name: Siren
+      description: The Enki siren (exposed as a switch).
+      selector:
+        entity:
+          filter:
+            - domain: switch
+    notify_action:
+      name: Notification action
+      description: The notify action to call, e.g. notify.mobile_app_your_phone.
+      default: notify.notify
+      selector:
+        text:
+    auto_off:
+      name: Siren auto-off
+      description: Turn the siren back off this long after it starts.
+      default:
+        minutes: 2
+      selector:
+        duration:
+
+mode: single
+max_exceeded: silent
+
+triggers:
+  - trigger: state
+    entity_id: !input motion_sensors
+    from: "off"
+    to: "on"
+
+conditions:
+  - condition: state
+    entity_id: !input armed_toggle
+    state: "on"
+
+actions:
+  - action: !input notify_action
+    data:
+      title: 🚨 Motion while armed
+      message: "{{ trigger.to_state.attributes.friendly_name }} triggered at {{ now().strftime('%d/%m %H:%M') }}."
+  - action: switch.turn_on
+    target:
+      entity_id: !input siren
+  - delay: !input auto_off
+  - action: switch.turn_off
+    target:
+      entity_id: !input siren
