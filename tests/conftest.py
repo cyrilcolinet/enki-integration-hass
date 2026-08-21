@@ -308,3 +308,34 @@ _update = MagicMock()
 _update.UpdateEntity = _HaEntity
 _update.UpdateDeviceClass = MagicMock()
 sys.modules["homeassistant.components.update"] = _update
+
+# --- device automation triggers (device_trigger.py) ---
+_ha_const.CONF_DEVICE_ID = "device_id"
+_ha_const.CONF_DOMAIN = "domain"
+_ha_const.CONF_ENTITY_ID = "entity_id"
+_ha_const.CONF_PLATFORM = "platform"
+_ha_const.CONF_TYPE = "type"
+_ha_const.STATE_ON = "on"
+_ha_const.STATE_OFF = "off"
+_binary_sensor.DOMAIN = "binary_sensor"
+
+for _name in (
+    "homeassistant.components.device_automation",
+    "homeassistant.components.homeassistant",
+    "homeassistant.components.homeassistant.triggers",
+    "homeassistant.components.homeassistant.triggers.state",
+    "homeassistant.helpers.trigger",
+    "homeassistant.helpers.typing",
+    "homeassistant.helpers.config_validation",
+):
+    sys.modules.setdefault(_name, MagicMock())
+
+sys.modules["homeassistant.components.device_automation"].DEVICE_TRIGGER_BASE_SCHEMA = MagicMock()
+_state_trigger = sys.modules["homeassistant.components.homeassistant.triggers.state"]
+_state_trigger.CONF_FROM = "from"
+_state_trigger.CONF_TO = "to"
+# Wire submodule attributes so `from ...triggers import state` yields the stub above.
+sys.modules["homeassistant.components.homeassistant"].triggers = sys.modules[
+    "homeassistant.components.homeassistant.triggers"
+]
+sys.modules["homeassistant.components.homeassistant.triggers"].state = _state_trigger
