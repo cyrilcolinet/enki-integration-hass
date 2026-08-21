@@ -47,7 +47,7 @@ def ha_platforms_for_profile(profile: EnkiCapabilityProfile) -> list[str]:
         platforms.append("sensor")
     if profile.is_config_switch:
         platforms.append("switch")
-    if profile.supports_vibration_sensibility:
+    if profile.supports_vibration_sensibility or profile.supports_offset_temperature:
         platforms.append("number")
     if profile.is_camera:
         platforms.extend(["camera", "sensor", "binary_sensor"])

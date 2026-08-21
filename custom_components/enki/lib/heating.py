@@ -51,6 +51,23 @@ def thermostat_temperature_range(possible_values: dict[str, Any]) -> tuple[float
     return 7.0, 28.0, 0.5
 
 
+def offset_temperature_range(possible_values: dict[str, Any]) -> tuple[float, float, float]:
+    """Return (min, max, step) for change_offset_temperature (calibration offset)."""
+    meta = possible_values.get("change_offset_temperature") or possible_values.get(
+        "check_offset_temperature"
+    )
+    if isinstance(meta, dict):
+        range_meta = meta.get("range")
+        if isinstance(range_meta, dict):
+            minimum = range_meta.get("min")
+            maximum = range_meta.get("max")
+            step = range_meta.get("step")
+            if isinstance(minimum, (int, float)) and isinstance(maximum, (int, float)):
+                resolved_step = float(step) if isinstance(step, (int, float)) else 0.5
+                return float(minimum), float(maximum), resolved_step
+    return -5.0, 5.0, 0.5
+
+
 def thermostat_running_to_hvac_action(running_state: str | None) -> str | None:
     """Map Enki thermostat running state to Home Assistant hvac_action strings."""
     if not isinstance(running_state, str):

@@ -189,11 +189,20 @@
       },
       "occupancy_mode": {
         "name": "Mode présence"
+      },
+      "child_lock": {
+        "name": "Verrouillage enfant"
+      },
+      "preheating": {
+        "name": "Préchauffage"
       }
     },
     "number": {
       "vibration_sensibility": {
         "name": "Sensibilité vibration"
+      },
+      "offset_temperature": {
+        "name": "Décalage de température"
       }
     },
     "cover": {

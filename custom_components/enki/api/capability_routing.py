@@ -72,6 +72,9 @@ CAPABILITY_READS: tuple[CapabilityRead, ...] = (
         "check_window_open_detection_mode",
         "window_open_detection_mode",
     ),
+    CapabilityRead("thermostat", "check_offset_temperature", "offset_temperature"),
+    CapabilityRead("thermostat", "check_child_lock", "child_lock"),
+    CapabilityRead("thermostat", "check_preheating_status", "preheating_status"),
     CapabilityRead("presence_detector", "check_occupancy", "occupancy"),
     CapabilityRead("presence_detector", "check_occupancy_mode", "occupancy_mode"),
     CapabilityRead(

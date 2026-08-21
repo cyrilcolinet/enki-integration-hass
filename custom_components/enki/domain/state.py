@@ -242,6 +242,20 @@ class EnkiDeviceState:
         return str(value) if isinstance(value, str) else None
 
     @property
+    def offset_temperature(self) -> float | None:
+        return _as_float(self._data.get("offset_temperature"))
+
+    @property
+    def child_lock(self) -> str | None:
+        value = self._data.get("child_lock")
+        return str(value) if isinstance(value, str) else None
+
+    @property
+    def preheating_status(self) -> str | None:
+        value = self._data.get("preheating_status")
+        return str(value) if isinstance(value, str) else None
+
+    @property
     def occupancy(self) -> str | None:
         value = self._data.get("occupancy")
         return str(value) if isinstance(value, str) else None
