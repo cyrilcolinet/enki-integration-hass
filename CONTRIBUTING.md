@@ -7,7 +7,7 @@ Thanks for contributing. For local setup, tests, and CI, see [docs/DEVELOPMENT.m
 1. Check [open issues](https://github.com/cyrilcolinet/enki-integration-hass/issues)
 2. New Enki device: open a **feature request** with output from `scripts/discover_devices.py` (no password)
 3. API context: [docs/API.md](docs/API.md)
-4. Gateway keys (APK): [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) (`extract_gateway_keys.py`) · cover validation: [docs/BETA_VOLETS_KEY.md](docs/BETA_VOLETS_KEY.md)
+4. Gateway keys (APK): [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) (`extract_gateway_keys.py`, or the mitmproxy fallback)
 
 ## Quality bar
 

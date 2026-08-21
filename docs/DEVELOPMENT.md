@@ -52,6 +52,17 @@ python3 scripts/discover_devices.py your@email.com 'password'
 
 Gateway keys are embedded in the APK (one per micro-service). Run `extract_gateway_keys.py --apply` after each Enki app update.
 
+### Capturing a gateway key with mitmproxy (fallback)
+
+When APK extraction misses a key or you need to validate one against live traffic (e.g. a 403 on a micro-service), intercept the app:
+
+1. PC and phone on the same Wi‑Fi. Start [mitmproxy](https://mitmproxy.org/): `mitmweb` (proxy on `:8080`, UI on `:8081`).
+2. Phone Wi‑Fi → manual proxy → PC IP, port `8080`. Install the mitmproxy cert from `http://mitm.it`.
+3. Trigger the action in the Enki app, filter for the micro-service (e.g. `rolling-prod`), and copy the `X-Gateway-APIKey` request header.
+4. Compare it to the matching `ENKI_*_API_KEY` in `const.py`. Disable the proxy when done.
+
+The key is an Adeo/Leroy Merlin app key (reusable, not a personal secret), but **never capture or share** the account password, Bearer token, `homeId`, or `nodeId`.
+
 ## Repository language
 
 - **Python code** (comments, docstrings): English — see [CONTRIBUTING.md](../CONTRIBUTING.md#language)

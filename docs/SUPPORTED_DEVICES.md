@@ -176,7 +176,7 @@ Extra referentiel controls, exposed when the thermostat advertises them. Routes 
 
 **Current state:** `ENKI_ACCESS_MOTORIZATION_API_KEY` included. Micro-service: `api-enki-rolling-prod` (not `access-and-motorizations`). **“Shutter (beta)”** entity if the shutter is active in the Enki app.
 
-Contributor network feedback: [BETA_VOLETS_KEY.md](BETA_VOLETS_KEY.md).
+Validating the gateway key with mitmproxy: [DEVELOPMENT.md](DEVELOPMENT.md#capturing-a-gateway-key-with-mitmproxy-fallback).
 
 ### For testers (covers)
 
