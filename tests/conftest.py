@@ -192,9 +192,14 @@ class _ConfigEntryNotReady(_HomeAssistantError):
     """Minimal ConfigEntryNotReady stand-in — must stay raisable."""
 
 
+class _ConfigEntryAuthFailed(_HomeAssistantError):
+    """Minimal ConfigEntryAuthFailed stand-in — must stay raisable."""
+
+
 _ha_exceptions = sys.modules["homeassistant.exceptions"]
 _ha_exceptions.HomeAssistantError = _HomeAssistantError
 _ha_exceptions.ConfigEntryNotReady = _ConfigEntryNotReady
+_ha_exceptions.ConfigEntryAuthFailed = _ConfigEntryAuthFailed
 
 _device_registry = sys.modules["homeassistant.helpers.device_registry"]
 _device_registry.DeviceInfo = dict

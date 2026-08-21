@@ -16,6 +16,13 @@
           "password": "Password"
         }
       },
+      "reauth_confirm": {
+        "title": "Re-authenticate Enki",
+        "description": "The stored credentials for {username} stopped working. Enter the Enki password again.",
+        "data": {
+          "password": "Password"
+        }
+      },
       "telemetry": {
         "title": "Help extend Enki support",
         "description": "Optional opt-in: when a new or unsupported device is detected on your account, Home Assistant can notify you with a **pre-filled GitHub link** (anonymized profile: type, model, capabilities).\n\nNothing is sent automatically — you decide whether to open the link. This helps prioritize heaters, shutters, sockets, and other hardware.\n\nYou can change this anytime under **Enki → Configure**.",
@@ -30,7 +37,8 @@
       "unknown": "Unexpected error. Check Home Assistant logs."
     },
     "abort": {
-      "already_configured": "This Enki account is already configured."
+      "already_configured": "This Enki account is already configured.",
+      "reauth_successful": "Enki re-authenticated successfully."
     }
   },
   "options": {
@@ -233,6 +241,20 @@
       "firmware": {
         "name": "Firmware"
       }
+    }
+  },
+  "issues": {
+    "gateway_key_rejected": {
+      "title": "Enki gateway key rejected",
+      "description": "The Enki API returned HTTP 403 for `{service}`: a gateway (micro-service) key is likely outdated after an Enki app update. Reads and commands on that service will keep failing until the key is refreshed. See the linked guide."
+    },
+    "cloud_unreachable": {
+      "title": "Enki cloud unreachable",
+      "description": "Home Assistant can't reach the Enki cloud (network, timeout, or server error). Entities won't update until connectivity is restored. Check your internet connection and the Home Assistant logs."
+    },
+    "maintenance": {
+      "title": "Enki maintenance in progress",
+      "description": "The Enki cloud reports maintenance in progress. Some features may be temporarily unavailable."
     }
   }
 }

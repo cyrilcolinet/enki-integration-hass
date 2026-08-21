@@ -1,59 +1,55 @@
-"""Persistent notifications for Enki operational issues."""
+"""Repairs issues for Enki operational problems.
+
+Uses Home Assistant's issue registry (Settings → Repairs) rather than
+hardcoded bilingual persistent notifications: the copy lives in the translation
+files (``strings.json`` / ``translations``) under ``issues`` and HA renders it in
+the user's language. Authentication failures are handled by the reauth flow
+(``ConfigEntryAuthFailed``), not here.
+"""
 
 from __future__ import annotations
 
 from typing import Any
 
-from homeassistant.components import persistent_notification
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import issue_registry as ir
 
 from .const import DOMAIN
 from .exceptions import EnkiConnectionError
 
 _DOCUMENTATION_URL = "https://github.com/cyrilcolinet/enki-integration-hass"
-_ISSUE_TRACKER = f"{_DOCUMENTATION_URL}/issues"
 
 
 def notify_for_connection_error(notifier: EnkiNotifier, err: EnkiConnectionError) -> None:
-    """Map an API transport error to the appropriate persistent notification."""
-    status = err.status
-    if status == 403:
+    """Map an API transport error to the appropriate repair issue."""
+    if err.status == 403:
         notifier.notify_gateway_rejected(service=err.service)
-    elif status == 401:
-        notifier.notify_auth_failed(gateway_hint=True)
-    elif status in {502, 503, 504}:
-        notifier.notify_service_unavailable()
     else:
         notifier.notify_connection_failed()
 
 
 class EnkiNotifier:
-    """Show or dismiss Enki persistent notifications for one config entry."""
+    """Create or clear Enki repair issues for one config entry."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         self._hass = hass
         self._entry = entry
 
-    def notify_auth_failed(self, *, gateway_hint: bool = False) -> None:
-        """Credentials rejected by Enki / Keycloak."""
-        self._dismiss(self._id("connection"))
-        self._dismiss(self._id("gateway"))
-        title, message = _auth_copy(self._hass, self._entry.entry_id, gateway_hint=gateway_hint)
-        self._create(self._id("auth"), title, message)
-
     def notify_gateway_rejected(self, *, service: str | None = None) -> None:
-        """HTTP 403 — gateway API key likely outdated."""
-        self._dismiss(self._id("connection"))
-        title, message = _gateway_copy(self._hass, service=service)
-        self._create(self._id("gateway"), title, message)
+        """HTTP 403 — a gateway API key is likely outdated after an app update."""
+        self._delete("connection")
+        self._create(
+            "gateway",
+            translation_key="gateway_key_rejected",
+            placeholders={"service": service or "?"},
+            learn_more_url=f"{_DOCUMENTATION_URL}/blob/main/docs/DEVELOPMENT.md",
+        )
 
     def notify_connection_failed(self) -> None:
         """Network error or unexpected upstream failure."""
-        self._dismiss(self._id("auth"))
-        self._dismiss(self._id("gateway"))
-        title, message = _connection_copy(self._hass)
-        self._create(self._id("connection"), title, message)
+        self._delete("gateway")
+        self._create("connection", translation_key="cloud_unreachable")
 
     def notify_service_unavailable(self) -> None:
         """Enki cloud temporarily unavailable (5xx)."""
@@ -61,15 +57,18 @@ class EnkiNotifier:
 
     def notify_maintenance_mode(self) -> None:
         """Enki cloud reports active maintenance."""
-        title, message = _maintenance_copy(self._hass)
-        self._create(self._id("maintenance"), title, message)
+        self._create(
+            "maintenance",
+            translation_key="maintenance",
+            learn_more_url="https://support.enki-home.com/",
+        )
 
     def dismiss_maintenance_mode(self) -> None:
-        """Clear maintenance notification when Enki reports normal operations."""
-        self._dismiss(self._id("maintenance"))
+        """Clear the maintenance issue when Enki reports normal operations."""
+        self._delete("maintenance")
 
     def sync_maintenance_mode(self, settings: dict[str, Any] | None) -> None:
-        """Show or hide maintenance notification from mobile-config payload."""
+        """Show or hide the maintenance issue from a mobile-config payload."""
         if settings is None:
             return
         if settings.get("maintenance") is True:
@@ -78,140 +77,36 @@ class EnkiNotifier:
             self.dismiss_maintenance_mode()
 
     def dismiss_operational_errors(self) -> None:
-        """Clear auth / gateway / connection notifications after a successful poll."""
-        for suffix in ("auth", "gateway", "connection"):
-            self._dismiss(self._id(suffix))
+        """Clear gateway / connection issues after a successful poll."""
+        self._delete("gateway")
+        self._delete("connection")
 
     def dismiss_all(self) -> None:
-        """Clear every operational notification for this entry (e.g. on unload)."""
+        """Clear every operational issue for this entry (e.g. on unload)."""
         self.dismiss_operational_errors()
-        self._dismiss(self._id("maintenance"))
+        self._delete("maintenance")
 
-    def _id(self, suffix: str) -> str:
-        return f"{DOMAIN}_{suffix}_{self._entry.entry_id}"
+    def _issue_id(self, suffix: str) -> str:
+        return f"{suffix}_{self._entry.entry_id}"
 
-    def _create(self, notification_id: str, title: str, message: str) -> None:
-        persistent_notification.async_create(
+    def _create(
+        self,
+        suffix: str,
+        *,
+        translation_key: str,
+        placeholders: dict[str, str] | None = None,
+        learn_more_url: str | None = None,
+    ) -> None:
+        ir.async_create_issue(
             self._hass,
-            message=message,
-            title=title,
-            notification_id=notification_id,
+            DOMAIN,
+            self._issue_id(suffix),
+            is_fixable=False,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key=translation_key,
+            translation_placeholders=placeholders,
+            learn_more_url=learn_more_url,
         )
 
-    def _dismiss(self, notification_id: str) -> None:
-        persistent_notification.async_dismiss(self._hass, notification_id)
-
-
-def _configure_url(entry_id: str) -> str:
-    return f"/config/integrations/configure/{entry_id}"
-
-
-def _auth_copy(
-    hass: HomeAssistant,
-    entry_id: str,
-    *,
-    gateway_hint: bool,
-) -> tuple[str, str]:
-    configure_url = _configure_url(entry_id)
-    if hass.config.language.startswith("fr"):
-        title = "Enki — connexion refusée"
-        if gateway_hint:
-            body = (
-                "L'API Enki a rejeté la requête (HTTP 401). "
-                "Vérifiez votre **email et mot de passe** Enki, ou mettez à jour les clés "
-                "gateway si l'app mobile a changé de version.\n\n"
-                f"[Reconfigurer Enki]({configure_url}) · "
-                f"[Documentation]({_DOCUMENTATION_URL})"
-            )
-        else:
-            body = (
-                "Identifiants Enki invalides ou session expirée. "
-                "Utilisez le même **email et mot de passe** que l'application mobile "
-                "Leroy Merlin Enki.\n\n"
-                f"[Reconfigurer Enki]({configure_url})"
-            )
-        return title, body
-
-    title = "Enki — sign-in failed"
-    if gateway_hint:
-        body = (
-            "The Enki API rejected the request (HTTP 401). Check your **email and password**, "
-            "or update gateway API keys if the mobile app was recently upgraded.\n\n"
-            f"[Reconfigure Enki]({configure_url}) · "
-            f"[Documentation]({_DOCUMENTATION_URL})"
-        )
-    else:
-        body = (
-            "Invalid Enki credentials or expired session. Use the same **email and password** "
-            "as the Leroy Merlin Enki mobile app.\n\n"
-            f"[Reconfigure Enki]({configure_url})"
-        )
-    return title, body
-
-
-def _gateway_copy(hass: HomeAssistant, *, service: str | None = None) -> tuple[str, str]:
-    service_hint = f" (`{service}`)" if service else ""
-    if hass.config.language.startswith("fr"):
-        return (
-            "Enki — clé API gateway refusée",
-            (
-                f"L'API Enki a répondu **HTTP 403**{service_hint} : une clé gateway "
-                "(micro-service) est probablement obsolète. Cela arrive quand "
-                "l'application Enki est mise à jour.\n\n"
-                "Mettez à jour les clés via `scripts/extract_gateway_keys.py` ou consultez "
-                f"[la documentation]({_DOCUMENTATION_URL}).\n\n"
-                f"[Signaler un problème]({_ISSUE_TRACKER})"
-            ),
-        )
-    return (
-        "Enki — gateway API key rejected",
-        (
-            f"The Enki API returned **HTTP 403**{service_hint}: a gateway "
-            "(micro-service) API key is likely outdated. This often happens after "
-            "an Enki app update.\n\n"
-            "Refresh keys with `scripts/extract_gateway_keys.py` or see "
-            f"[the documentation]({_DOCUMENTATION_URL}).\n\n"
-            f"[Report an issue]({_ISSUE_TRACKER})"
-        ),
-    )
-
-
-def _maintenance_copy(hass: HomeAssistant) -> tuple[str, str]:
-    if hass.config.language.startswith("fr"):
-        return (
-            "Enki — maintenance en cours",
-            (
-                "L'écosystème Enki signale une **maintenance** en cours. "
-                "Certaines fonctions peuvent être indisponibles temporairement.\n\n"
-                "[Support Enki](https://support.enki-home.com/)"
-            ),
-        )
-    return (
-        "Enki — maintenance in progress",
-        (
-            "The Enki cloud reports **maintenance** in progress. "
-            "Some features may be temporarily unavailable.\n\n"
-            "[Enki support](https://support.enki-home.com/)"
-        ),
-    )
-
-
-def _connection_copy(hass: HomeAssistant) -> tuple[str, str]:
-    if hass.config.language.startswith("fr"):
-        return (
-            "Enki — cloud inaccessible",
-            (
-                "Impossible de joindre le cloud Enki (réseau, timeout ou erreur serveur). "
-                "Les entités ne seront pas mises à jour tant que la connexion "
-                "n'est pas rétablie.\n\n"
-                "Vérifiez votre connexion Internet et les logs Home Assistant (`enki`)."
-            ),
-        )
-    return (
-        "Enki — cloud unreachable",
-        (
-            "Cannot reach the Enki cloud (network, timeout, or server error). "
-            "Entities will not update until connectivity is restored.\n\n"
-            "Check your Internet connection and Home Assistant logs (`enki`)."
-        ),
-    )
+    def _delete(self, suffix: str) -> None:
+        ir.async_delete_issue(self._hass, DOMAIN, self._issue_id(suffix))

@@ -12,6 +12,7 @@ from typing import Any
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import EnkiAPI
@@ -100,8 +101,9 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
         try:
             devices = await self.api.async_get_devices()
         except EnkiAuthError as err:
-            self._notifier.notify_auth_failed()
-            raise UpdateFailed(f"Authentication error: {err}") from err
+            # Surfaces HA's native reauth flow (Settings → Repairs) instead of a
+            # persistent notification, so the user re-enters the password inline.
+            raise ConfigEntryAuthFailed(f"Authentication error: {err}") from err
         except EnkiConnectionError as err:
             notify_for_connection_error(self._notifier, err)
             raise UpdateFailed(f"Cannot reach Enki cloud: {err}") from err
