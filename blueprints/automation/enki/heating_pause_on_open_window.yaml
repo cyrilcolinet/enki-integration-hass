@@ -1,0 +1,92 @@
+blueprint:
+  name: Enki heating – pause on open window
+  description: >
+    Turn an Enki thermostat / radiator OFF while a window is open, then turn it
+    back on when the window closes. Works with the Enki radiator's own
+    "open window" detection binary sensor, or any window/door contact sensor.
+    Saves energy without touching the setpoint.
+  domain: automation
+  author: cyrilcolinet
+  source_url: https://github.com/cyrilcolinet/enki-integration-hass/blob/main/blueprints/automation/enki/heating_pause_on_open_window.yaml
+  input:
+    window_sensor:
+      name: Window sensor
+      description: >
+        The radiator's "open window" binary sensor, or a door/window contact
+        (device class window / opening).
+      selector:
+        entity:
+          filter:
+            - domain: binary_sensor
+    climate_entity:
+      name: Thermostat / radiator
+      description: The Enki climate entity to pause.
+      selector:
+        entity:
+          filter:
+            - domain: climate
+    open_delay:
+      name: Delay before pausing
+      description: Wait this long after the window opens before turning heating off.
+      default:
+        minutes: 1
+      selector:
+        duration:
+    close_delay:
+      name: Delay before resuming
+      description: Wait this long after the window closes before turning heating back on.
+      default:
+        seconds: 30
+      selector:
+        duration:
+    resume_mode:
+      name: Resume mode
+      description: HVAC mode to restore when the window closes.
+      default: heat
+      selector:
+        select:
+          options:
+            - heat
+            - auto
+
+mode: restart
+max_exceeded: silent
+
+variables:
+  climate_entity: !input climate_entity
+  resume_mode: !input resume_mode
+
+triggers:
+  - trigger: state
+    entity_id: !input window_sensor
+    to: "on"
+    for: !input open_delay
+    id: opened
+  - trigger: state
+    entity_id: !input window_sensor
+    to: "off"
+    for: !input close_delay
+    id: closed
+
+conditions:
+  - condition: template
+    value_template: "{{ trigger.to_state.state not in ['unknown', 'unavailable'] }}"
+
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: opened
+        sequence:
+          - action: climate.turn_off
+            target:
+              entity_id: !input climate_entity
+      - conditions:
+          - condition: trigger
+            id: closed
+        sequence:
+          - action: climate.set_hvac_mode
+            target:
+              entity_id: !input climate_entity
+            data:
+              hvac_mode: "{{ resume_mode }}"
