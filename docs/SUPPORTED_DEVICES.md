@@ -5,13 +5,13 @@ Detail by device type and Home Assistant entities created. The integration detec
 | | |
 |---|---|
 | **Latest GitHub release** | [releases](https://github.com/cyrilcolinet/enki-integration-hass/releases/latest) |
-| **Repository `manifest.json`** | 1.6.14 |
+| **Version** | see [`manifest.json`](../custom_components/enki/manifest.json) |
 
 Summary: [ROADMAP.md](ROADMAP.md)
 
 ## Scope
 
-This integration covers **only the Enki / Leroy Merlin ecosystem**: Lexman, Equation, Inspire, Noirot, Edisio, Eglo, Sedea, Evology, Nodon, ACOVA, Envertech, etc. (exact list: [`lib/enki_scope.py`](../custom_components/enki/lib/enki_scope.py)).
+This integration covers **only the Enki / Leroy Merlin ecosystem**: Lexman, Equation, Inspire, Noirot, Edisio, Eglo, Sedea, Evology, Nodon, ACOVA, Envertech, Meari, etc. (exact list: [`lib/enki_scope.py`](../custom_components/enki/lib/enki_scope.py)).
 
 **In scope:** anything **visible and working in the Enki app** — Wi‑Fi devices (no hub required) and Zigbee devices paired on the Enki hub.
 
@@ -30,7 +30,7 @@ This integration covers **only the Enki / Leroy Merlin ecosystem**: Lexman, Equa
 | Rotation direction | Summer / winter if `change_fan_rotation_direction` (API `CLOCKWISE` / `COUNTERCLOCKWISE`) |
 | Modes | HA presets from referentiel: `manual`, `breeze`, and per model `ventilation`, `boost`, `auto`, `sleep` (UI label “Night”) |
 
-Fan and light kit are **independent**: turning one on does not turn the other on.
+Fan and light kit are **independent**: turning one on does not turn the other on. The **Cadix** exposes its main light and ambient ring as **two separate lights** with optimistic fan/light coupling (since **v1.11**).
 
 ## Enki lights (Eglo, Lexman, …)
 
@@ -43,16 +43,23 @@ Fan and light kit are **independent**: turning one on does not turn the other on
 | Tunable white | Color temperature (`colorTemperature`, e.g. `T3500K`) when advertised |
 | RGB color | HS mode if `change_hue` + `change_saturation` (since manifest **1.4.0**) |
 
-## Outlets, relays, and switches (Edisio, Equation, …)
+## Outlets, relays, and switches (Edisio, Equation, Evology …)
 
-**HA entity:** `light` ON/OFF (API `switch-electrical-power`, not lighting API)
+**HA entity:** `light` ON/OFF (API `switch-electrical-power`, not lighting API), or `switch` for multi-channel modules.
 
 | Model / type | Status |
 |---------------|--------|
 | Edisio outlets | ✅ ON/OFF, ✅ instant consumption (W) |
 | Equation ON/OFF relay | ✅ ON/OFF stable v1.6.8+ (instant consumption may stay unknown) |
+| Evology 2-channel in-wall module | ✅ one `switch` per channel (`check_channel1_electrical_power`, `check_channel2_electrical_power`) |
 
 Multi-circuit nodes may create **one entity per circuit** (BFF endpoint). Timers (`switch_electrical_power_in`, …): not exposed yet.
+
+## Water heater relay (Lexman / Nodon 83424574)
+
+**HA entity:** `switch` — the on/off relay SKU re-typed as `boiler` in the referentiel.
+
+Same power API as outlets (`ENKI_POWER_API_KEY`). Field-confirmed ([#87](https://github.com/cyrilcolinet/enki-integration-hass/issues/87)).
 
 ## Enki scenarios (v1.6.0+)
 
@@ -73,21 +80,23 @@ Scenarios refresh on each coordinator poll. They appear under the virtual device
 |----------|--------|
 | Instant production | Value from BFF dashboard (`description.value`) |
 
-## Enki sensors (Lexman, Sedea, …)
+## Enki sensors (Lexman, Sedea, Evology …)
 
-Gateway keys in `gateway_keys_data.py` (APK 2.25.1).
+Gateway keys in `gateway_keys_data.py` (APK 2.26.x).
 
-### Motion / contact / vibration
+### Motion / contact / vibration / presence
 
 **HA entities:** `binary_sensor`
 
 | API capability | Entity |
 |----------------|--------|
 | `check_motion_detection` / `check_motion_detector_state` | Motion |
+| `check_presence_detection` | Presence (Evology multisensor, …) |
 | `check_contact_sensor_state` | Contact (open / closed) |
 | `check_vibration_detection` | Vibration |
+| `check_dry_contact_for_electric_strike_state` | Electric-strike dry contact (**v1.13**) |
 
-### Temperature / humidity / battery
+### Temperature / humidity / battery / brightness
 
 **HA entities:** `sensor`
 
@@ -96,6 +105,7 @@ Gateway keys in `gateway_keys_data.py` (APK 2.25.1).
 | `check_current_temperature` | Temperature (°C) — except thermostats (temperature on `climate`) |
 | `check_current_humidity` | Humidity (%) |
 | `check_battery_health` | Battery (%, Enki mapping) |
+| `check_illuminance_level` / `check_brightness_level` | Brightness / illuminance (Evology multisensor, …) |
 
 **Sedea** thermometers (display): temperature, humidity, battery.
 
@@ -103,9 +113,9 @@ Gateway keys in `gateway_keys_data.py` (APK 2.25.1).
 
 **HA entity:** `switch` (ON/OFF via `switch_siren_status`)
 
-### Contact sensor settings
+### Contact / presence sensor settings
 
-**HA entities:** `switch` (detection enable), `number` (vibration sensitivity 1–5)
+**HA entities:** `switch` (detection enable, occupancy mode), `number` (vibration sensitivity 1–5)
 
 ### Water leak (Lexman) — beta
 
@@ -115,8 +125,18 @@ Gateway keys in `gateway_keys_data.py` (APK 2.25.1).
 
 | Capability | Service | Current status |
 |------------|---------|---------------|
-| `check_battery_health` | `battery-health` | ✅ stable (APK 2.25.1 key) |
+| `check_battery_health` | `battery-health` | ✅ stable |
 | `check_water_sensor_state` | `water-leak-detector` | 🔬 beta — reads OK remotely; on-site wet test pending |
+
+## Cameras (Lexman / Meari) — beta
+
+**HA entities:** `camera` (last-event snapshot), `sensor` (last event type, last motion), `binary_sensor` (SD-card removed)
+
+Events come from `api-enki-lexman-camera-prod` (`GET /events?nodeId=…`), snapshots from the last event's image URL. **Live video is not available** — the app streams over TUTK Kalay Nebula P2P, a native SDK with no Python path.
+
+Config controls (motion detection on/off, sensitivity, indicator light) live on the Meari service and are REST-doable, but need an indoor-camera owner to validate the write endpoints — tracked in [#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165). Field work: [#135](https://github.com/cyrilcolinet/enki-integration-hass/issues/135).
+
+**Blueprint:** motion → notify with the last snapshot — `blueprints/automation/enki/camera_motion_notification.yaml`.
 
 ## Heating — stable (v1.6.8+)
 
@@ -127,38 +147,47 @@ Validated on real hardware (Noirot radiator, Equation pilot wire, Equation relay
 | Equation pilot wire | `select` (COMFORT, ECO, FROST_PROTECTION, OFF, …) | `63a054c81a423d4a245a877e` |
 | Noirot radiator | `climate`, `binary_sensor` (window, presence), `switch` (detection modes) | `67a4b12bae1eca4709a45680` |
 
-**API routing:** `api-enki-thermostat-prod` for setpoint / pilot wire / window detection; `api-enki-presence-detector-prod` for occupancy (APK 2.25.1). Keys in `const.py` — update: [DEVELOPMENT.md](DEVELOPMENT.md) · API detail: [API.md](API.md#heating-and-water-sensors-manifest--150).
+### Thermostat config knobs (v1.18)
+
+Extra referentiel controls, exposed when the thermostat advertises them. Routes and enum values decoded from the app (2.26.x); **real-hardware validation welcome**.
+
+| Function | HA entity | API |
+|----------|-----------|-----|
+| Temperature offset (calibration) | `number` (°C) | `change/check-offset-temperature`, float |
+| Child lock | `switch` | `change/check-child-lock`, `LOCK` / `UNLOCK` |
+| Preheating | `switch` | `change/check-preheating-status`, `ENABLED` / `DISABLED` |
+
+**API routing:** `api-enki-thermostat-prod` for setpoint / pilot wire / window detection / config knobs; `api-enki-presence-detector-prod` for occupancy. Keys in `const.py` — update: [DEVELOPMENT.md](DEVELOPMENT.md) · API detail: [API.md](API.md#heating-and-water-sensors-manifest--150).
 
 **Note:** instant consumption sensors may stay `unknown` if `consumption-prod` returns no value — controls still work.
 
-API detail: [API.md](API.md#heating-and-water-sensors-manifest--150)
-
-## Roller shutters — beta (Evology, Nodon, …)
+## Roller shutters — beta (Evology, Nodon, Lexman RTS, …)
 
 **HA entity:** `cover` “Shutter (beta)”
 
 | Function | Detail |
 |----------|--------|
 | Open / close | HA cover commands |
-| Position | 0–100 % via `change-shutter-position` |
+| Position | 0–100 % via `change-shutter-position` when advertised |
 | Stop | Mid-travel stop via `stop-change-shutter-position` (Lexman, …) |
+| RTS (no position) | Open / close / stop only — position-less motors are handled without a percentage |
 | Wiring direction | `select` entity — `NORMAL` / `INVERTED` |
 | Presets | `button` per referentiel preset when `execute_preset` lists values |
 
-**Current state:** `ENKI_ACCESS_MOTORIZATION_API_KEY` included (APK 2.25.1). Micro-service: `api-enki-rolling-prod` (not `access-and-motorizations`). **“Shutter (beta)”** entity if the shutter is active in the Enki app.
+**Current state:** `ENKI_ACCESS_MOTORIZATION_API_KEY` included. Micro-service: `api-enki-rolling-prod` (not `access-and-motorizations`). **“Shutter (beta)”** entity if the shutter is active in the Enki app.
 
-Contributor network feedback: [BETA_VOLETS_KEY.md](BETA_VOLETS_KEY.md).
+Validating the gateway key with mitmproxy: [DEVELOPMENT.md](DEVELOPMENT.md#capturing-a-gateway-key-with-mitmproxy-fallback).
 
 ### For testers (covers)
 
-1. Update the Enki integration (**v1.5.0+**) via HACS, then restart Home Assistant.
+1. Update the Enki integration via HACS, then restart Home Assistant.
 2. Check the **“Shutter (beta)”** entity under Enki.
 3. Test open / close / position vs the Enki mobile app.
 4. Report results (model, HA version, integration version, `enki` log excerpt if it fails).
 
 ## Dry-contact gate / garage receiver (Lexman, Nodon)
 
-**HA entity:** `button` “Trigger” / “Déclencher”
+**HA entities:** `button` “Trigger” / “Déclencher” + `binary_sensor` (electric-strike contact state, **v1.13**)
 
 | Product | Notes |
 |---------|--------|
@@ -168,14 +197,14 @@ Contributor network feedback: [BETA_VOLETS_KEY.md](BETA_VOLETS_KEY.md).
 
 **API:** `POST api-enki-power-prod/v1/power/{nodeId}/power-on-with-timer` — no body. Same gateway key as outlets (`ENKI_POWER_API_KEY`). Detail: [API.md](API.md#dry-contact-gate--garage-receiver-lexman-83424576-nodon-sin-4-1-20).
 
-**Stable since v1.6.17** — field-confirmed ([#56](https://github.com/cyrilcolinet/enki-integration-hass/issues/56)). Related On/Off water-heater SKU (83424574): [#87](https://github.com/cyrilcolinet/enki-integration-hass/issues/87).
+**Stable since v1.6.17** — field-confirmed ([#56](https://github.com/cyrilcolinet/enki-integration-hass/issues/56)).
 
 ## Cross-cutting features
 
 - **OAuth auth** — Keycloak refresh token; HA notification on invalid credentials
 - **Opt-in telemetry** — notification for unknown profiles, pre-filled GitHub link (nothing sent without a click)
 - **Operational notifications** — login failure, gateway key 403, cloud unreachable ([API.md](API.md#operational-notifications))
-- **Diagnostics** — anonymized JSON export from Enki UI
+- **Diagnostics** — anonymized JSON export from Enki UI, with an anonymized request report attached on API failures
 
 ## Device info (firmware, connectivity)
 
@@ -195,9 +224,11 @@ Reads are best-effort (404 skipped) and driven by referentiel capabilities, not 
 |--------|--------|
 | ✅ Stable | Heating (Noirot, pilot wire, Equation relay) since v1.6.8 |
 | ✅ Stable | Dry-contact gate / garage receiver (Lexman 83424576) since v1.6.17 |
-| 🔬 Beta | Covers, Lexman water leak (on-site test), scenarios — feedback welcome |
-| Soon | ACOVA ARLAN radiators (same heating API if capabilities match) |
-| Not planned | Enki alarm (no API identified) |
+| ✅ Stable | Water-heater relay, Evology 2-channel module, Evology multisensor |
+| 🔬 Beta | Cameras (event snapshot — no live video), covers, Lexman water leak, scenarios — feedback welcome |
+| 🔬 Beta | Thermostat config knobs (offset, child-lock, preheating) — decoded, real-hardware validation welcome |
+| 🔜 Soon | ACOVA ARLAN radiators (same heating API if capabilities match); camera config controls ([#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165)) |
+| Not planned | Camera live video (TUTK Kalay native SDK); Enki alarm (no API identified) |
 | Out of scope | Enki pairing and device setup, Leroy Merlin account management → [Enki support](https://support.enki-home.com/) (configure devices in the app before HA) |
 
 API documentation: [API.md](API.md)

@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Cloud integration for the Enki / Leroy Merlin smart home ecosystem</strong><br>
-  Fans, lights, switches, sensors, covers, heating, scenarios, and more — from Home Assistant, using the same credentials as the mobile app.
+  Fans, lights, switches, sensors, covers, heating, cameras, scenarios, and more — from Home Assistant, using the same credentials as the mobile app.
 </p>
 
 <p align="center">
@@ -51,12 +51,12 @@ The **Enki** app controls hundreds of products (Lexman, Equation, Inspire, Edisi
 
 - **Ventilation** (Inspire Siroco+, Cadix, Radix, …) — `fan`, `light` (LED kit); the **Cadix** exposes its main light and ambient ring as separate lights with optimistic fan/light coupling (since **v1.11**)
 - **Lighting** (Eglo, Lexman, dimmables, RGB) — `light`
-- **Outlets & relays** (Edisio, Equation ON/OFF) — `light` / ON-OFF power
+- **Outlets & relays** (Edisio, Equation ON/OFF) — `light` / ON-OFF power; **Evology 2-channel module** — one `switch` per channel
 - **Water heater relay** (Lexman/Nodon on-off relay re-typed as boiler) — `switch`
 - **Solar** (Envertech-Lexman) — `sensor` (production W)
-- **Sensors** (Lexman, Sedea, …) — `binary_sensor`, `sensor`
+- **Sensors** (Lexman, Sedea, Evology multisensor, …) — `binary_sensor` (motion, presence, contact), `sensor` (temp, humidity, battery, brightness)
 - **Siren** (Lexman) — `switch`
-- **Heating** (Noirot radiator, Equation pilot wire) — `climate`, `select` (stable since **v1.6.8**)
+- **Heating** (Noirot radiator, Equation pilot wire) — `climate`, `select` (stable since **v1.6.8**); config knobs — temperature offset `number`, child-lock + preheating `switch` (**v1.18**)
 - **Gate / garage / electric-strike dry contact** (Lexman 83424576, Nodon SIN-4-1-20, Evology) — `button` impulse (stable since **v1.6.17**) + `binary_sensor` contact state (since **v1.13**)
 
 ### Beta

@@ -38,6 +38,8 @@ Scripts in `scripts/` run **on your dev machine**, not inside the HA container. 
 |--------|--------|
 | `scripts/fetch_gateway_keys.py` | Verify login and read `mobile-config` `/settings` (not gateway keys) |
 | `scripts/extract_gateway_keys.py` | Extract gateway keys from an APK (jadx + DI module); `--apply` updates `const.py` |
+| `scripts/extract_api_routes.py` | Regenerate the capability→route catalogue (`api/capability_routes_data.py`) from an APK |
+| `scripts/capability_coverage.py` | Report capabilities the app exposes but the integration doesn't handle yet |
 | `scripts/discover_devices.py` | Export anonymized device profiles from the account |
 
 ```bash
@@ -49,6 +51,17 @@ python3 scripts/discover_devices.py your@email.com 'password'
 ```
 
 Gateway keys are embedded in the APK (one per micro-service). Run `extract_gateway_keys.py --apply` after each Enki app update.
+
+### Capturing a gateway key with mitmproxy (fallback)
+
+When APK extraction misses a key or you need to validate one against live traffic (e.g. a 403 on a micro-service), intercept the app:
+
+1. PC and phone on the same Wi‑Fi. Start [mitmproxy](https://mitmproxy.org/): `mitmweb` (proxy on `:8080`, UI on `:8081`).
+2. Phone Wi‑Fi → manual proxy → PC IP, port `8080`. Install the mitmproxy cert from `http://mitm.it`.
+3. Trigger the action in the Enki app, filter for the micro-service (e.g. `rolling-prod`), and copy the `X-Gateway-APIKey` request header.
+4. Compare it to the matching `ENKI_*_API_KEY` in `const.py`. Disable the proxy when done.
+
+The key is an Adeo/Leroy Merlin app key (reusable, not a personal secret), but **never capture or share** the account password, Bearer token, `homeId`, or `nodeId`.
 
 ## Repository language
 
@@ -145,19 +158,23 @@ Home Assistant requires **platform loaders** and `config_flow.py` at the root of
 ```
 custom_components/enki/
 ├── __init__.py, manifest.json, config_flow.py, coordinator.py, entity.py
-├── binary_sensor.py, climate.py, cover.py, fan.py, light.py
+├── binary_sensor.py, button.py, camera.py, climate.py, cover.py, fan.py, light.py
 ├── number.py, select.py, sensor.py, switch.py, diagnostics.py
-├── const.py, exceptions.py, strings.json, translations/, brand/
+├── const.py, exceptions.py, migration.py, notifications.py, gateway_keys_data.py
+├── strings.json, translations/, brand/
 │
-├── api/                    # cloud layer
-│   ├── client.py           # discovery + REST commands
-│   ├── auth.py             # OAuth Keycloak
-│   ├── transport.py        # HTTP per micro-service
-│   ├── gateway_registry.py # APK micro-service catalogue
-│   └── gateway_keys.py     # runtime key store + mobile-config settings path
+├── api/                       # cloud layer
+│   ├── client.py              # discovery + REST commands
+│   ├── auth.py                # OAuth Keycloak
+│   ├── transport.py           # HTTP per micro-service
+│   ├── gateway_registry.py    # APK micro-service catalogue
+│   ├── gateway_keys.py        # runtime key store + mobile-config settings path
+│   ├── capability_routing.py  # capability → read routing table
+│   └── capability_routes_data.py  # generated capability→route catalogue (APK)
 │
 ├── domain/                 # business model (no HA import)
-│   ├── models.py, capabilities.py, state.py, profile.py
+│   ├── models.py, capabilities.py, state.py, profile.py, camera_events.py
+│   ├── telemetry_coverage.py, telemetry_enrichment.py
 │
 ├── platforms/              # shared internal logic
 │   ├── light/behavior.py
@@ -168,11 +185,12 @@ custom_components/enki/
 │   └── nudge.py
 │
 └── lib/                    # pure functions (0 HA import)
-    ├── conversion.py, bff.py, battery.py, capability_path.py
-    ├── heating.py, shutter.py, enki_scope.py
+    ├── conversion.py, bff.py, battery.py, capability_path.py, production.py
+    ├── heating.py, shutter.py, enki_scope.py, command_override.py
+    ├── fan_endpoints.py, request_report.py, telemetry_labels.py
 ```
 
-Platforms registered in `__init__.py` → `PLATFORMS`: `binary_sensor`, `climate`, `cover`, `fan`, `light`, `number`, `select`, `sensor`, `switch`.
+Platforms registered in `__init__.py` → `PLATFORMS`: `binary_sensor`, `button`, `camera`, `climate`, `cover`, `fan`, `light`, `number`, `select`, `sensor`, `switch`.
 
 ### Import conventions
 
