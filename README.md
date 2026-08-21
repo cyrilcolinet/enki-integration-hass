@@ -139,8 +139,8 @@ Download a [release](https://github.com/cyrilcolinet/enki-integration-hass/relea
 
 ## Troubleshooting
 
-- **Invalid credentials** — Verify email/password in the Enki app; reconfigure the integration
-- **HTTP 403** — Outdated gateway key after Enki app update → [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
+- **Invalid credentials** — Home Assistant prompts you to **re-authenticate** (notification + **Settings → Repairs**); enter your Enki password to reconnect
+- **HTTP 403** — Outdated gateway key after an Enki app update → surfaced as a repair in **Settings → Repairs**; see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
 - **No devices** — Device active in the app, same home
 - **Bug** — [Issue](https://github.com/cyrilcolinet/enki-integration-hass/issues/new?template=bug.yml) + `enki` logs
 

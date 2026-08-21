@@ -16,6 +16,13 @@
           "password": "Mot de passe"
         }
       },
+      "reauth_confirm": {
+        "title": "Ré-authentifier Enki",
+        "description": "Les identifiants enregistrés pour {username} ne fonctionnent plus. Saisissez à nouveau le mot de passe Enki.",
+        "data": {
+          "password": "Mot de passe"
+        }
+      },
       "telemetry": {
         "title": "Aidez à étendre le support Enki",
         "description": "Option facultative : lorsqu’un appareil nouveau ou non supporté est détecté sur votre compte, Home Assistant peut vous avertir avec un **lien GitHub pré-rempli** (profil anonymisé : type, modèle, capabilities).\n\nRien n’est envoyé automatiquement — vous choisissez d’ouvrir le lien ou non. Cela aide à prioriser radiateurs, volets, prises et autres matériels.\n\nModifiable à tout moment via **Enki → Configurer**.",
@@ -30,7 +37,8 @@
       "unknown": "Erreur inattendue. Consultez les journaux Home Assistant."
     },
     "abort": {
-      "already_configured": "Ce compte Enki est déjà configuré."
+      "already_configured": "Ce compte Enki est déjà configuré.",
+      "reauth_successful": "Enki ré-authentifié avec succès."
     }
   },
   "options": {
@@ -239,6 +247,20 @@
       "firmware": {
         "name": "Micrologiciel"
       }
+    }
+  },
+  "issues": {
+    "gateway_key_rejected": {
+      "title": "Enki — clé gateway refusée",
+      "description": "L'API Enki a répondu HTTP 403 pour `{service}` : une clé gateway (micro-service) est probablement obsolète suite à une mise à jour de l'app Enki. Les lectures et commandes de ce service échoueront tant que la clé n'est pas mise à jour. Voir le guide lié."
+    },
+    "cloud_unreachable": {
+      "title": "Enki — cloud inaccessible",
+      "description": "Home Assistant ne parvient pas à joindre le cloud Enki (réseau, timeout ou erreur serveur). Les entités ne seront pas mises à jour tant que la connexion n'est pas rétablie. Vérifiez votre connexion internet et les logs Home Assistant."
+    },
+    "maintenance": {
+      "title": "Enki — maintenance en cours",
+      "description": "Le cloud Enki signale une maintenance en cours. Certaines fonctions peuvent être temporairement indisponibles."
     }
   }
 }

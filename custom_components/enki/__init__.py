@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 
 from .exceptions import EnkiAuthError, EnkiConnectionError
@@ -60,8 +60,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: EnkiConfigEntry) -> bool
         await coordinator.api.async_connect()
     except EnkiAuthError as err:
         await coordinator.api.async_close()
-        notifier.notify_auth_failed()
-        raise ConfigEntryNotReady(f"Invalid Enki credentials: {err}") from err
+        # Trigger HA's reauth flow so the user re-enters the password inline.
+        raise ConfigEntryAuthFailed(f"Invalid Enki credentials: {err}") from err
     except EnkiConnectionError as err:
         await coordinator.api.async_close()
         notify_for_connection_error(notifier, err)

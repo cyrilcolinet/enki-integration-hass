@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import enki
 import pytest
 from enki.exceptions import EnkiAuthError, EnkiConnectionError
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 
 
 def _make_coordinator() -> MagicMock:
@@ -38,16 +38,22 @@ def _patched_dependencies(coordinator: MagicMock):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "error",
-    [EnkiAuthError("bad credentials"), EnkiConnectionError("cloud down")],
+    ("error", "expected"),
+    [
+        (EnkiAuthError("bad credentials"), ConfigEntryAuthFailed),
+        (EnkiConnectionError("cloud down"), ConfigEntryNotReady),
+    ],
 )
-async def test_whenConnectFails_thenApiSessionIsClosed(error: Exception) -> None:
+async def test_whenConnectFails_thenApiSessionIsClosed(
+    error: Exception,
+    expected: type[Exception],
+) -> None:
     # Given
     coordinator = _make_coordinator()
     coordinator.api.async_connect.side_effect = error
 
-    # When
-    with _patched_dependencies(coordinator), pytest.raises(ConfigEntryNotReady):
+    # When: an auth error triggers reauth, a connection error a retry
+    with _patched_dependencies(coordinator), pytest.raises(expected):
         await enki.async_setup_entry(_make_hass(), MagicMock())
 
     # Then
