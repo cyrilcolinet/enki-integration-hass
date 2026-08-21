@@ -183,11 +183,20 @@
       },
       "occupancy_mode": {
         "name": "Occupancy mode"
+      },
+      "child_lock": {
+        "name": "Child lock"
+      },
+      "preheating": {
+        "name": "Preheating"
       }
     },
     "number": {
       "vibration_sensibility": {
         "name": "Vibration sensitivity"
+      },
+      "offset_temperature": {
+        "name": "Temperature offset"
       }
     },
     "cover": {

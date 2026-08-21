@@ -411,6 +411,33 @@ class EnkiCapabilityProfile:
         )
 
     @property
+    def supports_offset_temperature(self) -> bool:
+        return _supports(
+            self.capabilities,
+            self.possible_values,
+            "change_offset_temperature",
+            "check_offset_temperature",
+        )
+
+    @property
+    def supports_child_lock(self) -> bool:
+        return _supports(
+            self.capabilities,
+            self.possible_values,
+            "change_child_lock",
+            "check_child_lock",
+        )
+
+    @property
+    def supports_preheating(self) -> bool:
+        return _supports(
+            self.capabilities,
+            self.possible_values,
+            "change_preheating_status",
+            "check_preheating_status",
+        )
+
+    @property
     def supports_color_temperature(self) -> bool:
         return _supports(
             self.capabilities,
@@ -563,6 +590,8 @@ class EnkiCapabilityProfile:
             or self.supports_siren
             or self.supports_window_open_detection_mode
             or self.supports_occupancy_mode
+            or self.supports_child_lock
+            or self.supports_preheating
         )
 
     @property
@@ -579,6 +608,7 @@ class EnkiCapabilityProfile:
             or self.is_climate
             or self.is_pilot_wire
             or self.supports_vibration_sensibility
+            or self.supports_offset_temperature
             or self.is_impulse_relay
             or self.is_boiler_switch
             or self.is_camera

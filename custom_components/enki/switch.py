@@ -59,6 +59,26 @@ _SWITCH_SPECS: tuple[dict[str, str], ...] = (
         "on_value": "ENABLED",
         "off_value": "DISABLED",
     },
+    {
+        "switch_capability": "change_child_lock",
+        "check_capability": "check_child_lock",
+        "state_key": "child_lock",
+        "suffix": "child_lock",
+        "translation_key": "child_lock",
+        "service": "thermostat",
+        "on_value": "LOCK",
+        "off_value": "UNLOCK",
+    },
+    {
+        "switch_capability": "change_preheating_status",
+        "check_capability": "check_preheating_status",
+        "state_key": "preheating_status",
+        "suffix": "preheating",
+        "translation_key": "preheating",
+        "service": "thermostat",
+        "on_value": "ENABLED",
+        "off_value": "DISABLED",
+    },
 )
 
 
