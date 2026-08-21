@@ -37,11 +37,11 @@ async def test_nudge_skipped_when_telemetry_enabled() -> None:
 
     with (
         patch(
-            "enki.telemetry.nudge.persistent_notification.async_create",
+            "enki.telemetry.nudge.ir.async_create_issue",
             new_callable=MagicMock,
         ) as notify,
         patch(
-            "enki.telemetry.nudge.persistent_notification.async_dismiss",
+            "enki.telemetry.nudge.ir.async_delete_issue",
             new_callable=MagicMock,
         ),
     ):
@@ -62,7 +62,7 @@ async def test_nudge_skipped_after_onboarding_step() -> None:
     nudge._store.async_save = AsyncMock()  # type: ignore[method-assign]
 
     with patch(
-        "enki.telemetry.nudge.persistent_notification.async_create",
+        "enki.telemetry.nudge.ir.async_create_issue",
         new_callable=MagicMock,
     ) as notify:
         await nudge.async_handle_setup()
@@ -83,13 +83,13 @@ async def test_nudge_shown_once_for_legacy_install() -> None:
     nudge._store.async_save = AsyncMock()  # type: ignore[method-assign]
 
     with patch(
-        "enki.telemetry.nudge.persistent_notification.async_create",
+        "enki.telemetry.nudge.ir.async_create_issue",
         new_callable=MagicMock,
     ) as notify:
         await nudge.async_handle_setup()
         notify.assert_called_once()
-        message = notify.call_args.kwargs["message"]
-        assert "options" in message.lower()
+        assert notify.call_args.args[2] == "telemetry_nudge_entry1"
+        assert notify.call_args.kwargs["translation_key"] == "telemetry_nudge"
 
         nudge._store.async_load = AsyncMock(  # type: ignore[method-assign]
             return_value={"telemetry_nudge_dismissed": True, "first_seen_version": "legacy"}
@@ -111,8 +111,9 @@ async def test_nudge_dismissed_when_telemetry_turned_on() -> None:
     nudge._store.async_save = AsyncMock()  # type: ignore[method-assign]
 
     with patch(
-        "enki.telemetry.nudge.persistent_notification.async_dismiss",
+        "enki.telemetry.nudge.ir.async_delete_issue",
         new_callable=MagicMock,
     ) as dismiss:
         await nudge.async_handle_setup()
         dismiss.assert_called_once()
+        assert dismiss.call_args.args[2] == "telemetry_nudge_entry1"

@@ -261,6 +261,18 @@
     "maintenance": {
       "title": "Enki — maintenance en cours",
       "description": "Le cloud Enki signale une maintenance en cours. Certaines fonctions peuvent être temporairement indisponibles."
+    },
+    "telemetry_nudge": {
+      "title": "Enki — accélérez le support de nouveaux appareils",
+      "description": "Activez la télémétrie opt-in dans Enki → Configurer pour être averti lorsqu'un appareil Enki non supporté est détecté sur votre compte. Seules des données anonymisées (type, modèle, capacités) sont utilisées — rien n'est envoyé sans un clic. Cela aide à prioriser le support des radiateurs, volets, prises et autres matériels."
+    },
+    "new_device_profile": {
+      "title": "Enki — nouveau profil d'appareil",
+      "description": "Un nouveau profil d'appareil a été détecté : {summary}. Données anonymisées uniquement — rien n'est envoyé sans votre action. Utilisez le lien En savoir plus pour ouvrir une issue GitHub pré-remplie."
+    },
+    "unsupported_device": {
+      "title": "Enki — appareil non supporté",
+      "description": "Le profil d'appareil {summary} n'est pas encore pris en charge par l'intégration. Utilisez le lien En savoir plus pour demander le support sur GitHub."
     }
   }
 }

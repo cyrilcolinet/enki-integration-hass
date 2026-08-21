@@ -261,6 +261,18 @@
     "maintenance": {
       "title": "Enki maintenance in progress",
       "description": "The Enki cloud reports maintenance in progress. Some features may be temporarily unavailable."
+    },
+    "telemetry_nudge": {
+      "title": "Enki — help prioritize new device support",
+      "description": "Turn on opt-in telemetry under Enki → Configure to be notified when an unsupported Enki device is detected on your account. Only anonymized data (type, model, capabilities) is used — nothing is sent without a click. This helps prioritize support for heaters, shutters, sockets, and other hardware."
+    },
+    "new_device_profile": {
+      "title": "Enki — new device profile",
+      "description": "A new device profile was detected: {summary}. Anonymized data only — nothing is sent without your action. Use the Learn more link to open a pre-filled GitHub issue."
+    },
+    "unsupported_device": {
+      "title": "Enki — unsupported device",
+      "description": "The device profile {summary} is not supported by the integration yet. Use the Learn more link to request support on GitHub."
     }
   }
 }
