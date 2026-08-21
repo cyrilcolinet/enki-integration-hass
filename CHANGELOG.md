@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.18.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.17.0...v1.18.0) (2026-08-21)
+
+
+### Features
+
+* **auth:** reauth flow + translated repair issues ([43edaf6](https://github.com/cyrilcolinet/enki-integration-hass/commit/43edaf64eed557d7f08bf9c13206185131215e46))
+* **blueprints:** add frost, humidity, consumption, tamper, pilot-wire ([808a8fa](https://github.com/cyrilcolinet/enki-integration-hass/commit/808a8fad6aaae6dc3b6f7c3638c526e9d86686c6))
+* **blueprints:** add leak, low-battery, window-heating automations ([38751de](https://github.com/cyrilcolinet/enki-integration-hass/commit/38751dee1075c546877054d71c573f15b4d5582e))
+* **blueprints:** add motion light, auto fan, covers, contact, siren ([45280f8](https://github.com/cyrilcolinet/enki-integration-hass/commit/45280f85ec16395f5eaaa377772948c5a11e8a41))
+* **blueprints:** add vibration, update, offline, solar, away, sunset ([a70ab1a](https://github.com/cyrilcolinet/enki-integration-hass/commit/a70ab1aa25f8c7ba4943573905bec367767d197c))
+* **entities:** categorize config and diagnostic entities ([41c33f1](https://github.com/cyrilcolinet/enki-integration-hass/commit/41c33f1e8045206527882a898a5cf19b85e2f5a6))
+* **thermostat:** add offset, child-lock, preheating controls ([0b14777](https://github.com/cyrilcolinet/enki-integration-hass/commit/0b1477756b6711b3d7627686733a6d512f95d7de)), closes [#167](https://github.com/cyrilcolinet/enki-integration-hass/issues/167)
+* **update:** expose device firmware in Settings → Updates ([d7f3ba0](https://github.com/cyrilcolinet/enki-integration-hass/commit/d7f3ba02268bd8471860bd3379f8907a264475a3))
+
+
+### Bug Fixes
+
+* **referentiel:** bump version 2.23.0 → 2.26.0 ([daaa915](https://github.com/cyrilcolinet/enki-integration-hass/commit/daaa915e5067e5d4f80d70d6406a2b9dbf9021a0))
+
 ## [1.17.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.16.1...v1.17.0) (2026-08-20)
 
 
