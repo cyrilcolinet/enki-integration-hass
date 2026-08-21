@@ -146,6 +146,7 @@ Download a [release](https://github.com/cyrilcolinet/enki-integration-hass/relea
 - **Invalid credentials** — Home Assistant prompts you to **re-authenticate** (notification + **Settings → Repairs**); enter your Enki password to reconnect
 - **HTTP 403** — Outdated gateway key after an Enki app update → surfaced as a repair in **Settings → Repairs**; see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
 - **No devices** — Device active in the app, same home
+- **Commands accepted but device doesn't react** — enable debug logging (`logger:` → `custom_components.enki: debug`); each accepted command logs its exact route and endpoint, which pinpoints a wrong-endpoint routing issue
 - **Bug** — [Issue](https://github.com/cyrilcolinet/enki-integration-hass/issues/new?template=bug.yml) + `enki` logs
 
 ## Resources
