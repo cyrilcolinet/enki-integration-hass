@@ -13,6 +13,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     LIGHT_LUX,
     PERCENTAGE,
+    EntityCategory,
     UnitOfEnergy,
     UnitOfPower,
     UnitOfTemperature,
@@ -156,6 +157,7 @@ class EnkiBatterySensor(EnkiEntity, SensorEntity):
     _attr_device_class = SensorDeviceClass.BATTERY
     _attr_native_unit_of_measurement = PERCENTAGE
     _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def __init__(self, coordinator: EnkiCoordinator, device: EnkiDevice) -> None:
         super().__init__(coordinator, device)
@@ -186,6 +188,7 @@ class EnkiCameraLastMotionSensor(EnkiEntity, SensorEntity):
 
     _attr_translation_key = "camera_last_motion"
     _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def __init__(self, coordinator: EnkiCoordinator, device: EnkiDevice) -> None:
         super().__init__(coordinator, device)
@@ -201,6 +204,7 @@ class EnkiCameraLastEventSensor(EnkiEntity, SensorEntity):
     """Type of the camera's most recent event (movement / SD state)."""
 
     _attr_translation_key = "camera_last_event"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def __init__(self, coordinator: EnkiCoordinator, device: EnkiDevice) -> None:
         super().__init__(coordinator, device)

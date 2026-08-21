@@ -8,7 +8,7 @@ from homeassistant.components.number import (
     NumberMode,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import UnitOfTemperature
+from homeassistant.const import EntityCategory, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -39,6 +39,7 @@ class EnkiVibrationSensibilityNumber(EnkiEntity, NumberEntity):
 
     _attr_has_entity_name = True
     _attr_translation_key = "vibration_sensibility"
+    _attr_entity_category = EntityCategory.CONFIG
     _attr_native_min_value = 1
     _attr_native_max_value = 5
     _attr_native_step = 1
@@ -74,6 +75,7 @@ class EnkiOffsetTemperatureNumber(EnkiEntity, NumberEntity):
     _attr_translation_key = "offset_temperature"
     _attr_device_class = NumberDeviceClass.TEMPERATURE
     _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
+    _attr_entity_category = EntityCategory.CONFIG
     _attr_mode = NumberMode.BOX
 
     def __init__(self, coordinator: EnkiCoordinator, device: EnkiDevice) -> None:

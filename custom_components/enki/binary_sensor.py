@@ -7,6 +7,7 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
 )
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -106,6 +107,7 @@ _BINARY_SENSOR_SPECS: tuple[dict[str, str | BinarySensorDeviceClass], ...] = (
         "suffix": "sd_card",
         "translation_key": "sd_card",
         "device_class": BinarySensorDeviceClass.PROBLEM,
+        "entity_category": EntityCategory.DIAGNOSTIC,
     },
 )
 
@@ -149,6 +151,7 @@ def _build_binary_sensor_entities(
                 suffix=str(spec["suffix"]),
                 translation_key=str(spec["translation_key"]),
                 device_class=spec["device_class"],
+                entity_category=spec.get("entity_category"),
             )
         )
     entities.extend(_build_metadata_binary_sensors(coordinator, device))
@@ -180,6 +183,7 @@ def _build_metadata_binary_sensors(
                 suffix="connectivity",
                 translation_key="connectivity",
                 device_class=BinarySensorDeviceClass.CONNECTIVITY,
+                entity_category=EntityCategory.DIAGNOSTIC,
             )
         )
 
@@ -192,6 +196,7 @@ def _build_metadata_binary_sensors(
                 suffix="firmware_update",
                 translation_key="firmware_update",
                 device_class=BinarySensorDeviceClass.UPDATE,
+                entity_category=EntityCategory.DIAGNOSTIC,
             )
         )
 
@@ -212,11 +217,13 @@ class EnkiBinarySensor(EnkiEntity, BinarySensorEntity):
         suffix: str,
         translation_key: str,
         device_class: BinarySensorDeviceClass,
+        entity_category: EntityCategory | None = None,
     ) -> None:
         super().__init__(coordinator, device)
         self._state_key = state_key
         self._attr_translation_key = translation_key
         self._attr_device_class = device_class
+        self._attr_entity_category = entity_category
         self._attr_unique_id = f"{DOMAIN}-{device.node_id}-{suffix}"
 
     @property

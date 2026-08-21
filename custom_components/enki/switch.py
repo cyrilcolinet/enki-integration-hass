@@ -6,6 +6,7 @@ from typing import Any
 
 from homeassistant.components.switch import SwitchDeviceClass, SwitchEntity
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -22,6 +23,7 @@ _SWITCH_SPECS: tuple[dict[str, str], ...] = (
         "suffix": "vibration_detection",
         "translation_key": "vibration_detection",
         "service": "contact_sensor",
+        "entity_category": EntityCategory.CONFIG,
     },
     {
         "switch_capability": "activate_contact_detection",
@@ -30,6 +32,7 @@ _SWITCH_SPECS: tuple[dict[str, str], ...] = (
         "suffix": "contact_detection",
         "translation_key": "contact_detection",
         "service": "contact_sensor",
+        "entity_category": EntityCategory.CONFIG,
     },
     {
         "switch_capability": "switch_siren_status",
@@ -48,6 +51,7 @@ _SWITCH_SPECS: tuple[dict[str, str], ...] = (
         "service": "thermostat",
         "on_value": "ENABLED",
         "off_value": "DISABLED",
+        "entity_category": EntityCategory.CONFIG,
     },
     {
         "switch_capability": "change_occupancy_mode",
@@ -58,6 +62,7 @@ _SWITCH_SPECS: tuple[dict[str, str], ...] = (
         "service": "presence_detector",
         "on_value": "ENABLED",
         "off_value": "DISABLED",
+        "entity_category": EntityCategory.CONFIG,
     },
     {
         "switch_capability": "change_child_lock",
@@ -68,6 +73,7 @@ _SWITCH_SPECS: tuple[dict[str, str], ...] = (
         "service": "thermostat",
         "on_value": "LOCK",
         "off_value": "UNLOCK",
+        "entity_category": EntityCategory.CONFIG,
     },
     {
         "switch_capability": "change_preheating_status",
@@ -78,6 +84,7 @@ _SWITCH_SPECS: tuple[dict[str, str], ...] = (
         "service": "thermostat",
         "on_value": "ENABLED",
         "off_value": "DISABLED",
+        "entity_category": EntityCategory.CONFIG,
     },
 )
 
@@ -174,6 +181,7 @@ def _build_config_switches(
                 service=spec["service"],
                 on_value=spec.get("on_value", "ON"),
                 off_value=spec.get("off_value", "OFF"),
+                entity_category=spec.get("entity_category"),
             )
         )
     return entities
@@ -319,6 +327,7 @@ class EnkiConfigSwitch(EnkiEntity, SwitchEntity):
         service: str,
         on_value: str = "ON",
         off_value: str = "OFF",
+        entity_category: EntityCategory | None = None,
     ) -> None:
         super().__init__(coordinator, device)
         self._switch_capability = switch_capability
@@ -328,6 +337,7 @@ class EnkiConfigSwitch(EnkiEntity, SwitchEntity):
         self._on_value = on_value
         self._off_value = off_value
         self._attr_translation_key = translation_key
+        self._attr_entity_category = entity_category
         self._attr_unique_id = f"{DOMAIN}-{device.node_id}-{suffix}"
 
     @property
