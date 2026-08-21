@@ -23,6 +23,22 @@ Without an Enki account or hardware:
 pytest tests/unit -v
 ```
 
+`tests/unit/` mirrors the source layout of `custom_components/enki/` — each file lives in the subfolder matching the module it primarily covers:
+
+```
+tests/unit/
+├── api/         # api/ modules: client, auth, transport, routing, discovery, scenarios
+├── domain/      # domain/ modules: capabilities, state, profile, camera_events, telemetry_*
+├── lib/         # lib/ pure helpers: conversion, production, shutter, heating, …
+├── platforms/   # platforms/ shared logic: fan airflow, light behavior
+├── telemetry/   # telemetry/ reporter and nudge
+├── entities/    # HA entity platform loaders at enki/ root: fan, light, sensor, switch, …
+├── core/        # integration glue: config_flow, coordinator, setup entry, migration, …
+└── scripts/     # tests for repo scripts/ (not custom_components)
+```
+
+`tests/conftest.py` applies to every subfolder — imports stay absolute (`from enki.… import …`) and work from any folder.
+
 ## Lint and format
 
 ```bash
@@ -191,6 +207,8 @@ custom_components/enki/
 ```
 
 Platforms registered in `__init__.py` → `PLATFORMS`: `binary_sensor`, `button`, `camera`, `climate`, `cover`, `fan`, `light`, `number`, `select`, `sensor`, `switch`.
+
+`tests/unit/` mirrors this layout (`api/`, `domain/`, `lib/`, `platforms/`, `telemetry/`, plus `entities/`, `core/`, and `scripts/` for the root platform loaders, integration glue, and repo scripts) — see [Unit tests](#unit-tests).
 
 ### Import conventions
 

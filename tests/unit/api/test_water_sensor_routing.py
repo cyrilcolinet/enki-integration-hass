@@ -15,7 +15,7 @@ from enki.domain.models import EnkiDevice
 from enki.domain.profile import build_discovery_record
 from enki.lib.capability_path import capability_to_path_segment
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[3]
 LEXMAN_LEAK_PROFILE = REPO_ROOT / "tests" / "fixtures" / "devices" / "651eada55b3a798ef6b6bc5c.json"
 ENKI_BASE = "https://enki.api.devportal.adeo.cloud"
 

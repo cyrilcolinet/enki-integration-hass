@@ -6,7 +6,7 @@ import ast
 import json
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[3]
 COMPONENT = REPO_ROOT / "custom_components" / "enki"
 HACS_MANIFEST = REPO_ROOT / "hacs.json"
 

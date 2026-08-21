@@ -32,6 +32,8 @@ CI runs the same checks plus Hassfest and HACS.
 
 Public imports via each package `__init__.py` (`from enki.api import EnkiAPI`, etc.).
 
+`tests/unit/` mirrors this layout: `api/`, `domain/`, `lib/`, `platforms/`, `telemetry/`, plus `entities/` (root HA loaders), `core/` (integration glue: `config_flow`, coordinator, setup entry, migration), and `scripts/` (tests for repo `scripts/`). Put a new test in the subfolder matching the module it primarily covers.
+
 ## Language
 
 - **Python code** (comments, docstrings, symbol names): **English**
