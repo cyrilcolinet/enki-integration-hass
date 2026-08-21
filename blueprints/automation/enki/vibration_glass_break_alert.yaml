@@ -1,0 +1,56 @@
+blueprint:
+  name: Enki vibration – glass-break / tamper alert
+  description: >
+    Notify (and optionally sound a siren) when an Enki vibration sensor
+    triggers — a forced window, a knocked door, glass breaking.
+  domain: automation
+  author: cyrilcolinet
+  source_url: https://github.com/cyrilcolinet/enki-integration-hass/blob/main/blueprints/automation/enki/vibration_glass_break_alert.yaml
+  input:
+    vibration_sensor:
+      name: Vibration sensor
+      description: The Enki vibration binary sensor.
+      selector:
+        entity:
+          filter:
+            - domain: binary_sensor
+              device_class: vibration
+    notify_action:
+      name: Notification action
+      description: The notify action to call, e.g. notify.mobile_app_your_phone.
+      default: notify.notify
+      selector:
+        text:
+    siren:
+      name: Siren (optional)
+      description: An Enki siren (or any switch) to turn on when triggered.
+      default: []
+      selector:
+        entity:
+          multiple: true
+          filter:
+            - domain: switch
+
+mode: single
+max_exceeded: silent
+
+variables:
+  siren: !input siren
+
+triggers:
+  - trigger: state
+    entity_id: !input vibration_sensor
+    to: "on"
+
+actions:
+  - action: !input notify_action
+    data:
+      title: 🔨 Vibration detected
+      message: "{{ trigger.to_state.attributes.friendly_name }} at {{ now().strftime('%d/%m %H:%M') }}."
+  - if:
+      - condition: template
+        value_template: "{{ siren | count > 0 }}"
+    then:
+      - action: switch.turn_on
+        target:
+          entity_id: !input siren

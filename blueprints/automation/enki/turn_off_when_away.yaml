@@ -1,0 +1,36 @@
+blueprint:
+  name: Enki away – turn everything off
+  description: >
+    When an "away" toggle turns on, switch off chosen lights and outlets in one
+    go. Handy paired with the frost-protection blueprint for a full "leaving
+    home" routine.
+  domain: automation
+  author: cyrilcolinet
+  source_url: https://github.com/cyrilcolinet/enki-integration-hass/blob/main/blueprints/automation/enki/turn_off_when_away.yaml
+  input:
+    away_toggle:
+      name: Away toggle
+      description: The input_boolean that is on while you're away.
+      selector:
+        entity:
+          domain: input_boolean
+    targets:
+      name: Lights and switches to turn off
+      description: The Enki lights / outlets / switches to switch off.
+      selector:
+        target:
+          entity:
+            - domain: light
+            - domain: switch
+
+mode: single
+max_exceeded: silent
+
+triggers:
+  - trigger: state
+    entity_id: !input away_toggle
+    to: "on"
+
+actions:
+  - action: homeassistant.turn_off
+    target: !input targets

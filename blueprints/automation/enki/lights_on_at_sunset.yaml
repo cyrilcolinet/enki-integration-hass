@@ -1,0 +1,55 @@
+blueprint:
+  name: Enki lights – on at sunset, off at time
+  description: >
+    Turn chosen Enki lights on at sunset and off at a set time (or leave the
+    off step out). An optional offset shifts the sunset trigger earlier/later.
+  domain: automation
+  author: cyrilcolinet
+  source_url: https://github.com/cyrilcolinet/enki-integration-hass/blob/main/blueprints/automation/enki/lights_on_at_sunset.yaml
+  input:
+    lights:
+      name: Lights
+      description: The Enki light(s) to control.
+      selector:
+        target:
+          entity:
+            - domain: light
+    sunset_offset:
+      name: Sunset offset
+      description: Shift the on-time relative to sunset (e.g. -00:30:00 for 30 min before).
+      default: "00:00:00"
+      selector:
+        text:
+    off_time:
+      name: Off time
+      description: When to turn the lights back off.
+      default: "23:30:00"
+      selector:
+        time:
+
+mode: single
+max_exceeded: silent
+
+triggers:
+  - trigger: sun
+    event: sunset
+    offset: !input sunset_offset
+    id: dusk
+  - trigger: time
+    at: !input off_time
+    id: bedtime
+
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: dusk
+        sequence:
+          - action: light.turn_on
+            target: !input lights
+      - conditions:
+          - condition: trigger
+            id: bedtime
+        sequence:
+          - action: light.turn_off
+            target: !input lights
