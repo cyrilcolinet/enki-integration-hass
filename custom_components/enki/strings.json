@@ -268,5 +268,20 @@
       "title": "Enki — unsupported device",
       "description": "The device profile {summary} is not supported by the integration yet. Use the Learn more link to request support on GitHub."
     }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "motion_detected": "{entity_name} detected motion",
+      "motion_stopped": "{entity_name} stopped detecting motion",
+      "presence_detected": "{entity_name} detected presence",
+      "presence_cleared": "{entity_name} presence cleared",
+      "leak_detected": "{entity_name} detected a leak",
+      "leak_cleared": "{entity_name} leak cleared",
+      "window_opened": "{entity_name} window opened",
+      "window_closed": "{entity_name} window closed",
+      "opened": "{entity_name} opened",
+      "closed": "{entity_name} closed",
+      "vibration_detected": "{entity_name} detected vibration"
+    }
   }
 }

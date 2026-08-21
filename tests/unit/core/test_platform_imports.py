@@ -18,6 +18,9 @@ PLATFORM_MODULES = (
     "number",
     "select",
     "button",
+    "update",
+    "camera",
+    "device_trigger",
     "config_flow",
     "migration",
 )

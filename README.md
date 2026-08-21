@@ -66,6 +66,10 @@ The **Enki** app controls hundreds of products (Lexman, Equation, Inspire, Edisi
 - **Cameras** (Lexman/Meari) — `camera` (last-event snapshot), `sensor` (last motion, last event), `binary_sensor` (SD card); live video is not available (TUTK Kalay P2P native SDK) — [#135](https://github.com/cyrilcolinet/enki-integration-hass/issues/135)
 - **Scenarios** (Enki cloud) — `button`
 
+### Device triggers
+
+Enki sensors expose native automation triggers in the HA editor — **"motion detected"**, **"leak detected"**, **"window opened"**, **"vibration detected"**, etc. — so you can build automations without hand-writing state triggers (**Settings → Automations → Create → Device**).
+
 ### Blueprints
 
 Ready-made automations under `blueprints/automation/enki/` — import via **Settings → Automations & scenes → Blueprints → Import**.

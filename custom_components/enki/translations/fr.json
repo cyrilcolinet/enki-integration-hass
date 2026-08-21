@@ -274,5 +274,20 @@
       "title": "Enki — appareil non supporté",
       "description": "Le profil d'appareil {summary} n'est pas encore pris en charge par l'intégration. Utilisez le lien En savoir plus pour demander le support sur GitHub."
     }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "motion_detected": "{entity_name} a détecté un mouvement",
+      "motion_stopped": "{entity_name} ne détecte plus de mouvement",
+      "presence_detected": "{entity_name} a détecté une présence",
+      "presence_cleared": "{entity_name} présence dissipée",
+      "leak_detected": "{entity_name} a détecté une fuite",
+      "leak_cleared": "{entity_name} fuite dissipée",
+      "window_opened": "{entity_name} fenêtre ouverte",
+      "window_closed": "{entity_name} fenêtre fermée",
+      "opened": "{entity_name} ouvert",
+      "closed": "{entity_name} fermé",
+      "vibration_detected": "{entity_name} a détecté une vibration"
+    }
   }
 }
