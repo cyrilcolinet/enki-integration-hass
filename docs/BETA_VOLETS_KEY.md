@@ -4,7 +4,7 @@ This document is for **people comfortable with networking / mobile debugging**. 
 
 ## Current state
 
-For **roller shutters** (`api-enki-rolling-prod`, APK ≥ 2.25.1), the **`ENKI_ACCESS_MOTORIZATION_API_KEY`** is already included in `const.py` (extracted from Enki APK 2.25.1). The legacy micro-service `api-enki-access-and-motorizations-prod` is no longer used.
+For **roller shutters** (`api-enki-rolling-prod`), the **`ENKI_ACCESS_MOTORIZATION_API_KEY`** is already included in `const.py` (extracted from the Enki APK — version tracked in `const.py`). The legacy micro-service `api-enki-access-and-motorizations-prod` is no longer used.
 
 Users **configure nothing**: the **“Shutter (beta)”** entity appears if the cover is active in the Enki app and the integration is **v1.5.0+**.
 
