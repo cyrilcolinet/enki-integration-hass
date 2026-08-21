@@ -228,6 +228,11 @@
       "thermostat": {
         "name": "Thermostat"
       }
+    },
+    "update": {
+      "firmware": {
+        "name": "Firmware"
+      }
     }
   }
 }

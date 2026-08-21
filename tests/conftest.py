@@ -298,3 +298,8 @@ _number.NumberEntity = _HaEntity
 
 _select = sys.modules["homeassistant.components.select"]
 _select.SelectEntity = _HaEntity
+
+_update = MagicMock()
+_update.UpdateEntity = _HaEntity
+_update.UpdateDeviceClass = MagicMock()
+sys.modules["homeassistant.components.update"] = _update
