@@ -82,3 +82,30 @@ async def test_get_json_error_attaches_anonymized_report() -> None:
     assert report["status"] == 400
     assert report["request_headers"]["Authorization"] == "***"
     assert report["response_body"] == {"message": "invalid nodeId"}
+
+
+@pytest.mark.asyncio
+async def test_post_command_debug_logs_accepted_route() -> None:
+    from unittest.mock import patch
+
+    url = f"{ENKI_BASE_URL}/api-enki-power-prod/v1/power/n1/switch-electrical-power"
+    async with aiohttp.ClientSession() as session:
+        with aioresponses() as mocked, patch("enki.api.transport.LOGGER") as logger:
+            mocked.post(f"{url}?endpoints=2", status=202, body="")
+            client = EnkiHttpClient(_FakeAuth(), session)
+            await client.post_command(
+                "power",
+                "/api-enki-power-prod/v1/power/n1/switch-electrical-power",
+                home_id="h1",
+                params={"endpoints": 2},
+                json={"value": "OFF"},
+            )
+
+    logger.debug.assert_called_once()
+    fmt = logger.debug.call_args.args[0]
+    args = logger.debug.call_args.args[1:]
+    assert "command accepted" in fmt.lower()
+    # route, params (endpoint selector) and payload are all in the log record
+    assert "/switch-electrical-power" in args[0]
+    assert args[1] == {"endpoints": 2}
+    assert args[2] == {"value": "OFF"}

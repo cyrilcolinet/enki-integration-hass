@@ -209,6 +209,16 @@ class EnkiHttpClient:
                         body,
                     ),
                 )
+            # Log the accepted route so command-routing issues (e.g. a wrong
+            # endpoint selector on multi-endpoint fans) are visible in debug logs
+            # without a proxy capture.
+            LOGGER.debug(
+                "Enki command accepted: POST %s params=%s json=%s -> HTTP %s",
+                path,
+                params,
+                json,
+                response.status,
+            )
 
     async def get_homes(self) -> list[str]:
         data = await self.get_json("home", "/api-enki-home-prod/v1/homes")
