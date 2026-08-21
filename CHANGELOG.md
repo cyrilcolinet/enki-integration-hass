@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.19.0...v1.19.1) (2026-08-21)
+
+
+### Bug Fixes
+
+* **manifest:** drop aiohttp requirement ([9bbd360](https://github.com/cyrilcolinet/enki-integration-hass/commit/9bbd360f3bd7449dc030f1c8e90d72d0aad6e992))
+
 ## [1.19.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.18.0...v1.19.0) (2026-08-21)
 
 
