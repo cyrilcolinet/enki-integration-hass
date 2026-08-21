@@ -68,8 +68,12 @@ The **Enki** app controls hundreds of products (Lexman, Equation, Inspire, Edisi
 
 ### Blueprints
 
-- **Camera motion notification** — notify with the last-event snapshot on motion.
-  Import: `blueprints/automation/enki/camera_motion_notification.yaml`
+Ready-made automations under `blueprints/automation/enki/` — import via **Settings → Automations & scenes → Blueprints → Import**:
+
+- **Camera motion notification** — notify with the last-event snapshot on motion (`camera_motion_notification.yaml`)
+- **Water leak alert** — urgent notification on a leak, optional siren + power cut-off (`water_leak_alert.yaml`)
+- **Low battery alert** — notify when an Enki battery sensor drops below a threshold (`low_battery_alert.yaml`)
+- **Heating pause on open window** — turn a radiator off while a window is open, back on when it closes (`heating_pause_on_open_window.yaml`)
 
 Per-device detail: [docs/SUPPORTED_DEVICES.md](docs/SUPPORTED_DEVICES.md) · History: [docs/ROADMAP.md](docs/ROADMAP.md)
 

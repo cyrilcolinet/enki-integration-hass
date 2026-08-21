@@ -1,0 +1,57 @@
+blueprint:
+  name: Enki low battery – alert
+  description: >
+    Notify when any selected Enki battery sensor drops below a threshold
+    (motion, contact, leak, thermometer, …). Pick the battery sensors once and
+    get a single reminder per device when it needs a new battery.
+  domain: automation
+  author: cyrilcolinet
+  source_url: https://github.com/cyrilcolinet/enki-integration-hass/blob/main/blueprints/automation/enki/low_battery_alert.yaml
+  input:
+    battery_sensors:
+      name: Battery sensors
+      description: One or more Enki battery sensors (device class battery, %).
+      selector:
+        entity:
+          multiple: true
+          filter:
+            - domain: sensor
+              device_class: battery
+    threshold:
+      name: Low battery threshold (%)
+      description: Notify when a sensor reports at or below this level.
+      default: 20
+      selector:
+        number:
+          min: 5
+          max: 95
+          step: 5
+          unit_of_measurement: "%"
+    notify_action:
+      name: Notification action
+      description: The notify action to call, e.g. notify.mobile_app_your_phone.
+      default: notify.notify
+      selector:
+        text:
+
+mode: single
+max_exceeded: silent
+
+triggers:
+  - trigger: numeric_state
+    entity_id: !input battery_sensors
+    below: !input threshold
+    for:
+      minutes: 5
+
+conditions:
+  - condition: template
+    value_template: "{{ trigger.to_state.state not in ['unknown', 'unavailable'] }}"
+
+actions:
+  - action: !input notify_action
+    data:
+      title: 🔋 Low battery
+      message: >
+        {{ trigger.to_state.attributes.friendly_name }} is at
+        {{ trigger.to_state.state }}%.

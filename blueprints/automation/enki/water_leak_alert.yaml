@@ -1,0 +1,74 @@
+blueprint:
+  name: Enki water leak – alert
+  description: >
+    Send an urgent notification the moment an Enki (Lexman) water leak detector
+    reports moisture. Optionally sound a siren and/or cut power to an outlet
+    (e.g. a valve actuator or the appliance behind the leak).
+  domain: automation
+  author: cyrilcolinet
+  source_url: https://github.com/cyrilcolinet/enki-integration-hass/blob/main/blueprints/automation/enki/water_leak_alert.yaml
+  input:
+    leak_sensor:
+      name: Water leak sensor
+      description: The Enki leak detector's binary sensor (device class moisture).
+      selector:
+        entity:
+          filter:
+            - domain: binary_sensor
+              device_class: moisture
+    notify_action:
+      name: Notification action
+      description: The notify action to call, e.g. notify.mobile_app_your_phone.
+      default: notify.notify
+      selector:
+        text:
+    siren:
+      name: Siren (optional)
+      description: An Enki siren (or any switch) to turn on while the leak is active.
+      default: []
+      selector:
+        entity:
+          multiple: true
+          filter:
+            - domain: switch
+    cutoff_switch:
+      name: Power cut-off (optional)
+      description: A switch to turn OFF on a leak — e.g. a valve actuator or the appliance outlet.
+      default: []
+      selector:
+        entity:
+          multiple: true
+          filter:
+            - domain: switch
+
+mode: single
+max_exceeded: silent
+
+variables:
+  siren: !input siren
+  cutoff_switch: !input cutoff_switch
+
+triggers:
+  - trigger: state
+    entity_id: !input leak_sensor
+    to: "on"
+
+actions:
+  - action: !input notify_action
+    data:
+      title: ⚠️ Water leak detected
+      message: "Leak reported at {{ now().strftime('%d/%m %H:%M') }}."
+  - if:
+      - condition: template
+        value_template: "{{ siren | count > 0 }}"
+    then:
+      - action: switch.turn_on
+        target:
+          entity_id: !input siren
+  - if:
+      - condition: template
+        value_template: "{{ cutoff_switch | count > 0 }}"
+    then:
+      - action: switch.turn_off
+        target:
+          entity_id: !input cutoff_switch
