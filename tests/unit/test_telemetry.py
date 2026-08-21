@@ -41,7 +41,7 @@ async def test_telemetry_skipped_when_disabled() -> None:
 
     reporter = EnkiTelemetryReporter(hass, entry, entry.runtime_data)
     with patch(
-        "enki.telemetry.reporter.persistent_notification.async_create",
+        "enki.telemetry.reporter.ir.async_create_issue",
         new_callable=MagicMock,
     ) as notify:
         await reporter.async_report([_record()])
@@ -59,15 +59,18 @@ async def test_telemetry_notifies_new_profile() -> None:
     reporter._store.async_save = AsyncMock()  # type: ignore[method-assign]
 
     with patch(
-        "enki.telemetry.reporter.persistent_notification.async_create",
+        "enki.telemetry.reporter.ir.async_create_issue",
         new_callable=MagicMock,
     ) as notify:
         await reporter.async_report([_record()])
         notify.assert_called_once()
         reporter._store.async_save.assert_awaited()
-        message = notify.call_args.kwargs["message"]
-        assert "github.com" in message
-        assert "equation_radiator" in message
+        assert notify.call_args.kwargs["translation_key"] == "unsupported_device"
+        learn_more_url = notify.call_args.kwargs["learn_more_url"]
+        assert "github.com" in learn_more_url
+        assert "equation_radiator" in learn_more_url
+        summary = notify.call_args.kwargs["translation_placeholders"]["summary"]
+        assert "radiator" in summary
 
 
 @pytest.mark.asyncio
@@ -81,7 +84,7 @@ async def test_telemetry_dedupes_fingerprint() -> None:
     reporter._store.async_save = AsyncMock()  # type: ignore[method-assign]
 
     with patch(
-        "enki.telemetry.reporter.persistent_notification.async_create",
+        "enki.telemetry.reporter.ir.async_create_issue",
         new_callable=MagicMock,
     ) as notify:
         await reporter.async_report([_record()])
@@ -118,7 +121,7 @@ async def test_telemetry_skips_fully_supported_profile() -> None:
     reporter._store.async_save = AsyncMock()  # type: ignore[method-assign]
 
     with patch(
-        "enki.telemetry.reporter.persistent_notification.async_create",
+        "enki.telemetry.reporter.ir.async_create_issue",
         new_callable=MagicMock,
     ) as notify:
         await reporter.async_report([record])
@@ -148,7 +151,7 @@ async def test_telemetry_skips_out_of_scope_sonoff() -> None:
     reporter._store.async_save = AsyncMock()  # type: ignore[method-assign]
 
     with patch(
-        "enki.telemetry.reporter.persistent_notification.async_create",
+        "enki.telemetry.reporter.ir.async_create_issue",
         new_callable=MagicMock,
     ) as notify:
         await reporter.async_report([record])
@@ -185,7 +188,7 @@ async def test_telemetry_notifies_when_api_errors_block_primary_poll() -> None:
     entry.runtime_data.api.poll_state_for_fingerprint.return_value = {}
 
     with patch(
-        "enki.telemetry.reporter.persistent_notification.async_create",
+        "enki.telemetry.reporter.ir.async_create_issue",
         new_callable=MagicMock,
     ) as notify:
         await reporter.async_report([record])
@@ -227,7 +230,7 @@ async def test_telemetry_does_not_renotify_reported_fingerprint() -> None:
     entry.runtime_data.api.poll_state_for_fingerprint.return_value = {}
 
     with patch(
-        "enki.telemetry.reporter.persistent_notification.async_create",
+        "enki.telemetry.reporter.ir.async_create_issue",
         new_callable=MagicMock,
     ) as notify:
         await reporter.async_report([record])
@@ -272,12 +275,12 @@ async def test_telemetry_dismisses_notification_when_profile_is_healthy() -> Non
     }
 
     with patch(
-        "enki.telemetry.reporter.persistent_notification.async_dismiss",
+        "enki.telemetry.reporter.ir.async_delete_issue",
         new_callable=MagicMock,
     ) as dismiss:
         await reporter.async_report([record])
         dismiss.assert_called_once()
-        assert dismiss.call_args.kwargs["notification_id"] == f"enki_profile_{fingerprint[:16]}"
+        assert dismiss.call_args.args[2] == f"profile_{fingerprint[:16]}"
 
 
 @pytest.mark.asyncio
@@ -292,7 +295,7 @@ async def test_telemetry_tolerates_corrupt_storage() -> None:
     reporter._store.async_save = AsyncMock()  # type: ignore[method-assign]
 
     with patch(
-        "enki.telemetry.reporter.persistent_notification.async_create",
+        "enki.telemetry.reporter.ir.async_create_issue",
         new_callable=MagicMock,
     ) as notify:
         await reporter.async_report([_record()])

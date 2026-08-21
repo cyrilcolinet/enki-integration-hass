@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from homeassistant.components import persistent_notification
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.storage import Store
 
 from ..const import CONF_TELEMETRY, DOMAIN, LOGGER
@@ -111,27 +111,27 @@ class EnkiTelemetryReporter:
         )
 
     def _dismiss_profile_notification(self, fingerprint: str) -> None:
-        persistent_notification.async_dismiss(
+        ir.async_delete_issue(
             self._hass,
-            notification_id=f"{DOMAIN}_profile_{fingerprint[:16]}",
+            DOMAIN,
+            f"profile_{fingerprint[:16]}",
         )
 
     def _notify_new_profile(self, export_dict: dict[str, Any], fingerprint: str) -> None:
         summary = format_telemetry_notification_summary(export_dict)
         issue_url = build_github_new_issue_url(export_dict, fingerprint)
-        supported = export_dict.get("supported_by_integration")
-        title, message = _profile_notification_copy(
-            self._hass,
-            summary=summary,
-            issue_url=issue_url,
-            supported=bool(supported),
-        )
+        supported = bool(export_dict.get("supported_by_integration"))
+        translation_key = "new_device_profile" if supported else "unsupported_device"
 
-        persistent_notification.async_create(
+        ir.async_create_issue(
             self._hass,
-            message=message,
-            title=title,
-            notification_id=f"{DOMAIN}_profile_{fingerprint[:16]}",
+            DOMAIN,
+            f"profile_{fingerprint[:16]}",
+            is_fixable=False,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key=translation_key,
+            translation_placeholders={"summary": summary},
+            learn_more_url=issue_url,
         )
 
     async def _load_reported(self) -> set[str]:
@@ -165,47 +165,3 @@ def _ha_version(hass: HomeAssistant) -> str:
         return str(__version__)
     except ImportError:
         return "not available"
-
-
-def _profile_notification_copy(
-    hass: HomeAssistant,
-    *,
-    summary: str,
-    issue_url: str,
-    supported: bool,
-) -> tuple[str, str]:
-    language = getattr(hass.config, "language", None) or "en"
-    if language.startswith("fr"):
-        if supported:
-            return (
-                "Enki — nouveau profil d'appareil",
-                (
-                    f"Profil détecté : **{summary}**.\n\n"
-                    "Données anonymisées — rien n'est envoyé sans votre action.\n\n"
-                    f"[Ouvrir une issue GitHub pré-remplie]({issue_url})"
-                ),
-            )
-        return (
-            "Enki — appareil non supporté",
-            (
-                f"Profil **{summary}** non géré par l'intégration.\n\n"
-                f"[Proposer le support sur GitHub]({issue_url})"
-            ),
-        )
-
-    if supported:
-        return (
-            "Enki — new device profile",
-            (
-                f"Profile detected: **{summary}**.\n\n"
-                "Anonymized data only — nothing is sent without your action.\n\n"
-                f"[Open a pre-filled GitHub issue]({issue_url})"
-            ),
-        )
-    return (
-        "Enki — unsupported device",
-        (
-            f"Profile **{summary}** is not supported by the integration yet.\n\n"
-            f"[Request support on GitHub]({issue_url})"
-        ),
-    )

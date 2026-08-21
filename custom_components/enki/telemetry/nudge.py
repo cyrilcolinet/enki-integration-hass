@@ -4,16 +4,18 @@ from __future__ import annotations
 
 from typing import Any
 
-from homeassistant.components import persistent_notification
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.storage import Store
 
 from ..const import CONF_TELEMETRY, CONF_TELEMETRY_ONBOARDING, DOMAIN, LOGGER
 
 STORAGE_VERSION = 1
 TELEMETRY_NUDGE_LEGACY_VERSION = "1.0.6"
-NOTIFICATION_ID_PREFIX = f"{DOMAIN}_telemetry_nudge"
+_LEARN_MORE_URL = (
+    "https://github.com/cyrilcolinet/enki-integration-hass/blob/main/docs/TELEMETRY.md"
+)
 
 
 def parse_version(version: str) -> tuple[int, ...]:
@@ -89,18 +91,21 @@ class EnkiTelemetryNudge:
         return version_is_before(first_seen, TELEMETRY_NUDGE_LEGACY_VERSION)
 
     async def _show_notification(self) -> None:
-        title, message = _nudge_copy(self._hass, self._entry.entry_id)
-        persistent_notification.async_create(
+        ir.async_create_issue(
             self._hass,
-            message=message,
-            title=title,
-            notification_id=f"{NOTIFICATION_ID_PREFIX}_{self._entry.entry_id}",
+            DOMAIN,
+            f"telemetry_nudge_{self._entry.entry_id}",
+            is_fixable=False,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key="telemetry_nudge",
+            learn_more_url=_LEARN_MORE_URL,
         )
 
     async def _dismiss_notification(self) -> None:
-        persistent_notification.async_dismiss(
+        ir.async_delete_issue(
             self._hass,
-            f"{NOTIFICATION_ID_PREFIX}_{self._entry.entry_id}",
+            DOMAIN,
+            f"telemetry_nudge_{self._entry.entry_id}",
         )
 
     async def _load_meta(self) -> dict[str, Any]:
@@ -113,34 +118,6 @@ class EnkiTelemetryNudge:
         from .. import __version__
 
         return __version__
-
-
-def _nudge_copy(hass: HomeAssistant, entry_id: str) -> tuple[str, str]:
-    configure_url = f"/config/integrations/configure/{entry_id}"
-    if hass.config.language.startswith("fr"):
-        return (
-            "Enki — accélérez le support de nouveaux appareils",
-            (
-                "Activez la **télémétrie opt-in** pour être averti lorsqu'un appareil "
-                "Enki non supporté est détecté chez vous.\n\n"
-                "Données **anonymisées** (type, modèle, capabilities) — "
-                "aucun envoi automatique, seulement un lien GitHub pré-rempli "
-                "si vous le souhaitez.\n\n"
-                "Cela aide à prioriser radiateurs, volets, prises et autres matériels.\n\n"
-                f"[Ouvrir les options Enki]({configure_url})"
-            ),
-        )
-    return (
-        "Enki — help prioritize new device support",
-        (
-            "Turn on **opt-in telemetry** to get notified when an unsupported Enki "
-            "device is detected on your account.\n\n"
-            "**Anonymized** data only (type, model, capabilities) — "
-            "nothing is sent automatically; you get a pre-filled GitHub link if you choose.\n\n"
-            "This helps prioritize heaters, shutters, sockets, and other hardware.\n\n"
-            f"[Open Enki options]({configure_url})"
-        ),
-    )
 
 
 async def async_handle_telemetry_nudge(hass: HomeAssistant, entry: ConfigEntry) -> None:
