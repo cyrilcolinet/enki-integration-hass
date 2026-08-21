@@ -74,6 +74,11 @@ Ready-made automations under `blueprints/automation/enki/` — import via **Sett
 - **Water leak alert** — urgent notification on a leak, optional siren + power cut-off (`water_leak_alert.yaml`)
 - **Low battery alert** — notify when an Enki battery sensor drops below a threshold (`low_battery_alert.yaml`)
 - **Heating pause on open window** — turn a radiator off while a window is open, back on when it closes (`heating_pause_on_open_window.yaml`)
+- **Motion-activated light** — light on with motion, off after a delay, optionally only when dark (`motion_activated_light.yaml`)
+- **Fan auto by temperature** — run a ceiling fan from a temperature sensor with hysteresis (`fan_auto_temperature.yaml`)
+- **Covers sun schedule** — open shutters at sunrise, close them at sunset (`covers_sun_schedule.yaml`)
+- **Contact open reminder** — notify when a door/window stays open too long (`contact_open_reminder.yaml`)
+- **Siren on motion when armed** — sound the siren + notify on motion while an "armed" toggle is on (`siren_on_motion_when_armed.yaml`)
 
 Per-device detail: [docs/SUPPORTED_DEVICES.md](docs/SUPPORTED_DEVICES.md) · History: [docs/ROADMAP.md](docs/ROADMAP.md)
 

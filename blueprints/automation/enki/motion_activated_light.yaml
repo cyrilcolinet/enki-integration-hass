@@ -1,0 +1,85 @@
+blueprint:
+  name: Enki motion – activated light
+  description: >
+    Turn a light on when an Enki motion sensor triggers, and off again after a
+    delay with no motion. Optionally only when it's dark, using an Enki
+    brightness sensor (Evology multisensor, …).
+  domain: automation
+  author: cyrilcolinet
+  source_url: https://github.com/cyrilcolinet/enki-integration-hass/blob/main/blueprints/automation/enki/motion_activated_light.yaml
+  input:
+    motion_sensor:
+      name: Motion sensor
+      description: The Enki motion / presence binary sensor.
+      selector:
+        entity:
+          filter:
+            - domain: binary_sensor
+              device_class: motion
+            - domain: binary_sensor
+              device_class: occupancy
+    light_target:
+      name: Light
+      description: The light(s) to control.
+      selector:
+        target:
+          entity:
+            - domain: light
+    no_motion_wait:
+      name: Wait time
+      description: Turn the light off this long after motion stops.
+      default:
+        minutes: 2
+      selector:
+        duration:
+    illuminance_sensor:
+      name: Brightness sensor (optional)
+      description: Only turn on when this Enki brightness sensor is at or below the threshold. Leave empty to ignore light level.
+      default: []
+      selector:
+        entity:
+          multiple: true
+          filter:
+            - domain: sensor
+              device_class: illuminance
+    illuminance_below:
+      name: Darkness threshold (lx)
+      description: Used only if a brightness sensor is set above.
+      default: 20
+      selector:
+        number:
+          min: 0
+          max: 1000
+          step: 5
+          unit_of_measurement: lx
+
+mode: restart
+max_exceeded: silent
+
+variables:
+  illuminance_sensor: !input illuminance_sensor
+  illuminance_below: !input illuminance_below
+
+triggers:
+  - trigger: state
+    entity_id: !input motion_sensor
+    from: "off"
+    to: "on"
+
+conditions:
+  - condition: template
+    value_template: >
+      {{ illuminance_sensor | count == 0
+         or states(illuminance_sensor[0]) | float(9999) <= illuminance_below }}
+
+actions:
+  - action: light.turn_on
+    target: !input light_target
+  - wait_for_trigger:
+      - trigger: state
+        entity_id: !input motion_sensor
+        from: "on"
+        to: "off"
+  - delay: !input no_motion_wait
+  - action: light.turn_off
+    target: !input light_target

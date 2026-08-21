@@ -1,0 +1,61 @@
+blueprint:
+  name: Enki covers – open at sunrise, close at sunset
+  description: >
+    Open your Enki roller shutters at sunrise and close them at sunset. Each
+    step is optional, so you can do sunrise-only, sunset-only, or both. Optional
+    sun-elevation offsets let you shift a bit before/after the exact event.
+  domain: automation
+  author: cyrilcolinet
+  source_url: https://github.com/cyrilcolinet/enki-integration-hass/blob/main/blueprints/automation/enki/covers_sun_schedule.yaml
+  input:
+    covers:
+      name: Covers
+      description: The Enki shutter(s) to move.
+      selector:
+        target:
+          entity:
+            - domain: cover
+    open_at_sunrise:
+      name: Open at sunrise
+      default: true
+      selector:
+        boolean:
+    close_at_sunset:
+      name: Close at sunset
+      default: true
+      selector:
+        boolean:
+
+mode: single
+max_exceeded: silent
+
+variables:
+  open_at_sunrise: !input open_at_sunrise
+  close_at_sunset: !input close_at_sunset
+
+triggers:
+  - trigger: sun
+    event: sunrise
+    id: sunrise
+  - trigger: sun
+    event: sunset
+    id: sunset
+
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: sunrise
+          - condition: template
+            value_template: "{{ open_at_sunrise }}"
+        sequence:
+          - action: cover.open_cover
+            target: !input covers
+      - conditions:
+          - condition: trigger
+            id: sunset
+          - condition: template
+            value_template: "{{ close_at_sunset }}"
+        sequence:
+          - action: cover.close_cover
+            target: !input covers
