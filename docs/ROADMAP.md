@@ -33,7 +33,7 @@ Short version: [README](../README.md) · detailed view below.
 | 🔜 Soon | Camera config controls (motion on/off, sensitivity) | REST-doable on Meari cameras; needs an indoor-camera owner to validate write endpoints ([#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165)) |
 | ⏳ Not planned | Camera live video | TUTK Kalay Nebula P2P — native SDK, no Python path |
 | ⏳ Not planned | Enki alarm | no API identified |
-| ✅ Prerequisite OK | Default HACS store | CI HACS + Hassfest green, releases published — [PR to `hacs/default`](HACS.md#default-hacs-store) |
+| ✅ Published | Default HACS store | listed in the default store — install from HACS directly (see [HACS.md](HACS.md)) |
 
 ## Tooling
 

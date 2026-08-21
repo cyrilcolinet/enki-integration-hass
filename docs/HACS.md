@@ -2,9 +2,15 @@
 
 Checklist aligned with the [official HACS documentation](https://www.hacs.xyz/docs/publish/).
 
-## Custom repository (current install)
+**Status: published in the default HACS store.** Users install Enki straight from
+HACS (search **Enki**) — no custom repository needed. The custom-repository flow
+below is only a fallback while a HACS instance catches up with the default-store
+sync.
 
-Until inclusion in the default store, users add the repo manually or via the **Open in HACS** badge.
+## Custom repository (fallback)
+
+If the default-store entry hasn't synced to a given instance yet, add the repo
+manually or via the **Open in HACS** badge.
 
 1. **Public** GitHub repository
 2. [`hacs.json`](../hacs.json) at the root with at least `name`
@@ -40,11 +46,14 @@ HACS shows the last 5 releases when they exist.
 
 Releases are automated via [release-please](../docs/RELEASE.md): merge the `chore: release X.Y.Z` PR on `main` — the workflow creates the GitHub Release and uploads `enki.zip`.
 
-## Default HACS store
+## Default HACS store — done ✅
 
 Procedure: [Include default repositories](https://www.hacs.xyz/docs/publish/include/)
 
-**Repository status:** technical prerequisites are covered by CI on every push/PR:
+The [hacs/default](https://github.com/hacs/default) PR adding
+`cyrilcolinet/enki-integration-hass` to the `integration` file is **merged**, so
+the integration ships in the default store. The technical prerequisites below are
+kept green by CI on every push/PR:
 
 | Prerequisite | Status |
 |-----------|--------|
@@ -54,7 +63,7 @@ Procedure: [Include default repositories](https://www.hacs.xyz/docs/publish/incl
 | At least **one** GitHub release | ✅ [releases](https://github.com/cyrilcolinet/enki-integration-hass/releases) |
 | Brand `custom_components/enki/brand/` | ✅ `icon.png` (256) + `icon@2x.png` (512) — served locally by HA **2026.3+** ([Brands Proxy API](https://developers.home-assistant.io/blog/2026/02/24/brands-proxy-api)); **no longer need** a PR on [home-assistant/brands](https://github.com/home-assistant/brands) (new custom integrations rejected since Feb 2026) |
 
-**Remaining publication step:** PR on [hacs/default](https://github.com/hacs/default) (`integration` file), **alphabetical** entry: `cyrilcolinet/enki-integration-hass`.
+The `integration` entry is alphabetical: `cyrilcolinet/enki-integration-hass`. If the repo is ever renamed or moved, update that entry (and open a new PR) to keep the default-store listing valid.
 
 ## Local validation
 
