@@ -37,8 +37,10 @@ sequenceDiagram
     HA->>BFF: GET /dashboard/homes/{id}?hasGroups=true
     BFF-->>HA: sections / items (nodeId, deviceId, deviceType)
     HA->>Node: GET /v1/nodes/{nodeId}
-    HA->>Ref: GET /v1/devices/{deviceId}?version=2.23.0
+    HA->>Ref: GET /v1/devices/{deviceId}?version={REFERENTIEL_VERSION}
 ```
+
+`REFERENTIEL_VERSION` is defined in [`const.py`](../custom_components/enki/const.py) and tracks the value the Enki app sends — a stale value returns a thinner capability set.
 
 ## Supported device types (this integration)
 
@@ -50,10 +52,11 @@ Detection is **capability-based** (referentiel metadata + BFF dashboard), not li
 | `lights` (+ light capabilities) | `light` | `api-enki-lighting-prod` |
 | Switches / outlets (Edisio, …) | `light` (ON/OFF) | `api-enki-power-prod` (`switch-electrical-power`) |
 | `inverters` (Envertech-Lexman solar) | `sensor` (power W) | BFF dashboard `description.value` |
-| `access_and_motorizations` (Evology, Nodon, …) | `cover` (beta) | `api-enki-rolling-prod` — `shutter/{nodeId}/…` (APK ≥ 2.25.1) |
+| `access_and_motorizations` (Evology, Nodon, …) | `cover` (beta) | `api-enki-rolling-prod` — `shutter/{nodeId}/…` (key in `const.py`) |
 | `sensors` (motion, contact, temperature, …) | `binary_sensor`, `sensor`, `switch`, `number` | presence, contact, temperature-humidity, battery-health, siren micro-services |
-| Heating / pilot wire / thermostat | `select`, `climate`, `switch`, `binary_sensor` | `api-enki-heating-prod` — `ENKI_HEATING_API_KEY` in `const.py` (APK 2.25.1); if cleared, reads are skipped silently and writes raise an error |
-| Water leak sensors | `binary_sensor`, `sensor` (battery) | `api-enki-water-leak-detector-prod` + `api-enki-battery-health-prod` — keys in `const.py` (APK 2.25.1); same fallback if a key is missing |
+| Heating / pilot wire / thermostat | `select`, `climate`, `switch`, `number`, `binary_sensor` | `api-enki-thermostat-prod` (setpoint, pilot wire, window/presence, offset, child-lock, preheating), `api-enki-presence-detector-prod` (occupancy); `ENKI_HEATING_API_KEY`/`ENKI_THERMOSTAT_API_KEY` in `const.py`; if cleared, reads are skipped silently and writes raise an error |
+| Water leak sensors | `binary_sensor`, `sensor` (battery) | `api-enki-water-leak-detector-prod` + `api-enki-battery-health-prod` — keys in `const.py`; same fallback if a key is missing |
+| `cameras` (Lexman / Meari) | `camera`, `sensor`, `binary_sensor` | `api-enki-lexman-camera-prod` (`/events?nodeId=…`) for events; config controls on `api-enki-lexman-camera-meari-prod`; **no live video** (TUTK Kalay P2P native SDK) |
 
 Sensor capability paths: `GET/POST …/v1/sensors/{node_id}/{kebab-case-capability}` (siren uses `/v1/siren/`).
 
@@ -105,7 +108,7 @@ RTS models (Somfy, `tr_device_rts_roller_shutter_motorization_label`) expose onl
 position and no `check-*` feedback. The cover entity reports `assumed_state`.
 Path segment unconfirmed against real hardware — see #96.
 
-Gateway key: `ENKI_ACCESS_MOTORIZATION_API_KEY` in `const.py` (filled from APK 2.25.1). Legacy path `api-enki-access-and-motorizations-prod` is obsolete. See [BETA_VOLETS_KEY.md](BETA_VOLETS_KEY.md) for validation with mitmproxy.
+Gateway key: `ENKI_ACCESS_MOTORIZATION_API_KEY` in `const.py`. Legacy path `api-enki-access-and-motorizations-prod` is obsolete. See [BETA_VOLETS_KEY.md](BETA_VOLETS_KEY.md) for validation with mitmproxy.
 
 ### Dry-contact gate / garage receiver (Lexman 83424576, Nodon SIN-4-1-20)
 
@@ -152,7 +155,7 @@ field (`hs` vs `ct`) indicates which mode is active.
 |------------|----------|
 | `check-water-sensor-state` | `binary_sensor` (moisture) |
 
-Gateway keys (`ENKI_HEATING_API_KEY`, `ENKI_WATER_SENSOR_API_KEY`, …) are in `const.py` (APK 2.25.1). Refresh with `scripts/extract_gateway_keys.py` after an app update — see [DEVELOPMENT.md](DEVELOPMENT.md). If a key is cleared, reads are skipped silently and writes raise a clear error.
+Gateway keys (`ENKI_HEATING_API_KEY`, `ENKI_WATER_SENSOR_API_KEY`, …) are in `const.py`. Refresh with `scripts/extract_gateway_keys.py` after an app update — see [DEVELOPMENT.md](DEVELOPMENT.md). If a key is cleared, reads are skipped silently and writes raise a clear error.
 
 ## Operational notifications
 
