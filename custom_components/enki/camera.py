@@ -1,8 +1,10 @@
 """Camera platform: last-event snapshot for Lexman cameras.
 
-The live video stream is TUTK Kalay P2P (native SDK, out of reach here), but the
-event list carries a snapshot URL for each motion event — surfaced as a still
-image so Home Assistant shows the latest detection.
+Live video is not wired yet: earlier Lexman cameras stream over TUTK Kalay P2P
+(native SDK, out of reach here), while the meari generation uses WebRTC over the
+meari signaling WebSocket (see docs/API.md). Meanwhile the event list carries a
+snapshot URL for each motion event — surfaced as a still image so Home Assistant
+shows the latest detection.
 """
 
 from __future__ import annotations
