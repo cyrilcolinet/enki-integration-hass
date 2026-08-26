@@ -318,6 +318,23 @@ async def _signaling(http: Any, connect: dict[str, Any], send_offer: bool, timeo
             print("    signaling: authenticated but never reached the offer")
 
 
+async def _generation(http: Any, home_id: str, node_id: str) -> str:
+    """Tell the two camera generations apart from the node payload.
+
+    A node carrying ``p2pId`` / ``p2pAuthKey`` / ``p2pPassword`` is driven by the
+    native TUTK Kalay SDK — no meari signaling, so no live stream reachable from
+    here. Only the presence of the keys is printed, never their values.
+    """
+    try:
+        node = await http.get_node(home_id, node_id)
+    except Exception as err:  # noqa: BLE001 - report, never crash the sweep
+        return f"unknown ({type(err).__name__})"
+    present = [key for key in ("p2pId", "p2pAuthKey", "p2pPassword") if node.get(key)]
+    if present:
+        return f"TUTK Kalay P2P — node carries {present} (native SDK only)"
+    return "no TUTK credentials on the node (meari candidate)"
+
+
 async def _probe_camera(
     http: Any,
     home_id: str,
@@ -329,6 +346,7 @@ async def _probe_camera(
     timeout: float,
 ) -> None:
     print(f"    referentiel capabilities = {sorted(caps)}")
+    print(f"    node generation: {await _generation(http, home_id, node_id)}")
 
     if wake:
         status, body = await _post(http, home_id, f"{_MEARI_PREFIX}/{node_id}/wake-up")
