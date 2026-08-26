@@ -9,9 +9,11 @@ message. Media is relayed by the coturn server the signaling server hands back.
 
 This script replays that handshake to find out, per camera:
 
-  1. whether the camera lives in the meari backend at all (``check-camera-status``
-     answers 200 vs 404 — the same lookup the ``change-*`` writes do, so a 404
-     here explains the 404 on every setting write);
+  1. which identifier — if any — the meari backend knows the camera by:
+     ``check-camera-status`` is retried with every id the node payload carries
+     (nodeId, deviceId, externalId, eui64, p2pId, mac), because a 404 on the
+     dashboard nodeId can mean "not a meari camera" *or* "wrong key". That is the
+     same lookup the ``change-*`` writes do, so it also explains their 404;
   2. whether ``check-camera-connect-wss`` hands back signaling credentials;
   3. (``--handshake``) whether the signaling server authenticates us and returns
      the coturn relay parameters;
@@ -318,27 +320,76 @@ async def _signaling(http: Any, connect: dict[str, Any], send_offer: bool, timeo
             print("    signaling: authenticated but never reached the offer")
 
 
-async def _generation(http: Any, home_id: str, node_id: str) -> str:
+async def _node(http: Any, home_id: str, node_id: str) -> dict[str, Any]:
+    try:
+        node = await http.get_node(home_id, node_id)
+    except Exception as err:  # noqa: BLE001 - report, never crash the sweep
+        print(f"    node payload unavailable ({type(err).__name__})")
+        return {}
+    return node if isinstance(node, dict) else {}
+
+
+def _generation(node: dict[str, Any]) -> str:
     """Tell the two camera generations apart from the node payload.
 
     A node carrying ``p2pId`` / ``p2pAuthKey`` / ``p2pPassword`` is driven by the
     native TUTK Kalay SDK — no meari signaling, so no live stream reachable from
     here. Only the presence of the keys is printed, never their values.
     """
-    try:
-        node = await http.get_node(home_id, node_id)
-    except Exception as err:  # noqa: BLE001 - report, never crash the sweep
-        return f"unknown ({type(err).__name__})"
+    if not node:
+        return "unknown"
     present = [key for key in ("p2pId", "p2pAuthKey", "p2pPassword") if node.get(key)]
     if present:
         return f"TUTK Kalay P2P — node carries {present} (native SDK only)"
     return "no TUTK credentials on the node (meari candidate)"
 
 
+def _id_candidates(node: dict[str, Any], node_id: str, device_id: str) -> list[tuple[str, str]]:
+    """Every id the meari routes could be keyed on, dashboard nodeId first.
+
+    A 404 on every meari route can mean "not a meari camera" *or* "right camera,
+    wrong identifier" — the app builds its paths from its own node model, and the
+    ids in the node payload (externalId, eui64, p2pId…) are all plausible keys.
+    """
+    seen = {""}
+    candidates: list[tuple[str, str]] = []
+    sources = [
+        ("nodeId", node_id),
+        ("deviceId", device_id),
+        ("node.id", str(node.get("id") or "")),
+        ("node.deviceId", str(node.get("deviceId") or "")),
+        ("node.externalId", str(node.get("externalId") or "")),
+        ("node.eui64", str(node.get("eui64") or "")),
+        ("node.p2pId", str(node.get("p2pId") or "")),
+        ("node.macAddress", str(node.get("macAddress") or "").replace(":", "")),
+    ]
+    for label, value in sources:
+        if value not in seen:
+            seen.add(value)
+            candidates.append((label, value))
+    return candidates
+
+
+async def _meari_id(
+    http: Any, home_id: str, candidates: list[tuple[str, str]]
+) -> tuple[str, Any] | None:
+    """Find which identifier — if any — the meari backend knows this camera by."""
+    for label, value in candidates:
+        status, body = await _get(http, home_id, f"{_MEARI_PREFIX}/{value}/check-camera-status")
+        print(f"    GET check-camera-status [{label}]: HTTP {status} {json.dumps(anonymize(body))}")
+        if status == 200:
+            return value, body
+        if status not in (400, 404):
+            # 401/403 is an auth problem, not an unknown camera — stop guessing.
+            return None
+    return None
+
+
 async def _probe_camera(
     http: Any,
     home_id: str,
     node_id: str,
+    device_id: str,
     caps: list[str],
     handshake: bool,
     send_offer: bool,
@@ -346,20 +397,21 @@ async def _probe_camera(
     timeout: float,
 ) -> None:
     print(f"    referentiel capabilities = {sorted(caps)}")
-    print(f"    node generation: {await _generation(http, home_id, node_id)}")
+    node = await _node(http, home_id, node_id)
+    print(f"    node generation: {_generation(node)}")
 
     if wake:
         status, body = await _post(http, home_id, f"{_MEARI_PREFIX}/{node_id}/wake-up")
         print(f"    POST wake-up: HTTP {status} {json.dumps(anonymize(body))}")
 
-    status, body = await _get(http, home_id, f"{_MEARI_PREFIX}/{node_id}/check-camera-status")
-    print(f"    GET check-camera-status: HTTP {status} {json.dumps(anonymize(body))}")
-    if status == 404:
+    found = await _meari_id(http, home_id, _id_candidates(node, node_id, device_id))
+    if found is None:
         print(
-            "    -> this camera is unknown to the meari backend: every meari write "
-            "(change-*) and the live stream will 404 too"
+            "    -> no identifier is known to the meari backend: every meari write "
+            "(change-*) and the live stream 404 the same way"
         )
         return
+    node_id, _ = found
 
     status, body = await _get(http, home_id, f"{_MEARI_PREFIX}/{node_id}/check-camera-connect-wss")
     if status != 200 or not isinstance(body, dict):
@@ -426,7 +478,15 @@ async def sweep(
                     caps = device.get("capabilities", []) or []
                 print(f"=== camera #{index} ===")
                 await _probe_camera(
-                    http, home_id, node_id, caps, handshake, send_offer, wake, timeout
+                    http,
+                    home_id,
+                    node_id,
+                    device_id,
+                    caps,
+                    handshake,
+                    send_offer,
+                    wake,
+                    timeout,
                 )
                 index += 1
 
