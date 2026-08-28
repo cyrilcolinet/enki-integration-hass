@@ -35,6 +35,8 @@
 
 The **Enki** app controls hundreds of products (Lexman, Equation, Inspire, Edisio, Evology, Noirot, Envertech, …) through the **Leroy Merlin cloud**. This integration exposes in Home Assistant **everything visible in the Enki app** — using Enki **API capabilities** from the referentiel, like the mobile app, rather than a fixed model list.
 
+> **Disclaimer — unofficial project:** This is a community-maintained integration. It is **not** official, **not** affiliated with, and **not** endorsed by Leroy Merlin, ADEO, or Enki. The author and maintainers are **independent** and do **not** work for Enki. Full details: [docs/DISCLAIMER.md](docs/DISCLAIMER.md).
+
 ## Why this integration?
 
 - **Connection** — Enki email + password (OAuth Keycloak)
@@ -158,12 +160,13 @@ Upgrading from [CyrilP/hass-enki-component](https://github.com/CyrilP/hass-enki-
 - 🗺️ [Roadmap](docs/ROADMAP.md)
 - 🛠️ [Development & APK keys](docs/DEVELOPMENT.md)
 - 📡 [Opt-in telemetry](docs/TELEMETRY.md)
+- ⚠️ [Disclaimer — unofficial project](docs/DISCLAIMER.md)
 - 🏠 [Enki support](https://support.enki-home.com/)
 - 🔗 [CyrilP/hass-enki-component](https://github.com/CyrilP/hass-enki-component)
 
 ## Credits & license
 
-**Community** integration, not affiliated with Leroy Merlin, Adeo, or Enki. Unofficial cloud API, subject to change.
+**Community** integration, not affiliated with Leroy Merlin, ADEO, or Enki — see the [disclaimer](docs/DISCLAIMER.md). Unofficial cloud API, subject to change.
 
 - Based on [CyrilP/hass-enki-component](https://github.com/CyrilP/hass-enki-component)
 
