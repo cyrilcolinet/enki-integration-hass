@@ -447,6 +447,13 @@ class EnkiCapabilityProfile:
         )
 
     @property
+    def supports_rgb_color(self) -> bool:
+        """RGB bulbs expose an HS color mode when both hue and saturation change."""
+        return _supports(self.capabilities, self.possible_values, "change_hue") and _supports(
+            self.capabilities, self.possible_values, "change_saturation"
+        )
+
+    @property
     def supports_brightness_control(self) -> bool:
         return (
             _supports(
