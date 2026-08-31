@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.2](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.19.1...v1.19.2) (2026-08-31)
+
+
+### Bug Fixes
+
+* **telemetry:** mark hue/saturation as covered for RGB lights ([c82d1b7](https://github.com/cyrilcolinet/enki-integration-hass/commit/c82d1b73bc7a2c212c1b6ebb09e73e1be5b340ff)), closes [#187](https://github.com/cyrilcolinet/enki-integration-hass/issues/187)
+
 ## [1.19.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.19.0...v1.19.1) (2026-08-21)
 
 
