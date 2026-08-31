@@ -43,6 +43,8 @@ _CAPABILITY_PROBES: dict[str, str] = {
     "change_airflow_mode": "supports_airflow_mode",
     "change_brightness": "supports_brightness_control",
     "change_color_temperature": "supports_color_temperature",
+    "change_hue": "supports_rgb_color",
+    "change_saturation": "supports_rgb_color",
     "change_fan_rotation_direction": "supports_fan_rotation",
     "change_fan_speed": "supports_fan_speed",
     "change_light_state": "supports_light_state",
