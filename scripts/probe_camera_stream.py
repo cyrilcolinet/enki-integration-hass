@@ -329,6 +329,20 @@ async def _node(http: Any, home_id: str, node_id: str) -> dict[str, Any]:
     return node if isinstance(node, dict) else {}
 
 
+async def _identity(http: Any, node: dict[str, Any], device_id: str) -> str:
+    """Brand / model / referentiel type — a camera that is in neither backend is
+    usually simply not a Lexman one."""
+    device: dict[str, Any] = {}
+    with contextlib.suppress(Exception):
+        device = await http.get_referentiel_device(device_id)
+    manufacturer = node.get("manufacturerId") or device.get("manufacturerId") or "?"
+    model = node.get("modelNumber") or node.get("model") or device.get("model") or "?"
+    return (
+        f"manufacturer={manufacturer!r} model={model!r} "
+        f"type={device.get('type', '?')!r} i18n={device.get('i18n', '?')!r}"
+    )
+
+
 def _generation(node: dict[str, Any]) -> str:
     """Tell the two camera generations apart from the node payload.
 
@@ -398,6 +412,10 @@ async def _probe_camera(
 ) -> None:
     print(f"    referentiel capabilities = {sorted(caps)}")
     node = await _node(http, home_id, node_id)
+    print(f"    identity: {await _identity(http, node, device_id)}")
+    # Field *names* only: which ids and secrets the node exposes tells us which
+    # backend drives the camera, without printing a single value.
+    print(f"    node fields = {sorted(node)}")
     print(f"    node generation: {_generation(node)}")
 
     if wake:
