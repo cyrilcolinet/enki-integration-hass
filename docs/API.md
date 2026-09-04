@@ -191,6 +191,77 @@ Base: `https://enki.api.devportal.adeo.cloud/api-enki-consumption-prod/v1/consum
 
 Used for Edisio / Equation devices with `check_electrical_consumption` in referentiel. Gateway key: `ENKI_CONSUMPTION_API_KEY`.
 
+## Lexman cameras (api-enki-lexman-camera-meari-prod)
+
+Base: `https://enki.api.devportal.adeo.cloud/api-enki-lexman-camera-meari-prod/v1/`
+Gateway key: `ENKI_LEXMAN_CAMERA_MEARI_API_KEY`. Headers: `Authorization`, `X-Gateway-APIKey`, `homeId`.
+
+Two camera generations coexist:
+
+| Generation | Backing service | Live video |
+|------------|-----------------|------------|
+| meari (solar / outdoor, 2K…) | `api-enki-lexman-camera-meari-prod` | WebRTC over the meari signaling WebSocket (documented below) |
+| earlier Lexman cameras | `api-enki-lexman-camera-prod` | TUTK Kalay P2P — node payload carries `p2pId` / `p2pAuthKey` / `p2pPassword`, and the app drives them through the native `com.tutk.IOTC` SDK |
+
+Only the meari generation is reachable without a native SDK. A camera that is not in the
+meari backend answers `404 NOT_FOUND` on **every** meari route — including all `change-*`
+writes — while an unknown enum value answers `400 BAD_REQUEST` first (values are validated
+before the device lookup). `check-camera-status` is therefore the cheapest way to tell a
+"wrong value" from a "wrong service".
+
+### REST
+
+| Method | Path | Notes |
+|--------|------|-------|
+| GET | `camera/{nodeId}/check-camera-status` | battery, wifi, sd card, firmware and every current setting |
+| GET | `camera/{nodeId}/check-camera-events?day=…` | event list (thumbnails) |
+| GET | `camera/{nodeId}/check-camera-connect-wss` | signaling credentials (see below) |
+| GET | `camera/{nodeId}/check-detection-zone` / `check-firmware-update-status` | |
+| POST | `camera/{nodeId}/wake-up` | wakes a dormant (battery) camera |
+| POST | `camera/{nodeId}/change-night-vision-mode` | `{"value": "SMART" \| "FULL_COLOR" \| "BLACK_AND_WHITE"}` |
+| POST | `camera/{nodeId}/change-motion-detection-mode` | `{"value": "ON" \| "OFF" \| "HUMAN_FORM"}` |
+| POST | `camera/{nodeId}/change-indicator-light-mode` | `{"value": "ON" \| "OFF"}` |
+| POST | `camera/{nodeId}/change-flip-screen-mode` | `{"value": "FLIP_HORIZONTAL" \| "FLIP_VERTICAL" \| "FLIP_ALL" \| …}` |
+| POST | `camera/{nodeId}/change-motion-detection-sensitivity-level` | `{"value": <int>}` |
+| POST | `camera/{nodeId}/change-humanoid-detection-sensitivity-level` | `{"value": <int>}` |
+| POST | `camera/{nodeId}/change-light-mode`, `change-recording-duration`, `change-detection-zone` | |
+| POST | `camera/{nodeId}/format-sd-card`, `update-firmware-version` | destructive — not exposed |
+
+### Live video — meari WebRTC signaling
+
+`check-camera-connect-wss` returns `webSocketServerUrl`, `accessId`, `signature`, `token`,
+`expires`, `callee`, `deviceCode`. Open that WebSocket (no extra header) and exchange JSON
+frames; every frame shares the same envelope:
+
+```json
+{"sid": "<uuid uppercase>", "method": "<option|offer|answer|candidate|settings>",
+ "action": "req", "cmd": "mts", "params": { }}
+```
+
+`caller` is a client id (16 hex chars), `callee` and `devicecode` come from the REST call.
+
+1. **Authenticate** — `method: "option"`, with `"auth": {accessId, signature, token}` and
+   `params: {caller, callee, devicecode, expires, continent: "Europe", country: "France"}`.
+   The reply (`method: "option"`) carries the relay: `coturn_host`, `coturn_ip`,
+   `coturn_port`, `username`, `pwd`.
+2. **Offer** — `method: "offer"`, `params: {caller, callee, devicecode, sdp,
+   settings: {method: "preview"}}`. The app offers audio `sendrecv` (two-way talk) plus
+   video `recvonly`, ICE **relay-only** through that coturn server.
+3. **Answer** — inbound `method: "answer"`, `params.sdp`.
+4. **ICE** — `method: "candidate"` both ways, `params: {caller, callee,
+   candidate: {candidate, sdpMid, sdpMLineIndex}}`.
+5. **Start the stream** — `method: "settings"`, `params: {caller, callee,
+   settings: {sid, method: "preview", streams: [{channel: 0, stream: 1, stop: 0}]}}`.
+   Recorded playback uses the same shape with `method: "playback"`.
+
+Errors arrive as `{sid, method, action, cmd, errid, errstr}` (plus `desc` when the camera is
+asleep). `errstr` values `device dormancy`, `device awaken timeout`, `device offline` and
+`session not found` mean "wake the camera and retry", not "wrong request".
+
+`scripts/probe_camera_stream.py` replays the whole sequence and prints, per camera, whether
+it is a meari device, whether signaling authenticates and whether the camera answers an SDP
+offer.
+
 ## Future device families
 
 The Enki app also controls alarms via other microservices. Use `scripts/discover_devices.py` to dump unknown `deviceType` values from your account before adding new platforms.

@@ -13,12 +13,19 @@ Steps:
 
 No dependencies beyond the standard library.
 
+A capture of the app confirms the cloud path is Kalay P2P (UDP to
+``*.iotcplatform.com``, then straight to the camera on the LAN) — but the very
+same capture proves the camera is reachable *locally*, so a local RTSP/ONVIF
+service, if any, is the way in.
+
 Usage:
     python3 scripts/scan_local_camera.py
+    python3 scripts/scan_local_camera.py --host 192.168.1.29
 """
 
 from __future__ import annotations
 
+import argparse
 import asyncio
 import socket
 
@@ -37,6 +44,9 @@ _PROBE = (
     "</e:Envelope>"
 )
 RTSP_PORTS = (554, 8554)
+# Wider sweep when a single host is targeted: RTSP variants plus the web/media
+# ports these cameras commonly expose.
+HOST_PORTS = (554, 8554, 10554, 80, 81, 443, 8000, 8080, 8081, 8899, 34567)
 
 
 def _local_ip() -> str | None:
@@ -101,7 +111,17 @@ async def scan_subnet(prefix: str) -> list[str]:
     return [hit for hit in await asyncio.gather(*tasks) if hit]
 
 
-async def main() -> None:
+async def scan_host(host: str) -> list[str]:
+    """Probe one known camera IP on every port worth trying."""
+
+    async def one(port: int) -> str | None:
+        banner = await check_rtsp(host, port, timeout=2.0)
+        return f"{host}:{port}  {banner}" if banner else None
+
+    return [hit for hit in await asyncio.gather(*(one(port) for port in HOST_PORTS)) if hit]
+
+
+async def main(host: str | None = None) -> None:
     ip = _local_ip()
     print(f"local ip: {ip or 'unknown'}")
 
@@ -112,6 +132,13 @@ async def main() -> None:
             print(f"  {entry}")
     else:
         print("  no ONVIF device answered (camera is likely cloud-only)")
+
+    if host:
+        print(f"\n== port scan ({host} on {', '.join(map(str, HOST_PORTS))}) ==")
+        hits = await scan_host(host)
+        for hit in hits or ["  no open port answered"]:
+            print(f"  {hit}" if hits else hit)
+        return
 
     if not ip:
         print("\nCan't derive the local subnet — skipping RTSP scan.")
@@ -127,5 +154,14 @@ async def main() -> None:
         print("  no open RTSP port found")
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Find a local RTSP / ONVIF stream on a camera")
+    parser.add_argument(
+        "--host",
+        help="Scan this camera IP only, on a wider port list (skips the /24 sweep)",
+    )
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(main(parse_args().host))
