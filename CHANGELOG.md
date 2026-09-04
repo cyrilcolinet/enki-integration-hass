@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.3](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.19.2...v1.19.3) (2026-09-04)
+
+
+### Bug Fixes
+
+* **api:** stop polling a service the gateway refuses ([d8ae62a](https://github.com/cyrilcolinet/enki-integration-hass/commit/d8ae62abf08e1989a205eaa57868e2543f12a8bc)), closes [#190](https://github.com/cyrilcolinet/enki-integration-hass/issues/190)
+
 ## [1.19.2](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.19.1...v1.19.2) (2026-08-31)
 
 
