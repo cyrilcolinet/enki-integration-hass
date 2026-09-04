@@ -19,6 +19,8 @@ Every microservice call sends:
 
 Gateway keys are bundled in `custom_components/enki/const.py`. They are **embedded in the Enki mobile APK** (one key per micro-service), not fetched from a central API. Refresh them after an app update with `scripts/extract_gateway_keys.py` (see [DEVELOPMENT.md](DEVELOPMENT.md)). Requests failing with `401`/`403` usually mean outdated credentials or gateway keys — Home Assistant shows a **persistent notification** with guidance.
 
+A `403 {"message":"You cannot consume this service"}` is different: the gateway is refusing the key for a whole micro-service, for every account, and no key refresh fixes it — Adeo has to re-open the API product. The transport records the first one (so it still reaches diagnostics and read-error telemetry), then stops reading that service until Home Assistant restarts, instead of retrying on every polling cycle. `api-enki-consumption-prod` and `api-enki-ota-prod` have been in that state since August 2026 — the keys we ship are byte-for-byte the ones app 2.26.3 uses.
+
 ## Discovery flow
 
 ```mermaid

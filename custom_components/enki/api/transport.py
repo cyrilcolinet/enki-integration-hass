@@ -25,6 +25,11 @@ from .gateway_registry import OPTIONAL_KEY_TRANSPORT_IDS, WIRED_PATH_PREFIXES
 
 _ERROR_BODY_MAX = 200
 
+# The Adeo gateway's wording when an API key is not authorized for a service.
+# It is a standing decision on their side, not a transient failure: every read
+# on that micro-service answers the same 403 until they re-open it.
+_SERVICE_FORBIDDEN_MARKER = "cannot consume this service"
+
 
 def _http_error_message(method: str, path: str, status: int, body: str) -> str:
     """Build an error message that carries the response body's reason, if any.
@@ -60,6 +65,7 @@ class EnkiHttpClient:
         self._auth = auth
         self._session = session
         self._key_store = key_store or GatewayKeyStore()
+        self._forbidden_services: set[str] = set()
 
     @property
     def session(self) -> aiohttp.ClientSession:
@@ -71,6 +77,30 @@ class EnkiHttpClient:
 
     async def ensure_token(self) -> None:
         await self._auth.ensure_valid(self._session)
+
+    @property
+    def forbidden_services(self) -> frozenset[str]:
+        """Micro-services the gateway refused to serve during this session."""
+        return frozenset(self._forbidden_services)
+
+    def _note_forbidden(self, service: str, path: str, body: str) -> None:
+        """Remember a gateway-level refusal so we stop polling that service.
+
+        A 403 carrying the gateway's own wording means the API key is not
+        authorized for the whole micro-service. Retrying is pointless — these
+        reads run every polling cycle, so without this they flood the log until
+        the next restart. The first one still raises, so diagnostics keep a trace.
+        """
+        if _SERVICE_FORBIDDEN_MARKER not in body.lower():
+            return
+        if service not in self._forbidden_services:
+            self._forbidden_services.add(service)
+            LOGGER.warning(
+                "Enki gateway refuses service %r (GET %s -> 403); skipping its reads "
+                "until Home Assistant restarts",
+                service,
+                path,
+            )
 
     def _service_api_key(self, service: str) -> str | None:
         api_key = self._key_store.get_transport_key(service)
@@ -121,6 +151,8 @@ class EnkiHttpClient:
         not_found_ok: bool = False,
     ) -> dict[str, Any]:
         """GET returning parsed JSON; raises on unexpected status."""
+        if service in self._forbidden_services:
+            return {}
         url = f"{ENKI_BASE_URL}{path}"
 
         async def _get() -> aiohttp.ClientResponse:
@@ -143,6 +175,11 @@ class EnkiHttpClient:
                 return {}
             if response.status != 200:
                 body = await response.text()
+                if response.status == 403:
+                    # Record the refusal, then raise once so diagnostics and
+                    # read-error telemetry keep a trace; later reads on that
+                    # service short-circuit above.
+                    self._note_forbidden(service, path, body)
                 raise EnkiConnectionError(
                     _http_error_message("GET", path, response.status, body),
                     status=response.status,
