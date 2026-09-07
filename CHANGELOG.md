@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.21.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.20.0...v1.21.0) (2026-09-07)
+
+
+### Features
+
+* **switch:** support DIO outlets as assumed-state switches ([0b56191](https://github.com/cyrilcolinet/enki-integration-hass/commit/0b5619163f8972b41b1cb820a1ec76af2eb6bc45)), closes [#203](https://github.com/cyrilcolinet/enki-integration-hass/issues/203)
+
 ## [1.20.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.19.4...v1.20.0) (2026-09-07)
 
 
