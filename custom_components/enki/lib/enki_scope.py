@@ -8,6 +8,8 @@ _ENKI_ECOSYSTEM_MANUFACTURERS = frozenset(
     {
         "adeo",
         "acova",
+        # DIO is an Enki hub partner (433 MHz RF outlets), not third-party Zigbee.
+        "dio",
         "edisio",
         "eglo",
         "enki",
