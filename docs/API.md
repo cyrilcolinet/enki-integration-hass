@@ -58,7 +58,7 @@ Detection is **capability-based** (referentiel metadata + BFF dashboard), not li
 | `sensors` (motion, contact, temperature, …) | `binary_sensor`, `sensor`, `switch`, `number` | presence, contact, temperature-humidity, battery-health, siren micro-services |
 | Heating / pilot wire / thermostat | `select`, `climate`, `switch`, `number`, `binary_sensor` | `api-enki-thermostat-prod` (setpoint, pilot wire, window/presence, offset, child-lock, preheating), `api-enki-presence-detector-prod` (occupancy); `ENKI_HEATING_API_KEY`/`ENKI_THERMOSTAT_API_KEY` in `const.py`; if cleared, reads are skipped silently and writes raise an error |
 | Water leak sensors | `binary_sensor`, `sensor` (battery) | `api-enki-water-leak-detector-prod` + `api-enki-battery-health-prod` — keys in `const.py`; same fallback if a key is missing |
-| `cameras` (Lexman / Meari) | `camera`, `sensor`, `binary_sensor` | `api-enki-lexman-camera-prod` (`/events?nodeId=…`) for events; config controls on `api-enki-lexman-camera-meari-prod`; **no live video** (TUTK Kalay P2P native SDK) |
+| `cameras` (Lexman / Meari) | `camera`, `sensor`, `binary_sensor` | `api-enki-lexman-camera-prod` (`/events?nodeId=…`) for events; config controls and live signaling on `api-enki-lexman-camera-meari-prod` — see [Lexman cameras](#lexman-cameras-api-enki-lexman-camera-meari-prod) for what each generation exposes |
 
 Sensor capability paths: `GET/POST …/v1/sensors/{node_id}/{kebab-case-capability}` (siren uses `/v1/siren/`).
 
@@ -209,7 +209,24 @@ Only the meari generation is reachable without a native SDK. A camera that is no
 meari backend answers `404 NOT_FOUND` on **every** meari route — including all `change-*`
 writes — while an unknown enum value answers `400 BAD_REQUEST` first (values are validated
 before the device lookup). `check-camera-status` is therefore the cheapest way to tell a
-"wrong value" from a "wrong service".
+"wrong value" from a "wrong service". A `403` would mean something else entirely: the gateway
+refusing the key for the service, as it does for `consumption` and `ota`.
+
+Measured on a Lexman IPC176KF (`tr_device_lexman_camera_outdoor_label`), the pre-meari
+generation (#165):
+
+- every meari route answers `404`, under any identifier the node carries (`nodeId`,
+  `deviceId`, `externalId`, `eui64`, `p2pId`, MAC);
+- a network capture of the app opening the live view shows **no HTTP call at all** for video
+  or settings — 12 packets to `enki.api.devportal.adeo.cloud` (the login), then a rendezvous
+  with `*.iotcplatform.com` (ThroughTek) and ~6 MB of UDP straight from the camera on the LAN;
+- the camera opens **no local port** (RTSP, ONVIF, HTTP) — nothing to fall back on.
+
+So on that generation both live video and settings are out of reach, and it is not a matter of
+finding the right endpoint: there is none. The meari generation, whose devices carry the
+`tr_device_lexman_camera_meari_solar_label` referentiel key, is the one the sections below
+describe. **None of it has been exercised against a real meari camera yet** — the protocol is
+reconstructed from the app, and `scripts/probe_camera_stream.py` is what will confirm it.
 
 ### REST
 
