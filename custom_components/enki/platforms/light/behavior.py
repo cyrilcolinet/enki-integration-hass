@@ -69,7 +69,7 @@ class EnkiLightBehaviorMixin:
             power,
             endpoint=endpoint_id,
         )
-        self.coordinator.update_endpoint_power(self._device.node_id, endpoint_id, power)
+        self._cache_endpoint_power(endpoint_id, power)
 
     def _light_endpoints_have_mixed_power(self: EnkiEntity) -> bool:
         return self._device.reported.light_endpoints_have_mixed_power(self._light_endpoint_ids())
@@ -128,10 +128,19 @@ class EnkiLightBehaviorMixin:
         endpoint_id: int | None = None,
     ) -> None:
         if endpoint_id is not None:
-            self.coordinator.update_endpoint_power(self._device.node_id, endpoint_id, power)
+            self._cache_endpoint_power(endpoint_id, power)
             return
         for gang_id in self._light_endpoint_ids():
-            self.coordinator.update_endpoint_power(self._device.node_id, gang_id, power)
+            self._cache_endpoint_power(gang_id, power)
+
+    def _cache_endpoint_power(self: EnkiEntity, endpoint_id: int, power: str) -> None:
+        """Patch the cached endpoint power, and the pending fan-light snapshot.
+
+        A light switched by hand while the fan runs must not be reverted when the
+        fan stops and the pre-fan configuration is restored (#196).
+        """
+        self.coordinator.update_endpoint_power(self._device.node_id, endpoint_id, power)
+        self.coordinator.revise_fan_light_state(self._device.node_id, endpoint_id, power)
 
     @staticmethod
     def _parse_color_temp_values(possible_values: dict[str, Any]) -> list[int]:
