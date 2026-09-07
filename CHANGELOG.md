@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.20.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.19.4...v1.20.0) (2026-09-07)
+
+
+### Features
+
+* **camera:** probe meari WebRTC live-stream path ([94e5244](https://github.com/cyrilcolinet/enki-integration-hass/commit/94e524413f66dd0b0ecd16e4f6d77bd376d46d0d)), closes [#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165)
+
 ## [1.19.4](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.19.3...v1.19.4) (2026-09-07)
 
 
