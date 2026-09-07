@@ -191,6 +191,17 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
         """Return and clear the pre-fan light snapshot, if any."""
         return self._fan_light_restore.pop(node_id, None)
 
+    def revise_fan_light_state(self, node_id: str, endpoint_id: int, power: str) -> None:
+        """Fold a manual light change into a pending pre-fan snapshot (#196).
+
+        Turning a light off while the fan runs must survive the fan stopping;
+        without this the restore replays the state captured before the fan
+        started and switches the light back on.
+        """
+        saved = self._fan_light_restore.get(node_id)
+        if saved is not None and endpoint_id in saved:
+            saved[endpoint_id] = power
+
     def _record_override(self, node_id: str, path: tuple, value: Any) -> None:
         self._overrides.setdefault(node_id, {})[path] = (
             value,

@@ -9,6 +9,7 @@ to its own Home Assistant entity with independent per-endpoint on/off state.
 from __future__ import annotations
 
 from contextlib import nullcontext
+from types import MethodType
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -310,3 +311,63 @@ async def test_cadix_fan_speed_change_while_running_does_not_recouple() -> None:
     coordinator.remember_fan_light_state.assert_not_called()
     coordinator.pop_fan_light_state.assert_not_called()
     coordinator.update_endpoint_power.assert_not_called()
+
+
+def _coordinator_with_real_snapshot() -> MagicMock:
+    """Mock coordinator whose fan-light snapshot methods are the real ones."""
+    coordinator = _coordinator()
+    coordinator._fan_light_restore = {}
+    for name in (
+        "remember_fan_light_state",
+        "pop_fan_light_state",
+        "revise_fan_light_state",
+    ):
+        setattr(coordinator, name, MethodType(getattr(EnkiCoordinator, name), coordinator))
+    return coordinator
+
+
+@pytest.mark.asyncio
+async def test_light_switched_off_while_fan_runs_stays_off_after_stop() -> None:
+    """Issue #196: the restore must not undo a manual change made meanwhile.
+
+    Both lights on, fan started (the ring goes off in firmware), then the user
+    switches the main light off and stops the fan. The pre-fan snapshot said the
+    main light was on, so restoring it verbatim switched it back on and Home
+    Assistant showed both lights lit.
+    """
+    coordinator = _coordinator_with_real_snapshot()
+    device = _cadix(
+        last_reported_value={
+            "electrical_endpoints": [
+                {"id": 1, "lastReportedValue": "ON"},  # main
+                {"id": 2, "lastReportedValue": "ON"},  # motor
+                {"id": 3, "lastReportedValue": "ON"},  # ambient ring
+            ],
+        },
+    )
+    fan = EnkiFanEntity(coordinator, device)
+    main = EnkiFanLightEntity(coordinator, device, endpoint_id=1, suffix="light_a")
+
+    await fan.async_turn_on(percentage=50)
+    assert coordinator._fan_light_restore["node-cadix"] == {1: "ON", 3: "ON"}
+
+    await main.async_turn_off()
+    assert coordinator._fan_light_restore["node-cadix"] == {1: "OFF", 3: "ON"}
+
+    device.last_reported_value["fan_speed"] = 3  # running, so turning off stops it
+    coordinator.update_endpoint_power.reset_mock()
+    await fan.async_turn_off()
+
+    restored = {(c.args[1], c.args[2]) for c in coordinator.update_endpoint_power.call_args_list}
+    assert (1, "OFF") in restored  # user's choice wins
+    assert (3, "ON") in restored  # ring still comes back, as the device does
+
+
+@pytest.mark.asyncio
+async def test_manual_light_change_without_running_fan_touches_no_snapshot() -> None:
+    coordinator = _coordinator_with_real_snapshot()
+    light = EnkiFanLightEntity(coordinator, _cadix(), endpoint_id=1, suffix="light_a")
+
+    await light.async_turn_off()
+
+    assert coordinator._fan_light_restore == {}
