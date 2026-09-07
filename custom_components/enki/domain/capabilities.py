@@ -125,6 +125,20 @@ class EnkiCapabilityProfile:
         )
 
     @property
+    def supports_electrical_power_read(self) -> bool:
+        """True when the outlet reports its state, not only accepts commands.
+
+        One-way RF outlets (DIO, …) declare ``switch_electrical_power`` alone:
+        the cloud never learns whether the plug actually switched, so Home
+        Assistant has to treat their state as assumed (#203).
+        """
+        return _supports(
+            self.capabilities,
+            self.possible_values,
+            "check_electrical_power",
+        )
+
+    @property
     def channel_power_indices(self) -> list[int]:
         """1-based channel numbers of a multi-channel in-wall power module.
 

@@ -205,6 +205,13 @@ class EnkiOutletSwitch(EnkiEntity, SwitchEntity):
         super().__init__(coordinator, device)
         self._endpoint_id = endpoint_id
         self._attr_unique_id = f"{DOMAIN}-{device.node_id}-{suffix}"
+        # One-way RF outlets (DIO, …) accept commands but never report back, and
+        # a per-endpoint outlet reads its state from the dashboard payload. Only
+        # the first case is assumed: Home Assistant then offers on/off buttons
+        # instead of a toggle that would flap back to unknown (#203).
+        self._attr_assumed_state = (
+            endpoint_id is None and not device.profile.supports_electrical_power_read
+        )
 
     @property
     def is_on(self) -> bool | None:
