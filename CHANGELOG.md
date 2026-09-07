@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.19.4](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.19.3...v1.19.4) (2026-09-07)
+
+
+### Bug Fixes
+
+* **binary-sensor:** map OPEN for contact sensors ([0a9a4df](https://github.com/cyrilcolinet/enki-integration-hass/commit/0a9a4dfd2b1f005713dac0f45156dee60c894743)), closes [#198](https://github.com/cyrilcolinet/enki-integration-hass/issues/198)
+* **fan:** keep manual light changes over the Cadix restore ([d8343a6](https://github.com/cyrilcolinet/enki-integration-hass/commit/d8343a66354550624b81c308e716abce70a2ee0a)), closes [#196](https://github.com/cyrilcolinet/enki-integration-hass/issues/196)
+
 ## [1.19.3](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.19.2...v1.19.3) (2026-09-04)
 
 
