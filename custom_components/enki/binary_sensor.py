@@ -11,16 +11,23 @@ from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DOMAIN
+from .const import DOMAIN, LOGGER
 from .coordinator import EnkiCoordinator
 from .domain.models import EnkiDevice
 from .entity import EnkiEntity
+
+# (state_key, value) pairs already reported as unmapped — keeps the log to one
+# line per new enum instead of one per polling cycle.
+_UNMAPPED_SEEN: set[tuple[str, str]] = set()
 
 _ENUM_TO_BOOL = {
     "MOTION_DETECTED": True,
     "NO_MOTION_DETECTED": False,
     "VIBRATION_DETECTED": True,
     "NO_VIBRATION_DETECTED": False,
+    # The API reports contacts and shutter openings as OPEN; OPENED never comes
+    # back from the gateway but stays mapped, it costs nothing (#198).
+    "OPEN": True,
     "OPENED": True,
     "CLOSED": False,
     "WATER_DETECTED": True,
@@ -252,6 +259,21 @@ class EnkiBinarySensor(EnkiEntity, BinarySensorEntity):
             mapped = _ENUM_TO_BOOL.get(raw.upper())
             if mapped is not None:
                 return mapped
+            # An unmapped enum silently becomes "unknown" in Home Assistant, which
+            # is what #198 looked like from the outside. Say so once per value.
+            self._log_unmapped(raw)
         if isinstance(raw, bool):
             return raw
         return None
+
+    def _log_unmapped(self, raw: str) -> None:
+        seen = (self._state_key, raw.upper())
+        if seen in _UNMAPPED_SEEN:
+            return
+        _UNMAPPED_SEEN.add(seen)
+        LOGGER.debug(
+            "Unmapped %s value %r on node %s: reporting unknown",
+            self._state_key,
+            raw,
+            self.node_id,
+        )
