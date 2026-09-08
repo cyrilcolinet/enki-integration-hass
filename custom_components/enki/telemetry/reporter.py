@@ -18,6 +18,12 @@ from ..domain.profile import (
 )
 from ..domain.telemetry_coverage import discovery_record_needs_telemetry
 from ..domain.telemetry_enrichment import enrich_telemetry_export
+from ..domain.unknown_brands import (
+    build_unknown_brand_issue_url,
+    format_unknown_brand_summary,
+    unknown_brand_census,
+    unknown_brand_fingerprint,
+)
 from ..lib.telemetry_labels import format_telemetry_notification_summary
 
 if TYPE_CHECKING:
@@ -102,12 +108,49 @@ class EnkiTelemetryReporter:
             new_count += 1
             self._notify_new_profile(export_dict, fingerprint)
 
+        await self._notify_unknown_brands(records, reported)
+
         if new_count == 0:
             return
 
         LOGGER.info(
             "Notified about %s new Enki device profile(s) (opt-in telemetry)",
             new_count,
+        )
+
+    async def _notify_unknown_brands(
+        self,
+        records: list[EnkiDiscoveryRecord],
+        reported: set[str],
+    ) -> None:
+        """Raise one card for the brands the integration skips, once per brand set.
+
+        Per-profile telemetry never sees these devices, so without this a
+        supportable product stays invisible (#203). Aggregated on purpose: a user
+        with seven plugs of an unknown brand gets one card, not seven.
+        """
+        census = unknown_brand_census(records)
+        if not census:
+            return
+        fingerprint = unknown_brand_fingerprint(census)
+        if fingerprint in reported:
+            return
+        reported.add(fingerprint)
+        await self._save_reported(reported)
+
+        ir.async_create_issue(
+            self._hass,
+            DOMAIN,
+            f"unknown_brands_{fingerprint[:16]}",
+            is_fixable=False,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key="unknown_brand_devices",
+            translation_placeholders={"summary": format_unknown_brand_summary(census)},
+            learn_more_url=build_unknown_brand_issue_url(census, fingerprint),
+        )
+        LOGGER.info(
+            "Enki: %s device(s) skipped because their brand is unknown (opt-in telemetry)",
+            sum(entry.count for entry in census),
         )
 
     def _dismiss_profile_notification(self, fingerprint: str) -> None:

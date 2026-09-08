@@ -267,6 +267,10 @@
     "unsupported_device": {
       "title": "Enki — unsupported device",
       "description": "The device profile {summary} is not supported by the integration yet. Use the Learn more link to request support on GitHub."
+    },
+    "unknown_brand_devices": {
+      "title": "Enki — unrecognized device brands",
+      "description": "Your Enki account has devices the integration skips because their brand is unknown to it: {summary}. Some of these are Enki partner products that would only need to be added to the supported list. Use the Learn more link to report them on GitHub — nothing is sent without a click."
     }
   },
   "device_automation": {

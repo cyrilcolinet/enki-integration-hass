@@ -28,6 +28,17 @@ When a **new** profile is detected (unique fingerprint) **and support is missing
 
 **Also skipped (no notification, no GitHub link):** Enki hub / gateway profiles, and third-party Zigbee (Sonoff, Tuya, Aqara, …) that the integration deliberately ignores at discovery.
 
+### Unrecognized brands (one aggregated card)
+
+Devices are skipped at discovery when their **brand** is unknown to the integration, so per-profile notifications never see them — that is how DIO outlets stayed invisible until a user happened to mention them ([#203](https://github.com/cyrilcolinet/enki-integration-hass/issues/203)), when supporting them only meant adding the brand.
+
+One **aggregated** repair card therefore lists those brands, with the same pre-filled GitHub link. Deliberately quiet:
+
+- **one card per brand set, per installation** — seven plugs of one unknown brand raise one card, not seven; buying an eighth raises none, since counts are excluded from the fingerprint;
+- **a new brand appearing** later does raise a new card, which is the point;
+- **third-party Zigbee brands stay silent**, as above;
+- brands Enki drives through their own micro-service (DIO, Wiz, Tapo, Somfy, Netatmo, …) are **flagged as partners** in the issue body — those are the ones usually worth supporting.
+
 ### Enriched export
 
 Diagnostics and GitHub prefill now include extra **English** context when available:

@@ -198,16 +198,25 @@ def discovery_record_telemetry_exclusion(record: EnkiDiscoveryRecord) -> str | N
     ):
         return "out_of_enki_scope"
 
-    device_type = _normalize_type(record.device_type)
-    bff_type = _normalize_type(record.bff_device_type)
-    if device_type in _GATEWAY_DEVICE_TYPES or bff_type in _GATEWAY_DEVICE_TYPES:
-        return "gateway"
-
-    caps = record.capabilities or []
-    if caps and any(cap in _GATEWAY_CAPABILITY_MARKERS for cap in caps):
+    if discovery_record_is_gateway(record):
         return "gateway"
 
     return None
+
+
+def discovery_record_is_gateway(record: EnkiDiscoveryRecord) -> bool:
+    """True for the hub itself, whatever its brand.
+
+    Checked on its own because the out-of-scope test runs first: an unknown-brand
+    hub would otherwise look like an unsupported product worth reporting.
+    """
+    device_type = _normalize_type(record.device_type)
+    bff_type = _normalize_type(record.bff_device_type)
+    if device_type in _GATEWAY_DEVICE_TYPES or bff_type in _GATEWAY_DEVICE_TYPES:
+        return True
+
+    caps = record.capabilities or []
+    return bool(caps and any(cap in _GATEWAY_CAPABILITY_MARKERS for cap in caps))
 
 
 def discovery_record_eligible_for_telemetry(record: EnkiDiscoveryRecord) -> bool:
