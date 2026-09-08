@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import math
 import time
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -279,7 +280,14 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
                 continue
             for path in list(paths):
                 value, expires_at = paths[path]
-                if now >= expires_at or _override_current(device, path) == value:
+                current = _override_current(device, path)
+                if now >= expires_at or current == value:
+                    del paths[path]
+                    continue
+                # A held-forever value belongs to a device that never reports
+                # back. The moment the cloud does report something — the plug
+                # was switched by its remote, say — it knows better than we do.
+                if math.isinf(expires_at) and current is not None:
                     del paths[path]
                     continue
                 _override_apply(device, path, value)
