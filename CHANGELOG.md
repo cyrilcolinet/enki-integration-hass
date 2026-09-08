@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.22.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.21.0...v1.22.0) (2026-09-08)
+
+
+### Features
+
+* **telemetry:** report brands skipped at discovery ([4808e3a](https://github.com/cyrilcolinet/enki-integration-hass/commit/4808e3a1e046b1c820caf9517e65a1560afbe9af)), closes [#203](https://github.com/cyrilcolinet/enki-integration-hass/issues/203)
+
+
+### Bug Fixes
+
+* **switch:** hold the last command on write-only outlets ([f3e450b](https://github.com/cyrilcolinet/enki-integration-hass/commit/f3e450b9204bdd2ceeb9a4938bb31dded9e6f235)), closes [#203](https://github.com/cyrilcolinet/enki-integration-hass/issues/203)
+* **switch:** let the cloud reclaim a held command ([cd712e6](https://github.com/cyrilcolinet/enki-integration-hass/commit/cd712e6a3a793d97b0fe32021b4413483c5c6c49)), closes [#203](https://github.com/cyrilcolinet/enki-integration-hass/issues/203)
+
 ## [1.21.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.20.0...v1.21.0) (2026-09-07)
 
 
