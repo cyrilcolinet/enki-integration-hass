@@ -202,19 +202,38 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
         if saved is not None and endpoint_id in saved:
             saved[endpoint_id] = power
 
-    def _record_override(self, node_id: str, path: tuple, value: Any) -> None:
+    def _record_override(
+        self,
+        node_id: str,
+        path: tuple,
+        value: Any,
+        hold_seconds: float | None = None,
+    ) -> None:
+        hold = _OPTIMISTIC_HOLD_SECONDS if hold_seconds is None else hold_seconds
         self._overrides.setdefault(node_id, {})[path] = (
             value,
-            time.monotonic() + _OPTIMISTIC_HOLD_SECONDS,
+            time.monotonic() + hold,
         )
 
-    def update_cached_value(self, node_id: str, key: str, value: Any) -> None:
-        """Optimistically patch cached state after a successful command."""
+    def update_cached_value(
+        self,
+        node_id: str,
+        key: str,
+        value: Any,
+        hold_seconds: float | None = None,
+    ) -> None:
+        """Optimistically patch cached state after a successful command.
+
+        ``hold_seconds`` overrides how long the value outranks the cloud. Pass
+        ``math.inf`` for a device that never reports back: nothing will ever
+        confirm or contradict the command, so expiring it only turns the entity
+        unknown until the next one (#203).
+        """
         device = self.get_device_by_node(node_id)
         if device is None or self.data is None:
             return
         device.last_reported_value[key] = value
-        self._record_override(node_id, ("top", key), value)
+        self._record_override(node_id, ("top", key), value, hold_seconds)
         self._notify()
 
     def update_cached_nested(self, node_id: str, parent_key: str, key: str, value: Any) -> None:

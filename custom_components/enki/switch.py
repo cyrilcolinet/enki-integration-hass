@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 from homeassistant.components.switch import SwitchDeviceClass, SwitchEntity
@@ -244,8 +245,12 @@ class EnkiOutletSwitch(EnkiEntity, SwitchEntity):
         if self._endpoint_id is not None:
             self.coordinator.update_endpoint_power(node_id, self._endpoint_id, power)
             return
-        self.coordinator.update_cached_value(node_id, "electrical_power", power)
-        self.coordinator.update_cached_value(node_id, "power", power)
+        # A one-way outlet is never read back, so the command is the only state
+        # there will ever be — holding it for 45 s just turns the entity unknown
+        # in between (#203).
+        hold = math.inf if self._attr_assumed_state else None
+        self.coordinator.update_cached_value(node_id, "electrical_power", power, hold)
+        self.coordinator.update_cached_value(node_id, "power", power, hold)
 
 
 class EnkiChannelSwitch(EnkiEntity, SwitchEntity):
