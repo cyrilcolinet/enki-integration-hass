@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock
+import math
+from unittest.mock import AsyncMock, MagicMock
 
+import pytest
 from enki.domain.models import EnkiDevice
 from enki.lib.enki_scope import device_in_enki_scope
 from enki.switch import _build_switch_entities
@@ -63,3 +65,33 @@ def test_readable_outlet_is_not_assumed_state() -> None:
     switch = _build_switch_entities(MagicMock(), device)[0]
     assert switch._attr_assumed_state is False
     assert switch.is_on is True
+
+
+@pytest.mark.asyncio
+async def test_assumed_state_outlet_holds_its_last_command() -> None:
+    """The optimistic value must not expire when nothing ever reports back.
+
+    Otherwise the entity turns unknown 45 s after each command, which is what the
+    reporter saw in the history: "off", then "unknown", then "on" (#203).
+    """
+    coordinator = MagicMock()
+    coordinator.api.async_switch_electrical_power = AsyncMock()
+    switch = _build_switch_entities(coordinator, _dio_outlet())[0]
+
+    await switch.async_turn_on()
+
+    holds = {call.args[1]: call.args[3] for call in coordinator.update_cached_value.call_args_list}
+    assert holds == {"electrical_power": math.inf, "power": math.inf}
+
+
+@pytest.mark.asyncio
+async def test_readable_outlet_keeps_the_default_hold() -> None:
+    coordinator = MagicMock()
+    coordinator.api.async_switch_electrical_power = AsyncMock()
+    device = _dio_outlet(capabilities=["switch_electrical_power", "check_electrical_power"])
+    switch = _build_switch_entities(coordinator, device)[0]
+
+    await switch.async_turn_off()
+
+    holds = {call.args[1]: call.args[3] for call in coordinator.update_cached_value.call_args_list}
+    assert holds == {"electrical_power": None, "power": None}
