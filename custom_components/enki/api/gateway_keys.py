@@ -157,14 +157,6 @@ class GatewayKeyStore:
         value = self.get_const_value(svc.const_key)
         return value or None
 
-    def suggest_const_updates(self) -> dict[str, str]:
-        """Runtime keys that could replace empty const.py entries."""
-        return {
-            const_key: value
-            for const_key, value in self._runtime.items()
-            if value and not self._defaults.get(const_key)
-        }
-
 
 async def fetch_mobile_config(http_client: Any) -> dict[str, Any]:
     """Fetch Enki app settings (same endpoint as the mobile app GET settings).
