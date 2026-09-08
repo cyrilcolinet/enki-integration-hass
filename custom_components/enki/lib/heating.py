@@ -80,15 +80,3 @@ def thermostat_running_to_hvac_action(running_state: str | None) -> str | None:
     if normalized == "COOL":
         return "cooling"
     return None
-
-
-def enabled_mode_is_on(value: str | None) -> bool | None:
-    """Map ENABLED/DISABLED heating feature toggles to bool."""
-    if not isinstance(value, str):
-        return None
-    normalized = value.upper()
-    if normalized == "ENABLED":
-        return True
-    if normalized == "DISABLED":
-        return False
-    return None

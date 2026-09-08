@@ -165,6 +165,12 @@
       },
       "sd_card": {
         "name": "SD card issue"
+      },
+      "connectivity": {
+        "name": "Connectivity"
+      },
+      "firmware_update": {
+        "name": "Firmware update"
       }
     },
     "switch": {
