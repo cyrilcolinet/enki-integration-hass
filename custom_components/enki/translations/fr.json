@@ -273,6 +273,10 @@
     "unsupported_device": {
       "title": "Enki — appareil non supporté",
       "description": "Le profil d'appareil {summary} n'est pas encore pris en charge par l'intégration. Utilisez le lien En savoir plus pour demander le support sur GitHub."
+    },
+    "unknown_brand_devices": {
+      "title": "Enki — marques d'appareils non reconnues",
+      "description": "Votre compte Enki contient des appareils que l'intégration ignore car leur marque lui est inconnue : {summary}. Certains sont des produits partenaires Enki qu'il suffirait d'ajouter à la liste des marques gérées. Utilisez le lien « En savoir plus » pour les signaler sur GitHub — rien n'est envoyé sans un clic."
     }
   },
   "device_automation": {
