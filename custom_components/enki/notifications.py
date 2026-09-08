@@ -51,10 +51,6 @@ class EnkiNotifier:
         self._delete("gateway")
         self._create("connection", translation_key="cloud_unreachable")
 
-    def notify_service_unavailable(self) -> None:
-        """Enki cloud temporarily unavailable (5xx)."""
-        self.notify_connection_failed()
-
     def notify_maintenance_mode(self) -> None:
         """Enki cloud reports active maintenance."""
         self._create(

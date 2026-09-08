@@ -26,7 +26,6 @@ from ..lib.conversion import (
     direction_to_enki_rotation,
     enki_rotation_to_direction,
     merge_light_state_payload,
-    normalize_power_state,
 )
 from ..lib.enki_scope import device_in_enki_scope
 from ..lib.production import parse_production_value
@@ -997,12 +996,6 @@ class EnkiAPI:
     ) -> None:
         """Backward-compatible wrapper for single-field lighting updates."""
         await self.async_change_light_state(home_id, node_id, {parameter: value})
-
-    async def _get_power_state(self, home_id: str, node_id: str, endpoint: int) -> str:
-        """Read one endpoint power state (used by integration tests)."""
-        http = await self._get_http()
-        data = await http.get_electrical_power(home_id, node_id)
-        return normalize_power_state(data.get("lastReportedValue"), endpoint)
 
     async def async_activate_scenario(self, home_id: str, scenario_id: str) -> None:
         """Trigger an Enki cloud scenario."""
