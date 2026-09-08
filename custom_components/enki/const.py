@@ -21,7 +21,7 @@ ENKI_OIDC_URL = "https://keycloak-prod.iot.leroymerlin.fr/realms/enki/protocol/o
 ENKI_BASE_URL = "https://enki.api.devportal.adeo.cloud"
 
 # Mobile app version used for gateway key extraction and HTTP impersonation.
-ENKI_APP_VERSION = "2.25.1"
+ENKI_APP_VERSION = "2.26.3"
 ENKI_USER_AGENT = f"Enki/{ENKI_APP_VERSION} (iPhone; iOS 18.0; Scale/3.00) Enki"
 
 

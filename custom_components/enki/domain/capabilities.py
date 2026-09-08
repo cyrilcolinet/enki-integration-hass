@@ -796,14 +796,6 @@ def is_cover_device(device: EnkiDevice) -> bool:
     return device.profile.is_cover
 
 
-def device_capabilities(device: EnkiDevice) -> set[str]:
-    return set(device.profile.capabilities)
-
-
-def device_possible_values(device: EnkiDevice) -> dict[str, Any]:
-    return device.profile.possible_values
-
-
 def is_fan_device(device: EnkiDevice) -> bool:
     return device.profile.is_fan
 
