@@ -33,7 +33,7 @@
 
 ---
 
-The **Enki** app controls hundreds of products (Lexman, Equation, Inspire, Edisio, Evology, Noirot, Envertech, …) through the **Leroy Merlin cloud**. This integration exposes in Home Assistant **everything visible in the Enki app** — using Enki **API capabilities** from the referentiel, like the mobile app, rather than a fixed model list.
+The **Enki** app controls hundreds of products (Lexman, Equation, Inspire, Edisio, Evology, Noirot, Envertech, DIO, …) through the **Leroy Merlin cloud**. This integration exposes in Home Assistant **everything visible in the Enki app** — using Enki **API capabilities** from the referentiel, like the mobile app, rather than a fixed model list.
 
 > **Disclaimer — unofficial project:** This is a community-maintained integration. It is **not** official, **not** affiliated with, and **not** endorsed by Leroy Merlin, ADEO, or Enki. The author and maintainers are **independent** and do **not** work for Enki. Full details: [docs/DISCLAIMER.md](docs/DISCLAIMER.md).
 
@@ -53,7 +53,7 @@ The **Enki** app controls hundreds of products (Lexman, Equation, Inspire, Edisi
 
 - **Ventilation** (Inspire Siroco+, Cadix, Radix, …) — `fan`, `light` (LED kit); the **Cadix** exposes its main light and ambient ring as separate lights with optimistic fan/light coupling (since **v1.11**)
 - **Lighting** (Eglo, Lexman, dimmables, RGB) — `light`
-- **Outlets & relays** (Edisio, Equation ON/OFF) — `light` / ON-OFF power; **Evology 2-channel module** — one `switch` per channel
+- **Outlets & relays** (Edisio, Equation ON/OFF) — `light` / ON-OFF power; **Evology 2-channel module** — one `switch` per channel; **DIO outlets** — `switch` with assumed state (one-way 433 MHz RF, nothing reports back) (since **v1.21**)
 - **Water heater relay** (Lexman/Nodon on-off relay re-typed as boiler) — `switch`
 - **Solar** (Envertech-Lexman) — `sensor` (production W)
 - **Sensors** (Lexman, Sedea, Evology multisensor, …) — `binary_sensor` (motion, presence, contact), `sensor` (temp, humidity, battery, brightness)

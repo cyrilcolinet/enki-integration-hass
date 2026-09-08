@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -271,3 +272,28 @@ def test_override_apply_endpoint_string_replaces_value() -> None:
     device = _device(electrical_endpoints=[{"id": 3, "lastReportedValue": "OFF"}])
     _override_apply(device, ("endpoint", 3), "ON")
     assert device.last_reported_value["electrical_endpoints"][0]["lastReportedValue"] == "ON"
+
+
+def test_infinite_hold_survives_a_silent_poll() -> None:
+    # A write-only outlet: the poll reports nothing, so the command stands (#203).
+    coordinator = _make_coordinator()
+    coordinator.data = [_device()]
+    coordinator.update_cached_value("node", "electrical_power", "ON", math.inf)
+
+    polled = coordinator._apply_optimistic_overrides([_device()])
+
+    assert polled[0].last_reported_value["electrical_power"] == "ON"
+    assert coordinator._overrides["node"]
+
+
+def test_infinite_hold_yields_once_the_cloud_reports() -> None:
+    # If the plug is ever switched by its remote and the cloud does report it,
+    # the held command must not mask the truth forever.
+    coordinator = _make_coordinator()
+    coordinator.data = [_device()]
+    coordinator.update_cached_value("node", "electrical_power", "ON", math.inf)
+
+    polled = coordinator._apply_optimistic_overrides([_device(electrical_power="OFF")])
+
+    assert polled[0].last_reported_value["electrical_power"] == "OFF"
+    assert coordinator._overrides == {}
