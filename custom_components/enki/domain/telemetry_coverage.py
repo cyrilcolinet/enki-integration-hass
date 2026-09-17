@@ -118,6 +118,9 @@ _CAPABILITY_PROBES: dict[str, str] = {
 # Referentiel capabilities with no HA entity planned (timers, energy totals, …).
 NOT_PLANNED_CAPABILITIES = frozenset(
     {
+        # Pan/tilt on the pre-meari Lexman cameras has no HTTP route: the app
+        # drives it through the Kalay P2P tunnel, out of reach here (#212, #165).
+        "change_camera_orientation",
         "cancel_electrical_power_switch_in",
         "next_electrical_power_switch_in",
         "switch_electrical_power_in",

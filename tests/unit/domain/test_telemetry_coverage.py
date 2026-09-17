@@ -283,3 +283,28 @@ def test_check_multisensor_state_covered() -> None:
     )
     profile = profile_from_record(record)
     assert capability_is_covered("check_multisensor_state", profile) is True
+
+
+def test_indoor_camera_orientation_is_not_a_capability_gap() -> None:
+    # Shape reported by #212 (Lexman IPC167KF). Pan/tilt has no HTTP route —
+    # nudging every owner of this camera to open the same issue helps nobody.
+    record = build_discovery_record(
+        device_type="cameras",
+        bff_device_type="cameras",
+        capabilities=[
+            "change_camera_orientation",
+            "check_camera_events",
+            "check_camera_last_event",
+            "remove_camera_events",
+        ],
+        possible_values={
+            "check_camera_last_event": {
+                "values": ["CAMERA_MOVEMENT", "SD_REMOVED", "SD_WORKING", "SOUND_DETECTED"]
+            }
+        },
+        manufacturer="Lexman",
+        model="IPC167KF",
+        firmware_version="2.0.0",
+        supported_by_integration=True,
+    )
+    assert discovery_record_needs_telemetry(record) is False
