@@ -118,6 +118,9 @@
       "camera_last_motion": {
         "name": "Last motion"
       },
+      "camera_last_sound": {
+        "name": "Last sound"
+      },
       "camera_last_event": {
         "name": "Last event"
       }

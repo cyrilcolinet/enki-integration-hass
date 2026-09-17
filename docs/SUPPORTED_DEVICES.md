@@ -131,11 +131,11 @@ Gateway keys in `gateway_keys_data.py` (APK 2.26.x).
 
 ## Cameras (Lexman / Meari) — beta
 
-**HA entities:** `camera` (last-event snapshot), `sensor` (last event type, last motion), `binary_sensor` (SD-card removed)
+**HA entities:** `camera` (last-event snapshot), `sensor` (last event type, last motion, last sound on models that report `SOUND_DETECTED`), `binary_sensor` (SD-card removed)
 
 Events come from `api-enki-lexman-camera-prod` (`GET /events?nodeId=…`), snapshots from the last event's image URL. **Live video is not available** — the app streams over TUTK Kalay Nebula P2P, a native SDK with no Python path.
 
-Config controls (motion detection on/off, sensitivity, indicator light) live on the Meari service and are REST-doable, but need an indoor-camera owner to validate the write endpoints — tracked in [#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165). Field work: [#135](https://github.com/cyrilcolinet/enki-integration-hass/issues/135).
+Config controls (night vision, motion detection, indicator light, …) exist only on the Meari service, for the Meari generation (e.g. the solar camera). The Lexman IPC1xxKF cameras are not in that backend: settings, pan/tilt and live video all go through the Kalay P2P tunnel, with no HTTP route — measured in [#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165), details in [API.md](API.md#lexman-cameras-api-enki-lexman-camera-meari-prod). Field work: [#135](https://github.com/cyrilcolinet/enki-integration-hass/issues/135).
 
 **Blueprint:** motion → notify with the last snapshot — `blueprints/automation/enki/camera_motion_notification.yaml`.
 
