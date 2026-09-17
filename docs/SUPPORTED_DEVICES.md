@@ -229,7 +229,7 @@ Reads are best-effort (404 skipped) and driven by referentiel capabilities, not 
 | 🔬 Beta | Cameras (event snapshot — no live video), covers, Lexman water leak, scenarios — feedback welcome |
 | 🔬 Beta | Thermostat config knobs (offset, child-lock, preheating) — decoded, real-hardware validation welcome |
 | 🔜 Soon | ACOVA ARLAN radiators (same heating API if capabilities match); camera config controls ([#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165)) |
-| Not planned | Camera live video (TUTK Kalay native SDK); Enki alarm (no API identified) |
+| Not planned | Camera live video and pan/tilt on Lexman IPC1xxKF cameras (Kalay P2P only, no HTTP route); Enki alarm (no API identified) |
 | Out of scope | Enki pairing and device setup, Leroy Merlin account management → [Enki support](https://support.enki-home.com/) (configure devices in the app before HA) |
 
 API documentation: [API.md](API.md)
