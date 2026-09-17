@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.23.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.22.0...v1.23.0) (2026-09-17)
+
+
+### Features
+
+* **camera:** expose the last sound detection ([c5c0834](https://github.com/cyrilcolinet/enki-integration-hass/commit/c5c0834c3e53e0648c33edb423ac5354056acdf0)), closes [#212](https://github.com/cyrilcolinet/enki-integration-hass/issues/212)
+
 ## [1.22.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.21.0...v1.22.0) (2026-09-08)
 
 
