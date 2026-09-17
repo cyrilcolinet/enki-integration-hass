@@ -65,6 +65,8 @@ def _build_sensor_entities(
         entities.append(EnkiElectricalConsumptionSensor(coordinator, device))
     if profile.is_camera:
         entities.append(EnkiCameraLastMotionSensor(coordinator, device))
+        if profile.supports_camera_sound_events:
+            entities.append(EnkiCameraLastSoundSensor(coordinator, device))
         entities.append(EnkiCameraLastEventSensor(coordinator, device))
 
     return entities
@@ -197,6 +199,23 @@ class EnkiCameraLastMotionSensor(EnkiEntity, SensorEntity):
     @property
     def native_value(self) -> datetime | None:
         raw = self._device.reported.camera_last_motion_at
+        return dt_util.parse_datetime(raw) if raw else None
+
+
+class EnkiCameraLastSoundSensor(EnkiEntity, SensorEntity):
+    """Timestamp of the camera's most recent sound detection."""
+
+    _attr_translation_key = "camera_last_sound"
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator: EnkiCoordinator, device: EnkiDevice) -> None:
+        super().__init__(coordinator, device)
+        self._attr_unique_id = f"{DOMAIN}-{device.node_id}-camera-last-sound"
+
+    @property
+    def native_value(self) -> datetime | None:
+        raw = self._device.reported.camera_last_sound_at
         return dt_util.parse_datetime(raw) if raw else None
 
 

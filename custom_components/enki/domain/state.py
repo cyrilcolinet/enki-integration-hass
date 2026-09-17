@@ -76,6 +76,11 @@ class EnkiDeviceState:
         return str(value) if isinstance(value, str) else None
 
     @property
+    def camera_last_sound_at(self) -> str | None:
+        value = self._data.get("camera_last_sound_at")
+        return str(value) if isinstance(value, str) else None
+
+    @property
     def camera_last_image_url(self) -> str | None:
         value = self._data.get("camera_last_image_url")
         return str(value) if isinstance(value, str) else None

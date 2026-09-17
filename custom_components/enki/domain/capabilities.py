@@ -549,6 +549,13 @@ class EnkiCapabilityProfile:
         )
 
     @property
+    def supports_camera_sound_events(self) -> bool:
+        """The camera reports SOUND_DETECTED events (models with a microphone, #212)."""
+        last_event = self.possible_values.get("check_camera_last_event")
+        values = last_event.get("values") if isinstance(last_event, dict) else None
+        return isinstance(values, list) and "SOUND_DETECTED" in values
+
+    @property
     def is_camera(self) -> bool:
         """Lexman cameras — event list (motion / SD) via api-enki-lexman-camera-prod."""
         return self.device_type == DEVICE_TYPE_CAMERAS or _supports(

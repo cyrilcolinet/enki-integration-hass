@@ -88,6 +88,7 @@ _POLL_STATE_EXPORT_KEYS = frozenset(
         "camera_last_event_type",
         "camera_last_event_at",
         "camera_last_motion_at",
+        "camera_last_sound_at",
         "camera_sd_removed",
         "channel1_electrical_power",
         "channel2_electrical_power",

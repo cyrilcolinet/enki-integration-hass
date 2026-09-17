@@ -1,8 +1,8 @@
 """Derive camera state from the Lexman event list (api-enki-lexman-camera-prod).
 
 The events endpoint returns ``{"items": [{"type", "createdAt", "image", "id"}]}``
-newest-first, where ``type`` is one of ``CAMERA_MOVEMENT`` / ``SD_WORKING`` /
-``SD_REMOVED`` and movement events carry an ``image`` snapshot URL.
+newest-first, where ``type`` is one of ``CAMERA_MOVEMENT`` / ``SOUND_DETECTED`` /
+``SD_WORKING`` / ``SD_REMOVED`` and movement events carry an ``image`` snapshot URL.
 """
 
 from __future__ import annotations
@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import Any
 
 MOVEMENT = "CAMERA_MOVEMENT"
+SOUND = "SOUND_DETECTED"
 SD_REMOVED = "SD_REMOVED"
 SD_WORKING = "SD_WORKING"
 _SD_TYPES = {SD_WORKING, SD_REMOVED}
@@ -38,6 +39,10 @@ def parse_camera_events(items: list[dict[str, Any]]) -> dict[str, Any]:
     motion = next((e for e in events if e.get("type") == MOVEMENT), None)
     if motion is not None:
         state["camera_last_motion_at"] = _created_at(motion) or None
+
+    sound = next((e for e in events if e.get("type") == SOUND), None)
+    if sound is not None:
+        state["camera_last_sound_at"] = _created_at(sound) or None
 
     image = next((e.get("image") for e in events if e.get("image")), None)
     if isinstance(image, str) and image:
