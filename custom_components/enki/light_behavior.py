@@ -6,8 +6,8 @@ from typing import Any
 
 from homeassistant.components.light import ATTR_BRIGHTNESS, ATTR_COLOR_TEMP_KELVIN
 
-from ...coordinator import EnkiCoordinator
-from ...entity import EnkiEntity
+from .coordinator import EnkiCoordinator
+from .entity import EnkiEntity
 
 
 class EnkiLightBehaviorMixin:

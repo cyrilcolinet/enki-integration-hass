@@ -30,9 +30,8 @@ tests/unit/
 ├── api/         # api/ modules: client, auth, transport, routing, discovery, scenarios
 ├── domain/      # domain/ modules: capabilities, state, profile, camera_events, telemetry_*
 ├── lib/         # lib/ pure helpers: conversion, production, shutter, heating, …
-├── platforms/   # platforms/ shared logic: fan airflow, light behavior
-├── telemetry/   # telemetry/ reporter and nudge
-├── entities/    # HA entity platform loaders at enki/ root: fan, light, sensor, switch, …
+├── telemetry/   # telemetry/ reporter
+├── entities/    # HA entity platform loaders at enki/ root and their helpers: fan, fan_airflow, light, light_behavior, …
 ├── core/        # integration glue: config_flow, coordinator, setup entry, migration, …
 └── scripts/     # tests for repo scripts/ (not custom_components)
 ```
@@ -174,6 +173,7 @@ Home Assistant requires **platform loaders** and `config_flow.py` at the root of
 ```
 custom_components/enki/
 ├── __init__.py, manifest.json, config_flow.py, coordinator.py, entity.py
+├── fan_airflow.py, light_behavior.py   # helpers shared by the fan and light entities
 ├── alarm_control_panel.py
 ├── binary_sensor.py, button.py, camera.py, climate.py, cover.py, fan.py, light.py
 ├── number.py, select.py, sensor.py, switch.py, update.py
@@ -186,7 +186,7 @@ custom_components/enki/
 │   ├── auth.py                # OAuth Keycloak
 │   ├── transport.py           # HTTP per micro-service
 │   ├── gateway_registry.py    # APK micro-service catalogue
-│   ├── gateway_keys.py        # runtime key store + mobile-config settings path
+│   ├── gateway_keys.py        # key lookup by transport + mobile-config settings read
 │   ├── device_metadata.py     # firmware / update / connectivity reads
 │   ├── capability_routing.py  # capability → read routing table
 │   └── capability_routes_data.py  # generated capability→route catalogue (APK)
@@ -195,24 +195,18 @@ custom_components/enki/
 │   ├── models.py, capabilities.py, state.py, profile.py, camera_events.py, security.py
 │   ├── telemetry_coverage.py, telemetry_enrichment.py, unknown_brands.py
 │
-├── platforms/              # shared internal logic
-│   ├── light/behavior.py
-│   └── fan/airflow.py
-│
 ├── telemetry/
-│   ├── reporter.py
-│   └── nudge.py
+│   └── reporter.py
 │
 └── lib/                    # pure functions (0 HA import)
     ├── conversion.py, bff.py, battery.py, capability_path.py, production.py
     ├── heating.py, shutter.py, enki_scope.py, command_override.py, fan_endpoints.py
     ├── request_report.py, telemetry_labels.py
-    ├── fan_endpoints.py, request_report.py, telemetry_labels.py
 ```
 
-Platforms registered in `__init__.py` → `PLATFORMS`: `binary_sensor`, `button`, `camera`, `climate`, `cover`, `fan`, `light`, `number`, `select`, `sensor`, `switch`.
+Platforms registered in `__init__.py` → `PLATFORMS`: `alarm_control_panel`, `binary_sensor`, `button`, `camera`, `climate`, `cover`, `fan`, `light`, `number`, `select`, `sensor`, `switch`, `update`.
 
-`tests/unit/` mirrors this layout (`api/`, `domain/`, `lib/`, `platforms/`, `telemetry/`, plus `entities/`, `core/`, and `scripts/` for the root platform loaders, integration glue, and repo scripts) — see [Unit tests](#unit-tests).
+`tests/unit/` mirrors this layout (`api/`, `domain/`, `lib/`, `telemetry/`, plus `entities/`, `core/`, and `scripts/` for the root platform loaders, integration glue, and repo scripts) — see [Unit tests](#unit-tests).
 
 ### Import conventions
 
@@ -221,7 +215,7 @@ Platforms registered in `__init__.py` → `PLATFORMS`: `binary_sensor`, `button`
 | `enki.api` | Public cloud client | `from enki.api import EnkiAPI` |
 | `enki.domain` | Model and capabilities | `from enki.domain.models import EnkiDevice` |
 | `enki.lib` | Helpers testable without HA | `from enki.lib.conversion import speed_to_percentage` |
-| `enki.platforms.fan` | Fan logic | `from enki.platforms.fan.airflow import preset_to_enki_airflow_mode` |
+| `enki.fan_airflow` | Fan preset logic | `from enki.fan_airflow import preset_to_enki_airflow_mode` |
 | `enki.telemetry` | Opt-in telemetry | `from enki.telemetry import EnkiTelemetryReporter` |
 
 See also [CONTRIBUTING.md](../CONTRIBUTING.md) for PR conventions.

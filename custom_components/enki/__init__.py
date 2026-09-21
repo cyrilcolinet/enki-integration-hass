@@ -50,7 +50,6 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
 
 async def async_setup_entry(hass: HomeAssistant, entry: EnkiConfigEntry) -> bool:
     from .coordinator import EnkiCoordinator
-    from .telemetry import async_handle_telemetry_nudge
 
     coordinator = EnkiCoordinator(hass, entry)
     notifier = EnkiNotifier(hass, entry)
@@ -72,7 +71,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: EnkiConfigEntry) -> bool
 
     try:
         await coordinator.async_config_entry_first_refresh()
-        await async_handle_telemetry_nudge(hass, entry)
     except Exception:
         await coordinator.api.async_close()
         raise

@@ -22,7 +22,7 @@ from .const import DOMAIN, FAN_SPEED_MAX
 from .coordinator import EnkiCoordinator
 from .domain.models import EnkiDevice
 from .entity import EnkiEntity
-from .platforms.fan.airflow import (
+from .fan_airflow import (
     airflow_modes_from_metadata,
     device_supports_fan_rotation,
     enki_airflow_mode_to_preset,

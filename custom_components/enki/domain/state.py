@@ -16,6 +16,16 @@ def _as_float(value: Any) -> float | None:
     return None
 
 
+def _str_field(key: str) -> property:
+    """A reported field that is only meaningful as a string; None otherwise."""
+
+    def read(self: EnkiDeviceState) -> str | None:
+        value = self._data.get(key)
+        return value if isinstance(value, str) else None
+
+    return property(read)
+
+
 class EnkiDeviceState:
     """Read-only view of ``EnkiDevice.last_reported_value``.
 
@@ -38,15 +48,9 @@ class EnkiDeviceState:
         value = self._data.get("fan_speed")
         return int(value) if value is not None else None
 
-    @property
-    def airflow_mode(self) -> str | None:
-        value = self._data.get("airflow_mode")
-        return str(value) if isinstance(value, str) else None
+    airflow_mode = _str_field("airflow_mode")
 
-    @property
-    def airflow_rotation(self) -> str | None:
-        value = self._data.get("airflow_rotation")
-        return str(value) if isinstance(value, str) else None
+    airflow_rotation = _str_field("airflow_rotation")
 
     @property
     def airflow_rotation_supported(self) -> bool:
@@ -60,54 +64,30 @@ class EnkiDeviceState:
             return value
         return self.global_power
 
-    @property
-    def camera_last_event_type(self) -> str | None:
-        value = self._data.get("camera_last_event_type")
-        return str(value) if isinstance(value, str) else None
+    camera_last_event_type = _str_field("camera_last_event_type")
 
-    @property
-    def camera_last_event_at(self) -> str | None:
-        value = self._data.get("camera_last_event_at")
-        return str(value) if isinstance(value, str) else None
+    camera_last_event_at = _str_field("camera_last_event_at")
 
-    @property
-    def camera_last_motion_at(self) -> str | None:
-        value = self._data.get("camera_last_motion_at")
-        return str(value) if isinstance(value, str) else None
+    camera_last_motion_at = _str_field("camera_last_motion_at")
 
-    @property
-    def camera_last_sound_at(self) -> str | None:
-        value = self._data.get("camera_last_sound_at")
-        return str(value) if isinstance(value, str) else None
+    camera_last_sound_at = _str_field("camera_last_sound_at")
 
-    @property
-    def camera_last_image_url(self) -> str | None:
-        value = self._data.get("camera_last_image_url")
-        return str(value) if isinstance(value, str) else None
+    camera_last_image_url = _str_field("camera_last_image_url")
 
     @property
     def camera_sd_removed(self) -> bool | None:
         value = self._data.get("camera_sd_removed")
         return bool(value) if isinstance(value, bool) else None
 
-    @property
-    def global_power(self) -> str | None:
-        value = self._data.get("power")
-        return str(value) if isinstance(value, str) else None
+    global_power = _str_field("power")
 
-    @property
-    def electrical_power(self) -> str | None:
-        value = self._data.get("electrical_power")
-        return str(value) if isinstance(value, str) else None
+    electrical_power = _str_field("electrical_power")
 
     @property
     def electrical_consumption(self) -> float | None:
         return _as_float(self._data.get("electrical_consumption"))
 
-    @property
-    def electrical_consumption_unit(self) -> str | None:
-        value = self._data.get("electrical_consumption_unit")
-        return str(value) if isinstance(value, str) else None
+    electrical_consumption_unit = _str_field("electrical_consumption_unit")
 
     @property
     def brightness(self) -> float | None:
@@ -116,10 +96,7 @@ class EnkiDeviceState:
             return float(value)
         return None
 
-    @property
-    def color_temperature(self) -> str | None:
-        value = self._data.get("colorTemperature")
-        return str(value) if isinstance(value, str) else None
+    color_temperature = _str_field("colorTemperature")
 
     @property
     def hue(self) -> float | None:
@@ -129,10 +106,7 @@ class EnkiDeviceState:
     def saturation(self) -> float | None:
         return _as_float(self._data.get("saturation"))
 
-    @property
-    def color_mode(self) -> str | None:
-        value = self._data.get("colorMode")
-        return str(value) if isinstance(value, str) else None
+    color_mode = _str_field("colorMode")
 
     @property
     def power_production(self) -> float | None:
@@ -178,97 +152,52 @@ class EnkiDeviceState:
     def illuminance_level(self) -> float | None:
         return _as_float(self._data.get("illuminance_level"))
 
-    @property
-    def battery_health(self) -> str | None:
-        value = self._data.get("battery_health")
-        return str(value) if isinstance(value, str) else None
+    battery_health = _str_field("battery_health")
 
     @property
     def motion_detection(self) -> str | None:
         value = self._data.get("motion_detection") or self._data.get("motion_detector_state")
         return str(value) if isinstance(value, str) else None
 
-    @property
-    def vibration_detection(self) -> str | None:
-        value = self._data.get("vibration_detection")
-        return str(value) if isinstance(value, str) else None
+    vibration_detection = _str_field("vibration_detection")
 
-    @property
-    def contact_sensor_state(self) -> str | None:
-        value = self._data.get("contact_sensor_state")
-        return str(value) if isinstance(value, str) else None
+    contact_sensor_state = _str_field("contact_sensor_state")
 
-    @property
-    def vibration_detection_activation(self) -> str | None:
-        value = self._data.get("vibration_detection_activation")
-        return str(value) if isinstance(value, str) else None
+    vibration_detection_activation = _str_field("vibration_detection_activation")
 
-    @property
-    def contact_detection_activation(self) -> str | None:
-        value = self._data.get("contact_detection_activation")
-        return str(value) if isinstance(value, str) else None
+    contact_detection_activation = _str_field("contact_detection_activation")
 
     @property
     def vibration_sensibility_level(self) -> float | None:
         return _as_float(self._data.get("vibration_sensibility_level"))
 
-    @property
-    def siren_global_state(self) -> str | None:
-        value = self._data.get("siren_global_state")
-        return str(value) if isinstance(value, str) else None
+    siren_global_state = _str_field("siren_global_state")
 
-    @property
-    def water_sensor_state(self) -> str | None:
-        value = self._data.get("water_sensor_state")
-        return str(value) if isinstance(value, str) else None
+    water_sensor_state = _str_field("water_sensor_state")
 
-    @property
-    def pilot_wire_state(self) -> str | None:
-        value = self._data.get("pilot_wire_state")
-        return str(value) if isinstance(value, str) else None
+    pilot_wire_state = _str_field("pilot_wire_state")
 
     @property
     def thermostat_target_temperature(self) -> float | None:
         return _as_float(self._data.get("thermostat_target_temperature"))
 
-    @property
-    def thermostat_running_state(self) -> str | None:
-        value = self._data.get("thermostat_running_state")
-        return str(value) if isinstance(value, str) else None
+    thermostat_running_state = _str_field("thermostat_running_state")
 
-    @property
-    def window_open_detection(self) -> str | None:
-        value = self._data.get("window_open_detection")
-        return str(value) if isinstance(value, str) else None
+    window_open_detection = _str_field("window_open_detection")
 
-    @property
-    def window_open_detection_mode(self) -> str | None:
-        value = self._data.get("window_open_detection_mode")
-        return str(value) if isinstance(value, str) else None
+    window_open_detection_mode = _str_field("window_open_detection_mode")
 
     @property
     def offset_temperature(self) -> float | None:
         return _as_float(self._data.get("offset_temperature"))
 
-    @property
-    def child_lock(self) -> str | None:
-        value = self._data.get("child_lock")
-        return str(value) if isinstance(value, str) else None
+    child_lock = _str_field("child_lock")
 
-    @property
-    def preheating_status(self) -> str | None:
-        value = self._data.get("preheating_status")
-        return str(value) if isinstance(value, str) else None
+    preheating_status = _str_field("preheating_status")
 
-    @property
-    def occupancy(self) -> str | None:
-        value = self._data.get("occupancy")
-        return str(value) if isinstance(value, str) else None
+    occupancy = _str_field("occupancy")
 
-    @property
-    def occupancy_mode(self) -> str | None:
-        value = self._data.get("occupancy_mode")
-        return str(value) if isinstance(value, str) else None
+    occupancy_mode = _str_field("occupancy_mode")
 
     @property
     def firmware_version(self) -> str | None:
@@ -285,10 +214,7 @@ class EnkiDeviceState:
         value = self._data.get("firmware_update_available")
         return value if isinstance(value, bool) else None
 
-    @property
-    def firmware_update_status(self) -> str | None:
-        value = self._data.get("firmware_update_status")
-        return str(value) if isinstance(value, str) else None
+    firmware_update_status = _str_field("firmware_update_status")
 
     @property
     def node_connected(self) -> bool | None:

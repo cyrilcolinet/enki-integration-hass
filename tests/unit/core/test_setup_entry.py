@@ -31,7 +31,6 @@ def _patched_dependencies(coordinator: MagicMock):
         patch("enki.coordinator.EnkiCoordinator", return_value=coordinator),
         patch("enki.EnkiNotifier"),
         patch("enki.notify_for_connection_error"),
-        patch("enki.telemetry.async_handle_telemetry_nudge", new=AsyncMock()),
     ):
         yield
 

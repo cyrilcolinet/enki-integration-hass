@@ -20,7 +20,7 @@ from ..lib.command_override import (
 from ..lib.conversion import is_command_success_status
 from ..lib.request_report import build_request_report
 from .auth import EnkiAuthSession
-from .gateway_keys import GatewayKeyStore
+from .gateway_keys import transport_key
 from .gateway_registry import OPTIONAL_KEY_TRANSPORT_IDS, WIRED_PATH_PREFIXES
 
 _ERROR_BODY_MAX = 200
@@ -59,21 +59,14 @@ class EnkiHttpClient:
         self,
         auth: EnkiAuthSession,
         session: aiohttp.ClientSession,
-        *,
-        key_store: GatewayKeyStore | None = None,
     ) -> None:
         self._auth = auth
         self._session = session
-        self._key_store = key_store or GatewayKeyStore()
         self._forbidden_services: set[str] = set()
 
     @property
     def session(self) -> aiohttp.ClientSession:
         return self._session
-
-    @property
-    def key_store(self) -> GatewayKeyStore:
-        return self._key_store
 
     async def ensure_token(self) -> None:
         await self._auth.ensure_valid(self._session)
@@ -103,7 +96,7 @@ class EnkiHttpClient:
             )
 
     def _service_api_key(self, service: str) -> str | None:
-        api_key = self._key_store.get_transport_key(service)
+        api_key = transport_key(service)
         if api_key:
             return api_key
         if service in OPTIONAL_KEY_TRANSPORT_IDS:
@@ -206,6 +199,12 @@ class EnkiHttpClient:
                 return {}
             return payload if isinstance(payload, dict) else {}
 
+    async def _read_optional(self, service: str, suffix: str, **kwargs: Any) -> dict[str, Any]:
+        """GET under a wired service's prefix; {} when its gateway key isn't shipped."""
+        if not self._service_api_key(service):
+            return {}
+        return await self.get_json(service, f"{WIRED_PATH_PREFIXES[service]}{suffix}", **kwargs)
+
     async def post_command(
         self,
         service: str,
@@ -289,24 +288,15 @@ class EnkiHttpClient:
 
     async def get_ota_version(self, home_id: str, node_id: str) -> dict[str, Any]:
         """Firmware version (APK t0i.c → ota/version/{nodeId})."""
-        if not self._service_api_key("ota"):
-            return {}
-        prefix = WIRED_PATH_PREFIXES["ota"]
-        return await self.get_json(
-            "ota",
-            f"{prefix}/ota/version/{node_id}",
-            home_id=home_id,
-            not_found_ok=True,
+        return await self._read_optional(
+            "ota", f"/ota/version/{node_id}", home_id=home_id, not_found_ok=True
         )
 
     async def get_ota_check(self, home_id: str, node_id: str) -> dict[str, Any]:
         """OTA update availability (APK t0i.d → ota/check/{nodeId})."""
-        if not self._service_api_key("ota"):
-            return {}
-        prefix = WIRED_PATH_PREFIXES["ota"]
-        return await self.get_json(
+        return await self._read_optional(
             "ota",
-            f"{prefix}/ota/check/{node_id}",
+            f"/ota/check/{node_id}",
             home_id=home_id,
             params={"isBlockingOrNoRetryNeeded": "false"},
             not_found_ok=True,
@@ -314,14 +304,8 @@ class EnkiHttpClient:
 
     async def get_esdk_connectivity(self, home_id: str, node_id: str) -> dict[str, Any]:
         """ESDK fan hub link state (APK sq9.b → states/{nodeId})."""
-        if not self._service_api_key("esdk"):
-            return {}
-        prefix = WIRED_PATH_PREFIXES["esdk"]
-        return await self.get_json(
-            "esdk",
-            f"{prefix}/states/{node_id}",
-            home_id=home_id,
-            not_found_ok=True,
+        return await self._read_optional(
+            "esdk", f"/states/{node_id}", home_id=home_id, not_found_ok=True
         )
 
     async def get_referentiel_device(self, device_id: str) -> dict[str, Any]:
@@ -539,25 +523,15 @@ class EnkiHttpClient:
 
     async def get_camera_events(self, home_id: str, node_id: str) -> dict[str, Any]:
         """Camera event list (motion / SD) from api-enki-lexman-camera-prod."""
-        if not self._service_api_key("camera"):
-            return {}
-        prefix = WIRED_PATH_PREFIXES["camera"]
-        return await self.get_json(
-            "camera",
-            f"{prefix}/events",
-            home_id=home_id,
-            params={"nodeId": node_id},
-            not_found_ok=True,
+        return await self._read_optional(
+            "camera", "/events", home_id=home_id, params={"nodeId": node_id}, not_found_ok=True
         )
 
     async def get_instant_consumption(self, home_id: str, node_id: str) -> dict[str, Any]:
         """Instant electrical consumption (Edisio / api-enki-consumption-prod)."""
-        if not self._service_api_key("consumption"):
-            return {}
-        prefix = WIRED_PATH_PREFIXES["consumption"]
-        return await self.get_json(
+        return await self._read_optional(
             "consumption",
-            f"{prefix}/{node_id}/check-instant-consumption",
+            f"/{node_id}/check-instant-consumption",
             params={"homeId": home_id},
             not_found_ok=True,
         )
@@ -580,26 +554,14 @@ class EnkiHttpClient:
 
     async def get_security_state(self, home_id: str) -> dict[str, Any]:
         """Home alarm state (APK mhm.b → GET security?homeId=)."""
-        if not self._service_api_key("home_security"):
-            return {}
-        prefix = WIRED_PATH_PREFIXES["home_security"]
-        return await self.get_json(
-            "home_security",
-            f"{prefix}/security",
-            params={"homeId": home_id},
-            not_found_ok=True,
+        return await self._read_optional(
+            "home_security", "/security", params={"homeId": home_id}, not_found_ok=True
         )
 
     async def get_security_modes(self, home_id: str) -> dict[str, Any]:
         """Modes configured for the home's alarm (APK mhm.f → GET modes?homeId=)."""
-        if not self._service_api_key("home_security"):
-            return {}
-        prefix = WIRED_PATH_PREFIXES["home_security"]
-        return await self.get_json(
-            "home_security",
-            f"{prefix}/modes",
-            params={"homeId": home_id},
-            not_found_ok=True,
+        return await self._read_optional(
+            "home_security", "/modes", params={"homeId": home_id}, not_found_ok=True
         )
 
     async def set_security_mode(self, home_id: str, security_id: str, mode: str) -> None:
