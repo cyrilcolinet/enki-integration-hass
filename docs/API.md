@@ -257,14 +257,15 @@ generation ([#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/
 So on that generation both live video and settings are out of reach, and it is not a matter of
 finding the right endpoint: there is none. The meari generation, whose devices carry the
 `tr_device_lexman_camera_meari_solar_label` referentiel key, is the one the sections below
-describe. **None of it has been exercised against a real meari camera yet** — the protocol is
-reconstructed from the app, and `scripts/probe_camera_stream.py` is what will confirm it.
+describe. The REST reads are **confirmed on a real solar camera** ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)); the writes and the live-view
+signaling are reconstructed from the app and not exercised yet — `scripts/probe_camera_stream.py`
+is what will confirm them.
 
 ### REST
 
 | Method | Path | Notes |
 |--------|------|-------|
-| GET | `camera/{nodeId}/check-camera-status` | battery, wifi, sd card, firmware and every current setting |
+| GET | `camera/{nodeId}/check-camera-status` | battery, wifi, sd card, firmware and every current setting — shape below |
 | GET | `camera/{nodeId}/check-camera-events?day=…` | event list (thumbnails) |
 | GET | `camera/{nodeId}/check-camera-connect-wss` | signaling credentials (see below) |
 | GET | `camera/{nodeId}/check-detection-zone` / `check-firmware-update-status` | |
@@ -272,15 +273,33 @@ reconstructed from the app, and `scripts/probe_camera_stream.py` is what will co
 | POST | `camera/{nodeId}/change-night-vision-mode` | `{"value": "SMART" \| "FULL_COLOR" \| "BLACK_AND_WHITE"}` |
 | POST | `camera/{nodeId}/change-motion-detection-mode` | `{"value": "ON" \| "OFF" \| "HUMAN_FORM"}` |
 | POST | `camera/{nodeId}/change-indicator-light-mode` | `{"value": "ON" \| "OFF"}` |
-| POST | `camera/{nodeId}/change-flip-screen-mode` | `{"value": "FLIP_HORIZONTAL" \| "FLIP_VERTICAL" \| "FLIP_ALL" \| …}` |
+| POST | `camera/{nodeId}/change-flip-screen-mode` | `{"value": "FLIP" \| "NOT_FLIP"}` |
 | POST | `camera/{nodeId}/change-motion-detection-sensitivity-level` | `{"value": <int>}` |
 | POST | `camera/{nodeId}/change-humanoid-detection-sensitivity-level` | `{"value": <int>}` |
-| POST | `camera/{nodeId}/change-light-mode`, `change-recording-duration`, `change-detection-zone` | |
+| POST | `camera/{nodeId}/change-recording-duration` | `{"value": "TEN_SECONDS" \| "TWENTY_SECONDS" \| "THIRTY_SECONDS" \| "FORTY_SECONDS" \| "ONE_MINUTE" \| "TWO_MINUTES" \| "THREE_MINUTES" \| "AUTO"}` |
+| POST | `camera/{nodeId}/change-light-mode`, `change-detection-zone` | light mode reads `"ON"` on a solar camera; other values not pinned down yet |
 | POST | `camera/{nodeId}/format-sd-card`, `update-firmware-version` | destructive — not exposed |
+
+`check-camera-status`, as returned by a Lexman solar camera (first real meari response, [#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)):
+
+```json
+{
+  "batteryLevel": "100", "wifiStrength": "52", "batteryChargingStatus": "CHARGING_FULL",
+  "motionDetection": "HUMAN_FORM", "motionDetectionSensitivityLevel": 6,
+  "humanFormDetectionSensitivityLevel": 3, "indicatorLight": "ON", "flipScreenMode": "NOT_FLIP",
+  "lightMode": "ON", "nightVisionMode": "SMART", "recordingDuration": "TEN_SECONDS",
+  "firmware": {"otaEnabled": true, "otaVersion": "…", "newOtaAvailable": false, "otaUpgradeMandatory": false},
+  "sdCard": {"state": "NO_CARD_INSERTED", "total": 0, "free": 0}
+}
+```
+
+`batteryChargingStatus` is `NOT_CHARGING` / `CHARGING` / `CHARGING_FULL`; `sdCard.state` is one of
+`NO_CARD_INSERTED`, `NORMAL_USE`, `ABNORMAL_CARD_READ_WRITE`, `FORMATTING`, `FILE_SYSTEM_NOT_SUPPORTED`,
+`CARD_BEING_RECOGNIZED`, `NOT_FORMATTED`, `OTHER_ERRORS`.
 
 ### Live video — meari WebRTC signaling
 
-`check-camera-connect-wss` returns `webSocketServerUrl`, `accessId`, `signature`, `token`,
+`check-camera-connect-wss` returns `wssUrl`, `accessId`, `signature`, `token`,
 `expires`, `callee`, `deviceCode`. Open that WebSocket (no extra header) and exchange JSON
 frames; every frame shares the same envelope:
 

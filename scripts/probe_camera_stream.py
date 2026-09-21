@@ -225,7 +225,7 @@ async def _signaling(http: Any, connect: dict[str, Any], send_offer: bool, timeo
     caller = uuid.uuid4().hex[:16]
     callee = connect.get("callee") or ""
     device_code = connect.get("deviceCode") or ""
-    url = connect.get("webSocketServerUrl") or ""
+    url = connect.get("wssUrl") or ""
 
     auth = {
         "sid": session_id,
@@ -437,7 +437,7 @@ async def _probe_camera(
         return
 
     expected = (
-        "webSocketServerUrl",
+        "wssUrl",
         "accessId",
         "signature",
         "token",
@@ -446,7 +446,7 @@ async def _probe_camera(
         "deviceCode",
     )
     missing = [key for key in expected if not body.get(key)]
-    scheme = str(body.get("webSocketServerUrl", "")).split("://", 1)[0]
+    scheme = str(body.get("wssUrl", "")).split("://", 1)[0]
     print(
         f"    GET check-camera-connect-wss: HTTP 200 scheme={scheme!r} "
         f"fields={'complete' if not missing else f'missing {missing}'}"
