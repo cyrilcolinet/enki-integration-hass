@@ -17,9 +17,9 @@ Every microservice call sends:
 - `X-Gateway-APIKey: <service-specific key>`
 - `homeId: <uuid>` when the node belongs to a home
 
-Gateway keys are bundled in `custom_components/enki/const.py`. They are **embedded in the Enki mobile APK** (one key per micro-service), not fetched from a central API. Refresh them after an app update with `scripts/extract_gateway_keys.py` (see [DEVELOPMENT.md](DEVELOPMENT.md)). Requests failing with `401`/`403` usually mean outdated credentials or gateway keys — Home Assistant shows a **persistent notification** with guidance.
+Gateway keys are bundled in `custom_components/enki/gateway_keys_data.py` (re-exported by `const.py`). They are **embedded in the Enki mobile APK** (one key per micro-service), not fetched from a central API. Refresh them after an app update with `scripts/extract_gateway_keys.py` (see [DEVELOPMENT.md](DEVELOPMENT.md)). A `401` means the credentials no longer work: Home Assistant opens its **reauthentication** flow. A `403` on the device poll usually means an outdated gateway key, and raises a **repair issue** with guidance.
 
-A `403 {"message":"You cannot consume this service"}` is different: the gateway is refusing the key for a whole micro-service, for every account, and no key refresh fixes it — Adeo has to re-open the API product. The transport records the first one (so it still reaches diagnostics and read-error telemetry), then stops reading that service until Home Assistant restarts, instead of retrying on every polling cycle. `api-enki-consumption-prod` and `api-enki-ota-prod` have been in that state since August 2026 — the keys we ship are byte-for-byte the ones app 2.26.3 uses.
+A `403 {"message":"You cannot consume this service"}` is different: the gateway is refusing the key for a whole micro-service, for every account, and no key refresh fixes it — Adeo has to re-open the API product. The transport records the first one (so it still reaches diagnostics and read-error telemetry), then stops reading that service until Home Assistant restarts, instead of retrying on every polling cycle. `api-enki-consumption-prod` and `api-enki-ota-prod` have been in that state since August 2026 — the keys we ship are byte-for-byte the ones the current app uses. The luminosity service followed in September.
 
 ## Discovery flow
 
@@ -54,10 +54,10 @@ Detection is **capability-based** (referentiel metadata + BFF dashboard), not li
 | `lights` (+ light capabilities) | `light` | `api-enki-lighting-prod` |
 | Switches / outlets (Edisio, …) | `light` (ON/OFF) | `api-enki-power-prod` (`switch-electrical-power`) |
 | `inverters` (Envertech-Lexman solar) | `sensor` (power W) | BFF dashboard `description.value` |
-| `access_and_motorizations` (Evology, Nodon, …) | `cover` (beta) | `api-enki-rolling-prod` — `shutter/{nodeId}/…` (key in `const.py`) |
+| `access_and_motorizations` (Evology, Nodon, …) | `cover` (beta) | `api-enki-rolling-prod` — `shutter/{nodeId}/…` (key in `gateway_keys_data.py`) |
 | `sensors` (motion, contact, temperature, …) | `binary_sensor`, `sensor`, `switch`, `number` | presence, contact, temperature-humidity, battery-health, siren micro-services |
-| Heating / pilot wire / thermostat | `select`, `climate`, `switch`, `number`, `binary_sensor` | `api-enki-thermostat-prod` (setpoint, pilot wire, window/presence, offset, child-lock, preheating), `api-enki-presence-detector-prod` (occupancy); `ENKI_HEATING_API_KEY`/`ENKI_THERMOSTAT_API_KEY` in `const.py`; if cleared, reads are skipped silently and writes raise an error |
-| Water leak sensors | `binary_sensor`, `sensor` (battery) | `api-enki-water-leak-detector-prod` + `api-enki-battery-health-prod` — keys in `const.py`; same fallback if a key is missing |
+| Heating / pilot wire / thermostat | `select`, `climate`, `switch`, `number`, `binary_sensor` | `api-enki-thermostat-prod` (setpoint, pilot wire, window/presence, offset, child-lock, preheating), `api-enki-presence-detector-prod` (occupancy); `ENKI_HEATING_API_KEY`/`ENKI_THERMOSTAT_API_KEY` in `gateway_keys_data.py`; if cleared, reads are skipped silently and writes raise an error |
+| Water leak sensors | `binary_sensor`, `sensor` (battery) | `api-enki-water-leak-detector-prod` + `api-enki-battery-health-prod` — keys in `gateway_keys_data.py`; same fallback if a key is missing |
 | `cameras` (Lexman / Meari) | `camera`, `sensor`, `binary_sensor` | `api-enki-lexman-camera-prod` (`/events?nodeId=…`) for events; config controls and live signaling on `api-enki-lexman-camera-meari-prod` — see [Lexman cameras](#lexman-cameras-api-enki-lexman-camera-meari-prod) for what each generation exposes |
 
 Sensor capability paths: `GET/POST …/v1/sensors/{node_id}/{kebab-case-capability}` (siren uses `/v1/siren/`).
@@ -110,7 +110,7 @@ RTS models (Somfy, `tr_device_rts_roller_shutter_motorization_label`) expose onl
 position and no `check-*` feedback. The cover entity reports `assumed_state`.
 Path segment unconfirmed against real hardware — see #96.
 
-Gateway key: `ENKI_ACCESS_MOTORIZATION_API_KEY` in `const.py`. Legacy path `api-enki-access-and-motorizations-prod` is obsolete. See [DEVELOPMENT.md](DEVELOPMENT.md#capturing-a-gateway-key-with-mitmproxy-fallback) for validating a key with mitmproxy.
+Gateway key: `ENKI_ACCESS_MOTORIZATION_API_KEY` in `gateway_keys_data.py`. Legacy path `api-enki-access-and-motorizations-prod` is obsolete. See [DEVELOPMENT.md](DEVELOPMENT.md#capturing-a-gateway-key-with-mitmproxy-fallback) for validating a key with mitmproxy.
 
 ### Dry-contact gate / garage receiver (Lexman 83424576, Nodon SIN-4-1-20)
 
@@ -157,20 +157,20 @@ field (`hs` vs `ct`) indicates which mode is active.
 |------------|----------|
 | `check-water-sensor-state` | `binary_sensor` (moisture) |
 
-Gateway keys (`ENKI_HEATING_API_KEY`, `ENKI_WATER_SENSOR_API_KEY`, …) are in `const.py`. Refresh with `scripts/extract_gateway_keys.py` after an app update — see [DEVELOPMENT.md](DEVELOPMENT.md). If a key is cleared, reads are skipped silently and writes raise a clear error.
+Gateway keys (`ENKI_HEATING_API_KEY`, `ENKI_WATER_SENSOR_API_KEY`, …) are in `gateway_keys_data.py`. Refresh with `scripts/extract_gateway_keys.py` after an app update — see [DEVELOPMENT.md](DEVELOPMENT.md). If a key is cleared, reads are skipped silently and writes raise a clear error.
 
 ## Operational notifications
 
-Home Assistant shows **persistent notifications** (French or English) when:
+Home Assistant raises **repair issues** (Settings → Repairs, French or English) when:
 
 | Situation | What you see |
 |-----------|----------------|
-| Invalid Enki credentials | Link to reconfigure the integration |
+| Invalid Enki credentials | Not a repair issue: Home Assistant's reauthentication flow asks for the password again |
 | HTTP 403 (gateway key) | Hint to refresh keys from the APK |
 | Network / cloud unreachable | Check Internet and `enki` logs |
 | Enki cloud maintenance (`mobile-config`) | Shown while `maintenance: true`; cleared on the next poll when it ends |
 
-Notifications clear automatically after the next successful poll (maintenance is re-checked every poll; auth/gateway/connection clear after a successful device poll).
+Repair issues clear automatically after the next successful poll (maintenance is re-checked every poll; auth/gateway/connection clear after a successful device poll).
 
 ## Home alarm (api-enki-home-security-prod)
 
@@ -223,7 +223,7 @@ Base: `https://enki.api.devportal.adeo.cloud/api-enki-consumption-prod/v1/consum
 |--------|------|-------|
 | GET | `/{nodeId}/check-instant-consumption?homeId={homeId}` | `lastReportedValue` (W), `unit` |
 
-Used for Edisio / Equation devices with `check_electrical_consumption` in referentiel. Gateway key: `ENKI_CONSUMPTION_API_KEY`.
+Used for Edisio / Equation devices with `check_electrical_consumption` in referentiel. Gateway key: `ENKI_CONSUMPTION_API_KEY`. **Refused to every account since August 2026** (`403 You cannot consume this service`) — see [Authentication](#authentication).
 
 ## Lexman cameras (api-enki-lexman-camera-meari-prod)
 
@@ -245,7 +245,7 @@ before the device lookup). `check-camera-status` is therefore the cheapest way t
 refusing the key for the service, as it does for `consumption` and `ota`.
 
 Measured on a Lexman IPC176KF (`tr_device_lexman_camera_outdoor_label`), the pre-meari
-generation (#165):
+generation ([#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165)):
 
 - every meari route answers `404`, under any identifier the node carries (`nodeId`,
   `deviceId`, `externalId`, `eui64`, `p2pId`, MAC);

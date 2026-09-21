@@ -53,7 +53,7 @@ The **Enki** app controls hundreds of products (Lexman, Equation, Inspire, Edisi
 
 - **Ventilation** (Inspire Siroco+, Cadix, Radix, …) — `fan`, `light` (LED kit); the **Cadix** exposes its main light and ambient ring as separate lights with optimistic fan/light coupling (since **v1.11**)
 - **Lighting** (Eglo, Lexman, dimmables, RGB) — `light`
-- **Outlets & relays** (Edisio, Equation ON/OFF) — `light` / ON-OFF power; **Evology 2-channel module** — one `switch` per channel; **DIO outlets** — `switch` with assumed state (one-way 433 MHz RF, nothing reports back) (since **v1.21**)
+- **Outlets & relays** (Edisio, Equation ON/OFF) — `switch`; **Evology 2-channel module** — one `switch` per channel; **DIO outlets** — `switch` with assumed state (one-way 433 MHz RF, nothing reports back) (since **v1.21**)
 - **Water heater relay** (Lexman/Nodon on-off relay re-typed as boiler) — `switch`
 - **Solar** (Envertech-Lexman) — `sensor` (production W)
 - **Sensors** (Lexman, Sedea, Evology multisensor, …) — `binary_sensor` (motion, presence, contact), `sensor` (temp, humidity, battery, brightness)
@@ -65,9 +65,20 @@ The **Enki** app controls hundreds of products (Lexman, Equation, Inspire, Edisi
 
 - **Covers** (Evology, Nodon, …) — `cover`
 - **Water leak** (Lexman) — `binary_sensor`, `sensor` (on-site leak test pending — [#36](https://github.com/cyrilcolinet/enki-integration-hass/issues/36))
-- **Cameras** (Lexman/Meari) — `camera` (last-event snapshot), `sensor` (last motion, last event), `binary_sensor` (SD card); live video is not available (TUTK Kalay P2P native SDK) — [#135](https://github.com/cyrilcolinet/enki-integration-hass/issues/135)
+- **Cameras** (Lexman/Meari) — `camera` (last-event snapshot), `sensor` (last motion, last event, last sound on models that report it), `binary_sensor` (SD card). Live video, settings and pan/tilt are out of reach on the Lexman IPC1xxKF cameras (proprietary P2P, no HTTP route — [#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165)); the solar camera, on the other camera backend, is being worked on — [#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)
 - **Scenarios** (Enki cloud) — `button`
 - **Alarm** (Enki home security) — `alarm_control_panel`: arm away / home / night and disarm, only with the modes configured in the app (beta, since **v1.24**)
+
+### Refused by the Enki cloud
+
+Since August–September 2026, Enki's API gateway refuses a few services to **every account** — these are server-side decisions, not bugs, and no update of the integration can bring them back:
+
+- instant power consumption,
+- firmware version and update check,
+- ceiling-fan connectivity,
+- brightness / illuminance sensors.
+
+The integration notices the refusal once and stops asking; the matching sensors stay unknown, everything else keeps working. Details: [API.md](docs/API.md#authentication).
 
 ### Device triggers
 

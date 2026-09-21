@@ -45,12 +45,12 @@ Fan and light kit are **independent**: turning one on does not turn the other on
 
 ## Outlets, relays, and switches (Edisio, Equation, Evology …)
 
-**HA entity:** `light` ON/OFF (API `switch-electrical-power`, not lighting API), or `switch` for multi-channel modules.
+**HA entity:** `switch` (API `switch-electrical-power`, not the lighting API) — one per channel on multi-channel modules.
 
 | Model / type | Status |
 |---------------|--------|
-| Edisio outlets | ✅ ON/OFF, ✅ instant consumption (W) |
-| Equation ON/OFF relay | ✅ ON/OFF stable v1.6.8+ (instant consumption may stay unknown) |
+| Edisio outlets | ✅ ON/OFF; instant consumption (W) refused by the Enki cloud since August 2026 |
+| Equation ON/OFF relay | ✅ ON/OFF stable v1.6.8+ (instant consumption refused by the Enki cloud) |
 | Evology 2-channel in-wall module | ✅ one `switch` per channel (`check_channel1_electrical_power`, `check_channel2_electrical_power`) |
 | DIO outlets (433 MHz RF) | ✅ ON/OFF, ⚠️ **assumed state** — the RF is one-way, so nothing reports back and Home Assistant shows on/off buttons instead of a toggle |
 
@@ -83,7 +83,7 @@ Scenarios refresh on each coordinator poll. They appear under the virtual device
 
 ## Enki sensors (Lexman, Sedea, Evology …)
 
-Gateway keys in `gateway_keys_data.py` (APK 2.26.x).
+Gateway keys in `gateway_keys_data.py`.
 
 ### Motion / contact / vibration / presence
 
@@ -106,7 +106,7 @@ Gateway keys in `gateway_keys_data.py` (APK 2.26.x).
 | `check_current_temperature` | Temperature (°C) — except thermostats (temperature on `climate`) |
 | `check_current_humidity` | Humidity (%) |
 | `check_battery_health` | Battery (%, Enki mapping) |
-| `check_illuminance_level` / `check_brightness_level` | Brightness / illuminance (Evology multisensor, …) |
+| `check_illuminance_level` / `check_brightness_level` | Brightness / illuminance (Evology multisensor, …) — the luminosity service is refused by the Enki cloud since September 2026 |
 
 **Sedea** thermometers (display): temperature, humidity, battery.
 
@@ -133,7 +133,7 @@ Gateway keys in `gateway_keys_data.py` (APK 2.26.x).
 
 **HA entities:** `camera` (last-event snapshot), `sensor` (last event type, last motion, last sound on models that report `SOUND_DETECTED`), `binary_sensor` (SD-card removed)
 
-Events come from `api-enki-lexman-camera-prod` (`GET /events?nodeId=…`), snapshots from the last event's image URL. **Live video is not available** — the app streams over TUTK Kalay Nebula P2P, a native SDK with no Python path.
+Events come from `api-enki-lexman-camera-prod` (`GET /events?nodeId=…`), snapshots from the last event's image URL. **No live video on the Lexman IPC1xxKF cameras** — the app streams them over a proprietary P2P tunnel (ThroughTek Kalay), a native SDK with no Python path. The solar camera uses another backend whose live view is WebRTC; it is being worked on in [#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216).
 
 Config controls (night vision, motion detection, indicator light, …) exist only on the Meari service, for the Meari generation (e.g. the solar camera). The Lexman IPC1xxKF cameras are not in that backend: settings, pan/tilt and live video all go through the Kalay P2P tunnel, with no HTTP route — measured in [#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165), details in [API.md](API.md#lexman-cameras-api-enki-lexman-camera-meari-prod). Field work: [#135](https://github.com/cyrilcolinet/enki-integration-hass/issues/135).
 
@@ -150,7 +150,7 @@ Validated on real hardware (Noirot radiator, Equation pilot wire, Equation relay
 
 ### Thermostat config knobs (v1.18)
 
-Extra referentiel controls, exposed when the thermostat advertises them. Routes and enum values decoded from the app (2.26.x); **real-hardware validation welcome**.
+Extra referentiel controls, exposed when the thermostat advertises them. Routes and enum values decoded from the app; **real-hardware validation welcome**.
 
 | Function | HA entity | API |
 |----------|-----------|-----|
@@ -158,9 +158,9 @@ Extra referentiel controls, exposed when the thermostat advertises them. Routes 
 | Child lock | `switch` | `change/check-child-lock`, `LOCK` / `UNLOCK` |
 | Preheating | `switch` | `change/check-preheating-status`, `ENABLED` / `DISABLED` |
 
-**API routing:** `api-enki-thermostat-prod` for setpoint / pilot wire / window detection / config knobs; `api-enki-presence-detector-prod` for occupancy. Keys in `const.py` — update: [DEVELOPMENT.md](DEVELOPMENT.md) · API detail: [API.md](API.md#heating-and-water-sensors-manifest--150).
+**API routing:** `api-enki-thermostat-prod` for setpoint / pilot wire / window detection / config knobs; `api-enki-presence-detector-prod` for occupancy. Keys in `gateway_keys_data.py` — update: [DEVELOPMENT.md](DEVELOPMENT.md) · API detail: [API.md](API.md#heating-and-water-sensors-manifest--150).
 
-**Note:** instant consumption sensors may stay `unknown` if `consumption-prod` returns no value — controls still work.
+**Note:** `consumption-prod` refuses every account since August 2026, so consumption sensors stay unknown — controls still work.
 
 ## Roller shutters — beta (Evology, Nodon, Lexman RTS, …)
 
@@ -202,9 +202,9 @@ Validating the gateway key with mitmproxy: [DEVELOPMENT.md](DEVELOPMENT.md#captu
 
 ## Cross-cutting features
 
-- **OAuth auth** — Keycloak refresh token; HA notification on invalid credentials
-- **Opt-in telemetry** — notification for unknown profiles, pre-filled GitHub link (nothing sent without a click)
-- **Operational notifications** — login failure, gateway key 403, cloud unreachable ([API.md](API.md#operational-notifications))
+- **OAuth auth** — Keycloak refresh token; invalid credentials open Home Assistant's **reauthentication** flow
+- **Opt-in telemetry** — a repair card for unsupported profiles, and one aggregated card for unrecognized brands, each with a pre-filled GitHub link (nothing sent without a click) — [TELEMETRY.md](TELEMETRY.md)
+- **Operational alerts** — gateway key rejected, cloud unreachable, Enki maintenance, as **repair issues** ([API.md](API.md#operational-notifications))
 - **Diagnostics** — anonymized JSON export from Enki UI, with an anonymized request report attached on API failures
 
 ## Device info (firmware, connectivity)
@@ -217,7 +217,7 @@ Since **1.6.11**, metadata from the Enki app device screen is exposed when the r
 | Update available | `ota/check/{nodeId}` when `ota_inventory` | `binary_sensor` (update) |
 | ESDK fan online | `esdk/states/{nodeId}` for ceiling fans | `binary_sensor` (connectivity) |
 
-Reads are best-effort (404 skipped) and driven by referentiel capabilities, not hard-coded per model.
+Reads are best-effort (404 skipped) and driven by referentiel capabilities, not hard-coded per model. The `ota` and `esdk` services are refused by the Enki cloud to every account since August 2026, so these three stay unknown.
 
 ## In progress / not supported
 
@@ -228,7 +228,8 @@ Reads are best-effort (404 skipped) and driven by referentiel capabilities, not 
 | ✅ Stable | Water-heater relay, Evology 2-channel module, Evology multisensor |
 | 🔬 Beta | Cameras (event snapshot — no live video), covers, Lexman water leak, scenarios — feedback welcome |
 | 🔬 Beta | Thermostat config knobs (offset, child-lock, preheating) — decoded, real-hardware validation welcome |
-| 🔜 Soon | ACOVA ARLAN radiators (same heating API if capabilities match); camera config controls ([#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165)) |
+| 🔬 Beta | ACOVA radiators — discovered and driven through the shared heating API (towel rail reported in [#190](https://github.com/cyrilcolinet/enki-integration-hass/issues/190)) |
+| 🔜 Soon | Lexman solar camera: settings and live view — needs validation ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)) |
 | 🔬 Beta | Enki alarm — built from the app's API, not yet validated on a real installation: feedback welcome |
 | Not planned | Camera live video and pan/tilt on Lexman IPC1xxKF cameras (Kalay P2P only, no HTTP route) |
 | Out of scope | Enki pairing and device setup, Leroy Merlin account management → [Enki support](https://support.enki-home.com/) (configure devices in the app before HA) |
