@@ -174,6 +174,7 @@ Home Assistant requires **platform loaders** and `config_flow.py` at the root of
 ```
 custom_components/enki/
 ├── __init__.py, manifest.json, config_flow.py, coordinator.py, entity.py
+├── alarm_control_panel.py
 ├── binary_sensor.py, button.py, camera.py, climate.py, cover.py, fan.py, light.py
 ├── number.py, select.py, sensor.py, switch.py, diagnostics.py
 ├── const.py, exceptions.py, migration.py, notifications.py, gateway_keys_data.py
@@ -189,7 +190,7 @@ custom_components/enki/
 │   └── capability_routes_data.py  # generated capability→route catalogue (APK)
 │
 ├── domain/                 # business model (no HA import)
-│   ├── models.py, capabilities.py, state.py, profile.py, camera_events.py
+│   ├── models.py, capabilities.py, state.py, profile.py, camera_events.py, security.py
 │   ├── telemetry_coverage.py, telemetry_enrichment.py
 │
 ├── platforms/              # shared internal logic
