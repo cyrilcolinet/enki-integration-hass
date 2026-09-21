@@ -71,8 +71,16 @@ def _build_sensor_entities(
     if profile.supports_camera_settings:
         entities.extend(
             [
-                EnkiCameraBatterySensor(coordinator, device),
-                EnkiCameraWifiSensor(coordinator, device),
+                EnkiCameraPercentSensor(
+                    coordinator,
+                    device,
+                    "camera_battery_level",
+                    "battery",
+                    SensorDeviceClass.BATTERY,
+                ),
+                EnkiCameraPercentSensor(
+                    coordinator, device, "camera_wifi_strength", "camera_wifi_strength"
+                ),
                 EnkiCameraEnumSensor(
                     coordinator,
                     device,
@@ -298,40 +306,30 @@ class EnkiElectricalConsumptionSensor(EnkiEntity, SensorEntity):
         return self._device.reported.electrical_consumption
 
 
-class EnkiCameraBatterySensor(EnkiEntity, SensorEntity):
-    """Battery of a meari camera, as a plain percentage (unlike battery_health)."""
+class EnkiCameraPercentSensor(EnkiEntity, SensorEntity):
+    """A percentage reported by a meari camera (battery, Wi-Fi signal)."""
 
-    _attr_translation_key = "battery"
-    _attr_device_class = SensorDeviceClass.BATTERY
     _attr_native_unit_of_measurement = PERCENTAGE
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_entity_category = EntityCategory.DIAGNOSTIC
 
-    def __init__(self, coordinator: EnkiCoordinator, device: EnkiDevice) -> None:
+    def __init__(
+        self,
+        coordinator: EnkiCoordinator,
+        device: EnkiDevice,
+        state_key: str,
+        translation_key: str,
+        device_class: SensorDeviceClass | None = None,
+    ) -> None:
         super().__init__(coordinator, device)
-        self._attr_unique_id = f"{DOMAIN}-{device.node_id}-camera-battery"
+        self._state_key = state_key
+        self._attr_translation_key = translation_key
+        self._attr_device_class = device_class
+        self._attr_unique_id = f"{DOMAIN}-{device.node_id}-{state_key}"
 
     @property
     def native_value(self) -> int | None:
-        value = self._device.last_reported_value.get("camera_battery_level")
-        return value if isinstance(value, int) else None
-
-
-class EnkiCameraWifiSensor(EnkiEntity, SensorEntity):
-    """Wi-Fi signal quality of a meari camera, in percent."""
-
-    _attr_translation_key = "camera_wifi_strength"
-    _attr_native_unit_of_measurement = PERCENTAGE
-    _attr_state_class = SensorStateClass.MEASUREMENT
-    _attr_entity_category = EntityCategory.DIAGNOSTIC
-
-    def __init__(self, coordinator: EnkiCoordinator, device: EnkiDevice) -> None:
-        super().__init__(coordinator, device)
-        self._attr_unique_id = f"{DOMAIN}-{device.node_id}-camera-wifi"
-
-    @property
-    def native_value(self) -> int | None:
-        value = self._device.last_reported_value.get("camera_wifi_strength")
+        value = self._device.last_reported_value.get(self._state_key)
         return value if isinstance(value, int) else None
 
 

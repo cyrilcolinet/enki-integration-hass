@@ -146,7 +146,6 @@ Config controls (night vision, motion detection, indicator light, …) exist onl
 | Night vision | `select` | adaptive / color / black and white |
 | Motion detection | `select` | any motion / human shape only / off |
 | Recording duration | `select` | 10 s … 3 min, auto |
-| Floodlight | `select` | only when the referentiel lists its values |
 | Motion / human-shape sensitivity | `number` | bounds from the referentiel; no entity without them |
 | Status light, image flip | `switch` | |
 | Battery, Wi-Fi, charging, SD card | `sensor` (diagnostic) | |

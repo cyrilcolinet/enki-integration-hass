@@ -7,8 +7,7 @@ cameras have none of this (#165).
 
 Choices and ranges come from the referentiel's ``possibleValues``, like the app
 does; the fallbacks below are the app's own enums and only fill in when the
-referentiel is silent. Where the app enum is not pinned down (light mode), there
-is no fallback: no entity rather than guessed values.
+referentiel is silent. Light mode is left out until its values are pinned down.
 """
 
 from __future__ import annotations
@@ -25,7 +24,6 @@ _STATUS_FIELDS: dict[str, str] = {
     "humanFormDetectionSensitivityLevel": "camera_human_sensitivity",
     "indicatorLight": "camera_indicator_light",
     "flipScreenMode": "camera_flip_screen_mode",
-    "lightMode": "camera_light_mode",
     "recordingDuration": "camera_recording_duration",
     "batteryChargingStatus": "camera_battery_charging",
 }
@@ -36,28 +34,22 @@ _NUMERIC_STRING_FIELDS: dict[str, str] = {
 }
 
 
-@dataclass(frozen=True, slots=True)
-class CameraSelectSpec:
+@dataclass(frozen=True)
+class CameraSettingSpec:
     capability: str
     state_key: str
     translation_key: str
+
+
+@dataclass(frozen=True)
+class CameraSelectSpec(CameraSettingSpec):
     fallback_values: tuple[str, ...]
 
 
-@dataclass(frozen=True, slots=True)
-class CameraSwitchSpec:
-    capability: str
-    state_key: str
-    translation_key: str
+@dataclass(frozen=True)
+class CameraSwitchSpec(CameraSettingSpec):
     on_value: str
     off_value: str
-
-
-@dataclass(frozen=True, slots=True)
-class CameraNumberSpec:
-    capability: str
-    state_key: str
-    translation_key: str
 
 
 CAMERA_SELECTS: tuple[CameraSelectSpec, ...] = (
@@ -88,7 +80,6 @@ CAMERA_SELECTS: tuple[CameraSelectSpec, ...] = (
             "AUTO",
         ),
     ),
-    CameraSelectSpec("change_light_mode", "camera_light_mode", "camera_light_mode", ()),
 )
 
 CAMERA_SWITCHES: tuple[CameraSwitchSpec, ...] = (
@@ -108,13 +99,13 @@ CAMERA_SWITCHES: tuple[CameraSwitchSpec, ...] = (
     ),
 )
 
-CAMERA_NUMBERS: tuple[CameraNumberSpec, ...] = (
-    CameraNumberSpec(
+CAMERA_NUMBERS: tuple[CameraSettingSpec, ...] = (
+    CameraSettingSpec(
         "change_motion_detection_sensitivity_level",
         "camera_motion_sensitivity",
         "camera_motion_sensitivity",
     ),
-    CameraNumberSpec(
+    CameraSettingSpec(
         "change_humanoid_detection_sensitivity_level",
         "camera_human_sensitivity",
         "camera_human_sensitivity",
@@ -159,7 +150,7 @@ def select_values(spec: CameraSelectSpec, possible_values: dict[str, Any]) -> tu
 
 
 def number_range(
-    spec: CameraNumberSpec, possible_values: dict[str, Any]
+    spec: CameraSettingSpec, possible_values: dict[str, Any]
 ) -> tuple[float, float, float] | None:
     """(min, max, step) from the referentiel, or None when it gives no range."""
     meta = possible_values.get(spec.capability)

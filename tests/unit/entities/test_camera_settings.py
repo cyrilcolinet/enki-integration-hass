@@ -112,11 +112,6 @@ def test_select_choices_prefer_the_referentiel() -> None:
     assert select_values(night, listed) == ("SMART", "BLACK_AND_WHITE")
 
 
-def test_light_mode_has_no_guessed_choices() -> None:
-    light = next(s for s in CAMERA_SELECTS if s.capability == "change_light_mode")
-    assert select_values(light, {}) == ()
-
-
 def test_sensitivity_range_comes_only_from_the_referentiel() -> None:
     spec = CAMERA_NUMBERS[0]
     assert number_range(spec, {}) is None

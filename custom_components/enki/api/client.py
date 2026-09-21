@@ -42,7 +42,7 @@ from .auth import EnkiAuthSession
 from .capability_routing import CAPABILITY_READS, CapabilityRead
 from .device_metadata import refresh_device_metadata
 from .gateway_keys import fetch_mobile_config
-from .transport import EnkiHttpClient
+from .transport import OK_WITH_BODY, EnkiHttpClient
 
 _DISCOVERY_CONCURRENCY = 8
 _CAMERA_SETTINGS_TTL_SECONDS = 300.0
@@ -684,8 +684,7 @@ class EnkiAPI:
             node_id,
             capability,
             value,
-            # The meari routes answer with the updated setting in the body.
-            ok_statuses=frozenset({200, 202, 204}),
+            ok_statuses=OK_WITH_BODY,
         )
         self._camera_settings_cache.pop(node_id, None)
 

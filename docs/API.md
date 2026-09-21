@@ -277,7 +277,7 @@ is what will confirm them.
 | POST | `camera/{nodeId}/change-motion-detection-sensitivity-level` | `{"value": <int>}` |
 | POST | `camera/{nodeId}/change-humanoid-detection-sensitivity-level` | `{"value": <int>}` |
 | POST | `camera/{nodeId}/change-recording-duration` | `{"value": "TEN_SECONDS" \| "TWENTY_SECONDS" \| "THIRTY_SECONDS" \| "FORTY_SECONDS" \| "ONE_MINUTE" \| "TWO_MINUTES" \| "THREE_MINUTES" \| "AUTO"}` |
-| POST | `camera/{nodeId}/change-light-mode`, `change-detection-zone` | light mode reads `"ON"` on a solar camera; other values not pinned down yet |
+| POST | `camera/{nodeId}/change-light-mode`, `change-detection-zone` | not exposed: light mode reads `"ON"` on a solar camera, other values not pinned down yet |
 | POST | `camera/{nodeId}/format-sd-card`, `update-firmware-version` | destructive — not exposed |
 
 The `change-*` routes return the updated setting in the body (APK return types), so the integration accepts **200** as well as 202/204 for them. `check-camera-status` is polled at most every 5 minutes per camera, and the cache is dropped after each write.

@@ -117,6 +117,8 @@ _CAPABILITY_PROBES: dict[str, str] = {
     # Meari-generation camera settings (#216).
     "check_camera_state": "supports_camera_settings",
     **{capability: "supports_camera_settings" for capability in CAMERA_SETTING_CAPABILITIES},
+    # Known and tracked in #216; no entity until its values are pinned down.
+    "change_light_mode": "supports_camera_settings",
 }
 
 # Referentiel capabilities with no HA entity planned (timers, energy totals, …).

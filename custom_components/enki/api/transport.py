@@ -46,6 +46,10 @@ def _http_error_message(method: str, path: str, status: int, body: str) -> str:
     return message
 
 
+# For the endpoints that answer 200 with the updated resource in the body.
+OK_WITH_BODY = frozenset({200, 202, 204})
+
+
 class EnkiHttpClient:
     """Authenticated requests against Enki cloud micro-services.
 
@@ -587,7 +591,7 @@ class EnkiHttpClient:
             json={"currentMode": mode},
             method="PATCH",
             # Answers 200 with the updated state (APK: Response<CheckSecurityStateResponseDTO>).
-            ok_statuses=frozenset({200, 202, 204}),
+            ok_statuses=OK_WITH_BODY,
         )
 
     async def activate_scenario(self, home_id: str, scenario_id: str) -> None:
