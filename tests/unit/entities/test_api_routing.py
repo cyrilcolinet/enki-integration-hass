@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from enki.domain.models import EnkiDevice
 from enki.fan import EnkiFanEntity
-from enki.platforms.light.behavior import EnkiLightBehaviorMixin
+from enki.light_behavior import EnkiLightBehaviorMixin
 
 
 def _ceiling_fan(**overrides) -> EnkiDevice:

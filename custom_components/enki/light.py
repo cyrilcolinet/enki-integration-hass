@@ -19,7 +19,7 @@ from .coordinator import EnkiCoordinator
 from .domain.models import EnkiDevice
 from .entity import EnkiEntity
 from .lib.conversion import enki_to_hs, hs_to_enki, select_light_color_modes
-from .platforms.light.behavior import EnkiLightBehaviorMixin
+from .light_behavior import EnkiLightBehaviorMixin
 
 
 async def async_setup_entry(

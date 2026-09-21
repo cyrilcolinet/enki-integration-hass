@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from enki.const import PRESET_MODE_BREEZE, PRESET_MODE_MANUAL
 from enki.domain.models import EnkiDevice
-from enki.platforms.fan.airflow import (
+from enki.fan_airflow import (
     airflow_modes_from_metadata,
     device_supports_airflow_mode,
     enki_airflow_mode_to_preset,
@@ -22,7 +22,7 @@ def test_airflow_mode_preset_mapping() -> None:
 
 
 def test_preset_mode_icons() -> None:
-    from enki.platforms.fan.airflow import preset_mode_icon
+    from enki.fan_airflow import preset_mode_icon
 
     assert preset_mode_icon("breeze") == "mdi:weather-windy"
     assert preset_mode_icon("manual") == "mdi:fan"

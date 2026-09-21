@@ -20,8 +20,6 @@ _PACKAGE_PATHS: dict[str, Path] = {
     "enki.api": ENKI_ROOT / "api",
     "enki.domain": ENKI_ROOT / "domain",
     "enki.lib": ENKI_ROOT / "lib",
-    "enki.platforms": ENKI_ROOT / "platforms",
-    "enki.platforms.light": ENKI_ROOT / "platforms" / "light",
     "enki.telemetry": ENKI_ROOT / "telemetry",
 }
 
@@ -77,8 +75,6 @@ def bootstrap(*modules: str) -> None:
         "enki.api",
         "enki.domain",
         "enki.lib",
-        "enki.platforms",
-        "enki.platforms.light",
     ):
         _ensure_package(pkg)
 

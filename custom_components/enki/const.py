@@ -2,8 +2,6 @@
 
 from logging import Logger, getLogger
 
-from . import gateway_keys_data
-
 LOGGER: Logger = getLogger(__package__)
 
 DOMAIN = "enki"
@@ -23,13 +21,6 @@ ENKI_BASE_URL = "https://enki.api.devportal.adeo.cloud"
 # Mobile app version used for gateway key extraction and HTTP impersonation.
 ENKI_APP_VERSION = "2.26.3"
 ENKI_USER_AGENT = f"Enki/{ENKI_APP_VERSION} (iPhone; iOS 18.0; Scale/3.00) Enki"
-
-
-# Re-export gateway keys (defined in gateway_keys_data.py — do not duplicate here).
-def __getattr__(name: str) -> str:
-    if name.endswith("_API_KEY"):
-        return getattr(gateway_keys_data, name)
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 FAN_ENDPOINT = 1

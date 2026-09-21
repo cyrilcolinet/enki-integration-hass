@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from enki.domain.models import EnkiDevice
-from enki.platforms.fan.airflow import device_supports_fan_rotation
+from enki.fan_airflow import device_supports_fan_rotation
 
 
 def test_device_supports_fan_rotation_from_capabilities() -> None:

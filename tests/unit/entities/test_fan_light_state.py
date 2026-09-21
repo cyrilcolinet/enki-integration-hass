@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from enki.domain.models import EnkiDevice
 from enki.lib.conversion import merge_light_state_payload
-from enki.platforms.light.behavior import EnkiLightBehaviorMixin
+from enki.light_behavior import EnkiLightBehaviorMixin
 from homeassistant.components.light import ATTR_BRIGHTNESS
 
 

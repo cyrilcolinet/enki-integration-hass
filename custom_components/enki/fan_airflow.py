@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from ...const import PRESET_MODE_BREEZE, PRESET_MODE_MANUAL
-from ...domain.models import EnkiDevice
+from .const import PRESET_MODE_BREEZE, PRESET_MODE_MANUAL
+from .domain.models import EnkiDevice
 
 # Enki API values (uppercase) ↔ Home Assistant preset slugs (lowercase).
 ENKI_AIRFLOW_TO_PRESET: dict[str, str] = {

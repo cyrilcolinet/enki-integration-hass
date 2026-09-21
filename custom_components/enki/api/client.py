@@ -39,7 +39,7 @@ from ..lib.shutter import normalize_shutter_position
 from .auth import EnkiAuthSession
 from .capability_routing import CAPABILITY_READS, CapabilityRead
 from .device_metadata import refresh_device_metadata
-from .gateway_keys import GatewayKeyStore, fetch_mobile_config
+from .gateway_keys import fetch_mobile_config
 from .transport import EnkiHttpClient
 
 _DISCOVERY_CONCURRENCY = 8
@@ -66,7 +66,6 @@ class EnkiAPI:
         self._auth = EnkiAuthSession(username, password)
         self._session: aiohttp.ClientSession | None = None
         self._http: EnkiHttpClient | None = None
-        self._key_store = GatewayKeyStore()
         self._discovery_records: list[EnkiDiscoveryRecord] = []
         self._referentiel_cache: dict[str, dict[str, Any]] = {}
         self._scenarios: tuple[EnkiScenario, ...] = ()
@@ -103,7 +102,6 @@ class EnkiAPI:
             self._http = EnkiHttpClient(
                 self._auth,
                 self._session,
-                key_store=self._key_store,
             )
         assert self._http is not None
         return self._http

@@ -29,7 +29,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(r'''{REPO}''') / "scripts"))
 from enki_bootstrap import bootstrap_fetch_keys, load_module
 bootstrap_fetch_keys()
-assert load_module("enki.const").ENKI_HOME_API_KEY
+assert load_module("enki.gateway_keys_data").ENKI_HOME_API_KEY
 print("ok")
 """
     result = subprocess.run(
