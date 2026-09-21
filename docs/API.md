@@ -280,6 +280,8 @@ is what will confirm them.
 | POST | `camera/{nodeId}/change-light-mode`, `change-detection-zone` | light mode reads `"ON"` on a solar camera; other values not pinned down yet |
 | POST | `camera/{nodeId}/format-sd-card`, `update-firmware-version` | destructive — not exposed |
 
+The `change-*` routes return the updated setting in the body (APK return types), so the integration accepts **200** as well as 202/204 for them. `check-camera-status` is polled at most every 5 minutes per camera, and the cache is dropped after each write.
+
 `check-camera-status`, as returned by a Lexman solar camera (first real meari response, [#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)):
 
 ```json

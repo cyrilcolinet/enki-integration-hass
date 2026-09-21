@@ -13,6 +13,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
 from .coordinator import EnkiCoordinator
+from .domain.camera_settings import CAMERA_SWITCHES, CameraSwitchSpec
 from .domain.models import EnkiDevice
 from .entity import EnkiEntity
 
@@ -112,6 +113,12 @@ def _build_switch_entities(
     entities.extend(_build_channel_switches(coordinator, device))
     entities.extend(_build_boiler_switches(coordinator, device))
     entities.extend(_build_config_switches(coordinator, device))
+    if device.profile.supports_camera_settings:
+        entities.extend(
+            EnkiCameraSettingSwitch(coordinator, device, spec)
+            for spec in CAMERA_SWITCHES
+            if spec.capability in device.profile.capabilities
+        )
     return entities
 
 
@@ -378,3 +385,39 @@ class EnkiConfigSwitch(EnkiEntity, SwitchEntity):
             value,
         )
         self.coordinator.update_cached_value(self.node_id, self._state_key, value)
+
+
+class EnkiCameraSettingSwitch(EnkiEntity, SwitchEntity):
+    """An on/off setting of a meari camera (status light, image flip)."""
+
+    _attr_has_entity_name = True
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(
+        self, coordinator: EnkiCoordinator, device: EnkiDevice, spec: CameraSwitchSpec
+    ) -> None:
+        super().__init__(coordinator, device)
+        self._spec = spec
+        self._attr_translation_key = spec.translation_key
+        self._attr_unique_id = f"{DOMAIN}-{device.node_id}-{spec.translation_key}"
+
+    @property
+    def is_on(self) -> bool | None:
+        value = self._device.last_reported_value.get(self._spec.state_key)
+        if value == self._spec.on_value:
+            return True
+        if value == self._spec.off_value:
+            return False
+        return None
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        await self._set(self._spec.on_value)
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        await self._set(self._spec.off_value)
+
+    async def _set(self, value: str) -> None:
+        await self.coordinator.api.async_set_camera_setting(
+            self._device.home_id, self._device.node_id, self._spec.capability, value
+        )
+        self.coordinator.update_cached_value(self.node_id, self._spec.state_key, value)

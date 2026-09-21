@@ -128,6 +128,30 @@
       },
       "camera_last_event": {
         "name": "Dernier événement"
+      },
+      "camera_wifi_strength": {
+        "name": "Signal Wi-Fi"
+      },
+      "camera_battery_charging": {
+        "name": "Charge",
+        "state": {
+          "not_charging": "Pas en charge",
+          "charging": "En charge",
+          "charging_full": "Chargée"
+        }
+      },
+      "camera_sd_card": {
+        "name": "Carte SD",
+        "state": {
+          "no_card_inserted": "Aucune carte",
+          "normal_use": "OK",
+          "abnormal_card_read_write": "Erreur de lecture/écriture",
+          "formatting": "Formatage",
+          "file_system_not_supported": "Système de fichiers non pris en charge",
+          "card_being_recognized": "Détection",
+          "not_formatted": "Non formatée",
+          "other_errors": "Erreur"
+        }
       }
     },
     "camera": {
@@ -211,6 +235,12 @@
       },
       "preheating": {
         "name": "Préchauffage"
+      },
+      "camera_indicator_light": {
+        "name": "Voyant lumineux"
+      },
+      "camera_flip_screen": {
+        "name": "Retourner l'image"
       }
     },
     "number": {
@@ -219,6 +249,12 @@
       },
       "offset_temperature": {
         "name": "Décalage de température"
+      },
+      "camera_motion_sensitivity": {
+        "name": "Sensibilité au mouvement"
+      },
+      "camera_human_sensitivity": {
+        "name": "Sensibilité silhouette humaine"
       }
     },
     "cover": {
@@ -243,6 +279,43 @@
         "state": {
           "normal": "Normal",
           "inverted": "Inversé"
+        }
+      },
+      "camera_night_vision": {
+        "name": "Vision nocturne",
+        "state": {
+          "smart": "Adaptative",
+          "full_color": "Couleur",
+          "black_and_white": "Noir et blanc"
+        }
+      },
+      "camera_motion_detection": {
+        "name": "Détection de mouvement",
+        "state": {
+          "on": "Tout mouvement",
+          "off": "Désactivée",
+          "human_form": "Silhouette humaine seulement"
+        }
+      },
+      "camera_recording_duration": {
+        "name": "Durée d'enregistrement",
+        "state": {
+          "ten_seconds": "10 s",
+          "twenty_seconds": "20 s",
+          "thirty_seconds": "30 s",
+          "forty_seconds": "40 s",
+          "one_minute": "1 min",
+          "two_minutes": "2 min",
+          "three_minutes": "3 min",
+          "auto": "Auto"
+        }
+      },
+      "camera_light_mode": {
+        "name": "Projecteur",
+        "state": {
+          "on": "Allumé",
+          "off": "Éteint",
+          "auto": "Auto"
         }
       }
     },

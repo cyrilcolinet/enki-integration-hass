@@ -504,6 +504,8 @@ class EnkiHttpClient:
         node_id: str,
         capability: str,
         value: Any,
+        *,
+        ok_statuses: frozenset[int] | None = None,
     ) -> None:
         """POST a change_*/switch_*/activate_* capability."""
         if not self._service_api_key(service):
@@ -519,6 +521,7 @@ class EnkiHttpClient:
             f"{prefix}/{node_id}/{action}",
             home_id=home_id,
             json={"value": value},
+            ok_statuses=ok_statuses,
         )
 
     async def get_camera_events(self, home_id: str, node_id: str) -> dict[str, Any]:
@@ -551,6 +554,12 @@ class EnkiHttpClient:
         if isinstance(items, list):
             return [item for item in items if isinstance(item, dict)]
         return []
+
+    async def get_camera_status(self, home_id: str, node_id: str) -> dict[str, Any]:
+        """Every current setting of a meari camera (APK udf.r → check-camera-status)."""
+        return await self._read_optional(
+            "camera_meari", f"/{node_id}/check-camera-status", home_id=home_id, not_found_ok=True
+        )
 
     async def get_security_state(self, home_id: str) -> dict[str, Any]:
         """Home alarm state (APK mhm.b → GET security?homeId=)."""

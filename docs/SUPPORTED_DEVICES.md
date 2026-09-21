@@ -137,6 +137,22 @@ Events come from `api-enki-lexman-camera-prod` (`GET /events?nodeId=…`), snaps
 
 Config controls (night vision, motion detection, indicator light, …) exist only on the Meari service, for the Meari generation (e.g. the solar camera). The Lexman IPC1xxKF cameras are not in that backend: settings, pan/tilt and live video all go through the Kalay P2P tunnel, with no HTTP route — measured in [#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165), details in [API.md](API.md#lexman-cameras-api-enki-lexman-camera-meari-prod). Field work: [#135](https://github.com/cyrilcolinet/enki-integration-hass/issues/135).
 
+### Lexman solar camera (meari) — beta
+
+**HA entities**, created from what the camera's referentiel declares:
+
+| Setting | Entity | Values |
+|---------|--------|--------|
+| Night vision | `select` | adaptive / color / black and white |
+| Motion detection | `select` | any motion / human shape only / off |
+| Recording duration | `select` | 10 s … 3 min, auto |
+| Floodlight | `select` | only when the referentiel lists its values |
+| Motion / human-shape sensitivity | `number` | bounds from the referentiel; no entity without them |
+| Status light, image flip | `switch` | |
+| Battery, Wi-Fi, charging, SD card | `sensor` (diagnostic) | |
+
+Settings are read from `check-camera-status` at most every 5 minutes — the camera runs on a battery — and re-read right after a change. Reads are confirmed on a real camera; writes still need field validation ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)).
+
 **Blueprint:** motion → notify with the last snapshot — `blueprints/automation/enki/camera_motion_notification.yaml`.
 
 ## Heating — stable (v1.6.8+)
@@ -229,7 +245,7 @@ Reads are best-effort (404 skipped) and driven by referentiel capabilities, not 
 | 🔬 Beta | Cameras (event snapshot — no live video), covers, Lexman water leak, scenarios — feedback welcome |
 | 🔬 Beta | Thermostat config knobs (offset, child-lock, preheating) — decoded, real-hardware validation welcome |
 | 🔬 Beta | ACOVA radiators — discovered and driven through the shared heating API (towel rail reported in [#190](https://github.com/cyrilcolinet/enki-integration-hass/issues/190)) |
-| 🔜 Soon | Lexman solar camera: settings and live view — needs validation ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)) |
+| 🔬 Beta | Lexman solar camera: settings and diagnostics; live view in progress ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)) |
 | 🔬 Beta | Enki alarm — built from the app's API, not yet validated on a real installation: feedback welcome |
 | Not planned | Camera live video and pan/tilt on Lexman IPC1xxKF cameras (Kalay P2P only, no HTTP route) |
 | Out of scope | Enki pairing and device setup, Leroy Merlin account management → [Enki support](https://support.enki-home.com/) (configure devices in the app before HA) |

@@ -19,6 +19,7 @@ from ..lib.fan_endpoints import (
     fan_light_endpoints_from_motor,
     infer_fan_motor_endpoints,
 )
+from .camera_settings import CAMERA_SETTING_CAPABILITIES
 from .models import EnkiDevice
 
 _CHANNEL_SWITCH_RE = re.compile(r"switch_channel(\d+)_electrical_power")
@@ -554,6 +555,11 @@ class EnkiCapabilityProfile:
         last_event = self.possible_values.get("check_camera_last_event")
         values = last_event.get("values") if isinstance(last_event, dict) else None
         return isinstance(values, list) and "SOUND_DETECTED" in values
+
+    @property
+    def supports_camera_settings(self) -> bool:
+        """Meari-generation camera exposing its settings (the solar camera, #216)."""
+        return self.is_camera and bool(self.capabilities & CAMERA_SETTING_CAPABILITIES)
 
     @property
     def is_camera(self) -> bool:

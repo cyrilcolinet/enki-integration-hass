@@ -6,6 +6,7 @@ from typing import Any
 
 from ..api.capability_routing import CAPABILITY_READS
 from ..lib.enki_scope import device_in_enki_scope
+from .camera_settings import CAMERA_SETTING_CAPABILITIES
 from .capabilities import EnkiCapabilityProfile
 from .models import EnkiDiscoveryRecord
 
@@ -113,6 +114,9 @@ _CAPABILITY_PROBES: dict[str, str] = {
     "check_water_sensor_state": "supports_water_leak",
     "check_camera_events": "is_camera",
     "check_camera_last_event": "is_camera",
+    # Meari-generation camera settings (#216).
+    "check_camera_state": "supports_camera_settings",
+    **{capability: "supports_camera_settings" for capability in CAMERA_SETTING_CAPABILITIES},
 }
 
 # Referentiel capabilities with no HA entity planned (timers, energy totals, …).
@@ -121,6 +125,13 @@ NOT_PLANNED_CAPABILITIES = frozenset(
         # Pan/tilt on the pre-meari Lexman cameras has no HTTP route: the app
         # drives it through the Kalay P2P tunnel, out of reach here (#212, #165).
         "change_camera_orientation",
+        # Meari cameras: the detection zone needs a drawing UI, and the rest is
+        # destructive (wiping the SD card, deleting events, flashing firmware).
+        "change_detection_zone",
+        "check_detection_zone",
+        "delete_camera_events",
+        "format_sd_card",
+        "update_firmware_version",
         "cancel_electrical_power_switch_in",
         "next_electrical_power_switch_in",
         "switch_electrical_power_in",

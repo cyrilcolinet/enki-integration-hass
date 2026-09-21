@@ -68,6 +68,36 @@ def _build_sensor_entities(
         if profile.supports_camera_sound_events:
             entities.append(EnkiCameraLastSoundSensor(coordinator, device))
         entities.append(EnkiCameraLastEventSensor(coordinator, device))
+    if profile.supports_camera_settings:
+        entities.extend(
+            [
+                EnkiCameraBatterySensor(coordinator, device),
+                EnkiCameraWifiSensor(coordinator, device),
+                EnkiCameraEnumSensor(
+                    coordinator,
+                    device,
+                    "camera_battery_charging",
+                    "camera_battery_charging",
+                    ("not_charging", "charging", "charging_full"),
+                ),
+                EnkiCameraEnumSensor(
+                    coordinator,
+                    device,
+                    "camera_sd_state",
+                    "camera_sd_card",
+                    (
+                        "no_card_inserted",
+                        "normal_use",
+                        "abnormal_card_read_write",
+                        "formatting",
+                        "file_system_not_supported",
+                        "card_being_recognized",
+                        "not_formatted",
+                        "other_errors",
+                    ),
+                ),
+            ]
+        )
 
     return entities
 
@@ -266,3 +296,69 @@ class EnkiElectricalConsumptionSensor(EnkiEntity, SensorEntity):
     @property
     def native_value(self) -> float | None:
         return self._device.reported.electrical_consumption
+
+
+class EnkiCameraBatterySensor(EnkiEntity, SensorEntity):
+    """Battery of a meari camera, as a plain percentage (unlike battery_health)."""
+
+    _attr_translation_key = "battery"
+    _attr_device_class = SensorDeviceClass.BATTERY
+    _attr_native_unit_of_measurement = PERCENTAGE
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator: EnkiCoordinator, device: EnkiDevice) -> None:
+        super().__init__(coordinator, device)
+        self._attr_unique_id = f"{DOMAIN}-{device.node_id}-camera-battery"
+
+    @property
+    def native_value(self) -> int | None:
+        value = self._device.last_reported_value.get("camera_battery_level")
+        return value if isinstance(value, int) else None
+
+
+class EnkiCameraWifiSensor(EnkiEntity, SensorEntity):
+    """Wi-Fi signal quality of a meari camera, in percent."""
+
+    _attr_translation_key = "camera_wifi_strength"
+    _attr_native_unit_of_measurement = PERCENTAGE
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator: EnkiCoordinator, device: EnkiDevice) -> None:
+        super().__init__(coordinator, device)
+        self._attr_unique_id = f"{DOMAIN}-{device.node_id}-camera-wifi"
+
+    @property
+    def native_value(self) -> int | None:
+        value = self._device.last_reported_value.get("camera_wifi_strength")
+        return value if isinstance(value, int) else None
+
+
+class EnkiCameraEnumSensor(EnkiEntity, SensorEntity):
+    """A reported camera state with a fixed set of values (charging, SD card)."""
+
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(
+        self,
+        coordinator: EnkiCoordinator,
+        device: EnkiDevice,
+        state_key: str,
+        translation_key: str,
+        options: tuple[str, ...],
+    ) -> None:
+        super().__init__(coordinator, device)
+        self._state_key = state_key
+        self._attr_translation_key = translation_key
+        self._attr_options = list(options)
+        self._attr_unique_id = f"{DOMAIN}-{device.node_id}-{translation_key}"
+
+    @property
+    def native_value(self) -> str | None:
+        value = self._device.last_reported_value.get(self._state_key)
+        # An unknown value would be rejected by the enum device class.
+        if isinstance(value, str) and value.lower() in self._attr_options:
+            return value.lower()
+        return None

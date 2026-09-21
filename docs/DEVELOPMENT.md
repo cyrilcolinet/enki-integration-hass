@@ -192,7 +192,7 @@ custom_components/enki/
 │   └── capability_routes_data.py  # generated capability→route catalogue (APK)
 │
 ├── domain/                 # business model (no HA import)
-│   ├── models.py, capabilities.py, state.py, profile.py, camera_events.py, security.py
+│   ├── models.py, capabilities.py, state.py, profile.py, camera_events.py, camera_settings.py, security.py
 │   ├── telemetry_coverage.py, telemetry_enrichment.py, unknown_brands.py
 │
 ├── telemetry/
