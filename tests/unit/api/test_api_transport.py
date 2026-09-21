@@ -105,10 +105,11 @@ async def test_post_command_debug_logs_accepted_route() -> None:
     fmt = logger.debug.call_args.args[0]
     args = logger.debug.call_args.args[1:]
     assert "command accepted" in fmt.lower()
-    # route, params (endpoint selector) and payload are all in the log record
-    assert "/switch-electrical-power" in args[0]
-    assert args[1] == {"endpoints": 2}
-    assert args[2] == {"value": "OFF"}
+    # verb, route, params (endpoint selector) and payload are all in the log record
+    assert args[0] == "POST"
+    assert "/switch-electrical-power" in args[1]
+    assert args[2] == {"endpoints": 2}
+    assert args[3] == {"value": "OFF"}
 
 
 @pytest.mark.asyncio

@@ -126,6 +126,14 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
                     err,
                     exc_info=LOGGER.isEnabledFor(logging.DEBUG),
                 )
+            try:
+                await self.api.async_refresh_security()
+            except Exception as err:  # noqa: BLE001 — the alarm must never break device poll
+                LOGGER.debug(
+                    "Alarm refresh skipped: %s",
+                    err,
+                    exc_info=LOGGER.isEnabledFor(logging.DEBUG),
+                )
             return self._apply_optimistic_overrides(devices)
 
     async def _async_sync_maintenance_notification(self) -> None:

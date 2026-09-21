@@ -20,6 +20,12 @@ from ..domain.profile import (
     profile_to_export_dict,
     sanitize_poll_state,
 )
+from ..domain.security import (
+    EnkiSecuritySystem,
+    parse_configured_modes,
+    parse_security_state,
+    security_id_from_tile,
+)
 from ..exceptions import EnkiApiNotFoundError, EnkiConnectionError
 from ..lib.bff import parse_bff_power
 from ..lib.conversion import (
@@ -64,6 +70,10 @@ class EnkiAPI:
         self._discovery_records: list[EnkiDiscoveryRecord] = []
         self._referentiel_cache: dict[str, dict[str, Any]] = {}
         self._scenarios: tuple[EnkiScenario, ...] = ()
+        # home_id -> securityId, from the dashboard SECURITY tile (not a node).
+        self._security_ids: dict[str, str] = {}
+        self._pending_security_ids: dict[str, str] = {}
+        self._security: tuple[EnkiSecuritySystem, ...] = ()
         self._node_fingerprints: dict[str, str] = {}
         self._profile_read_errors: dict[str, dict[str, str]] = {}
         self._profile_read_reports: dict[str, dict[str, dict[str, Any]]] = {}
@@ -126,6 +136,7 @@ class EnkiAPI:
         self._pending_read_errors = {}
         self._pending_read_reports = {}
         self._pending_poll_state = {}
+        self._pending_security_ids = {}
 
         devices: list[EnkiDevice] = []
         records: list[EnkiDiscoveryRecord] = []
@@ -139,6 +150,7 @@ class EnkiAPI:
         self._profile_read_errors = self._pending_read_errors
         self._profile_read_reports = self._pending_read_reports
         self._profile_poll_state = self._pending_poll_state
+        self._security_ids = self._pending_security_ids
         return devices
 
     @property
@@ -228,6 +240,39 @@ class EnkiAPI:
 
         self._scenarios = tuple(scenarios)
 
+    @property
+    def security_systems(self) -> tuple[EnkiSecuritySystem, ...]:
+        return self._security
+
+    async def async_refresh_security(self) -> None:
+        """Read each home's alarm state and configured modes (best-effort)."""
+        if not self._security_ids:
+            self._security = ()
+            return
+        http = await self._get_http()
+        systems: list[EnkiSecuritySystem] = []
+        for home_id, security_id in sorted(self._security_ids.items()):
+            try:
+                state = await http.get_security_state(home_id)
+                modes = await http.get_security_modes(home_id)
+            except EnkiConnectionError as err:
+                LOGGER.debug("Alarm state skipped for home %s: %s", home_id, err)
+                continue
+            system = parse_security_state(
+                state,
+                home_id=home_id,
+                security_id=security_id,
+                configured_modes=parse_configured_modes(modes),
+            )
+            if system is not None:
+                systems.append(system)
+        self._security = tuple(systems)
+
+    async def async_set_security_mode(self, home_id: str, security_id: str, mode: str) -> None:
+        """Arm or disarm a home's alarm."""
+        http = await self._get_http()
+        await http.set_security_mode(home_id, security_id, mode)
+
     async def _discover_home(
         self,
         http: EnkiHttpClient,
@@ -237,6 +282,12 @@ class EnkiAPI:
         items = [
             item for section in dashboard.get("sections", []) for item in section.get("items", [])
         ]
+        # The alarm is a dashboard tile, not a node: no deviceId, so it never
+        # reaches device discovery. Its securityId is all the alarm API needs.
+        for item in items:
+            security_id = security_id_from_tile(item)
+            if security_id is not None:
+                self._pending_security_ids[home_id] = security_id
         semaphore = asyncio.Semaphore(_DISCOVERY_CONCURRENCY)
 
         async def discover_item(

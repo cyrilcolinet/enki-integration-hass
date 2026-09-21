@@ -23,6 +23,7 @@ __version__ = json.loads((Path(__file__).parent / "manifest.json").read_text(enc
 ]
 
 PLATFORMS: list[Platform] = [
+    Platform.ALARM_CONTROL_PANEL,
     Platform.BINARY_SENSOR,
     Platform.BUTTON,
     Platform.CAMERA,

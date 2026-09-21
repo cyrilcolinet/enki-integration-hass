@@ -249,10 +249,10 @@ ENKI_MICRO_SERVICES: tuple[EnkiMicroService, ...] = (
     EnkiMicroService(
         "api-enki-home-security-prod",
         "ENKI_HOME_SECURITY_API_KEY",
-        "",
-        "/api-enki-home-security-prod/v1/home-security",
-        wired=False,
-        notes="",
+        "home_security",
+        "/api-enki-home-security-prod/v1",
+        wired=True,
+        notes="Home alarm: state, configured modes, arming",
     ),
     EnkiMicroService(
         "api-enki-leroy-merlin-prod",
