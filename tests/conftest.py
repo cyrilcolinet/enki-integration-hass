@@ -63,6 +63,7 @@ _HA_STUBS = [
     "homeassistant.components.camera",
     "homeassistant.components.number",
     "homeassistant.components.select",
+    "homeassistant.components.alarm_control_panel",
     "homeassistant.helpers.aiohttp_client",
     "homeassistant.util",
 ]
@@ -282,6 +283,38 @@ _binary_sensor.BinarySensorDeviceClass = MagicMock()
 
 _camera = sys.modules["homeassistant.components.camera"]
 _camera.Camera = _HaEntity
+
+# Real enums, not mocks: the alarm entity combines feature flags and compares
+# states, and a MagicMock would make every such assertion pass.
+import enum as _enum  # noqa: E402
+
+
+class _AlarmControlPanelEntityFeature(_enum.IntFlag):
+    ARM_HOME = 1
+    ARM_AWAY = 2
+    ARM_NIGHT = 4
+    TRIGGER = 8
+    ARM_CUSTOM_BYPASS = 16
+    ARM_VACATION = 32
+
+
+class _AlarmControlPanelState(_enum.StrEnum):
+    DISARMED = "disarmed"
+    ARMED_HOME = "armed_home"
+    ARMED_AWAY = "armed_away"
+    ARMED_NIGHT = "armed_night"
+    ARMED_VACATION = "armed_vacation"
+    ARMED_CUSTOM_BYPASS = "armed_custom_bypass"
+    PENDING = "pending"
+    ARMING = "arming"
+    DISARMING = "disarming"
+    TRIGGERED = "triggered"
+
+
+_alarm = sys.modules["homeassistant.components.alarm_control_panel"]
+_alarm.AlarmControlPanelEntity = _HaEntity
+_alarm.AlarmControlPanelEntityFeature = _AlarmControlPanelEntityFeature
+_alarm.AlarmControlPanelState = _AlarmControlPanelState
 
 # Give homeassistant.util.dt a real-ish parse_datetime so timestamp sensors work.
 import datetime as _datetime  # noqa: E402

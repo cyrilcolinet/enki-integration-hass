@@ -67,6 +67,7 @@ The **Enki** app controls hundreds of products (Lexman, Equation, Inspire, Edisi
 - **Water leak** (Lexman) — `binary_sensor`, `sensor` (on-site leak test pending — [#36](https://github.com/cyrilcolinet/enki-integration-hass/issues/36))
 - **Cameras** (Lexman/Meari) — `camera` (last-event snapshot), `sensor` (last motion, last event), `binary_sensor` (SD card); live video is not available (TUTK Kalay P2P native SDK) — [#135](https://github.com/cyrilcolinet/enki-integration-hass/issues/135)
 - **Scenarios** (Enki cloud) — `button`
+- **Alarm** (Enki home security) — `alarm_control_panel`: arm away / home / night and disarm, only with the modes configured in the app (beta, since **v1.24**)
 
 ### Device triggers
 

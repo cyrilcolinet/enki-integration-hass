@@ -53,6 +53,11 @@
     }
   },
   "entity": {
+    "alarm_control_panel": {
+      "security": {
+        "name": "Alarm"
+      }
+    },
     "fan": {
       "ceiling_fan": {
         "name": "Fan",

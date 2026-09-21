@@ -172,6 +172,38 @@ Home Assistant shows **persistent notifications** (French or English) when:
 
 Notifications clear automatically after the next successful poll (maintenance is re-checked every poll; auth/gateway/connection clear after a successful device poll).
 
+## Home alarm (api-enki-home-security-prod)
+
+Base: `https://enki.api.devportal.adeo.cloud/api-enki-home-security-prod/v1/`
+Gateway key: `ENKI_HOME_SECURITY_API_KEY`.
+
+The alarm is **not a node**: the dashboard shows it as a tile with `template: "SECURITY"` and a
+`metadata.securityId`, without any `deviceId` — so device discovery never sees it. Discovery
+records that id per home, and only homes with such a tile are polled.
+
+| Method | Path | Notes |
+|--------|------|-------|
+| GET | `security?homeId={homeId}` | `homeId`, `threatLevel`, `lastThreatDate`, `currentMode`, `alarmDelay` (s), `notificationsEnabled` |
+| GET | `modes?homeId={homeId}` | `items[].type` — the modes configured in the app (a mode needs ≥ 1 detector and ≥ 1 siren) |
+| PATCH | `security/{securityId}/homes/{homeId}/currentMode` | `{"currentMode": "FULL"}` — answers **200** with the new state, not 202 |
+| PATCH | `security/{securityId}/homes/{homeId}/delay` / `…/notifications` | not wired |
+
+Modes (`currentMode`, app enum) and their Home Assistant state:
+
+| Enki | App label | Home Assistant |
+|------|-----------|----------------|
+| `DISABLED` | Disabled | `disarmed` |
+| `FULL` | Total | `armed_away` |
+| `PARTIAL` | Partial | `armed_home` |
+| `PRESENCE` | Presence | `armed_night` |
+| `INACTIVE` | — (never offered) | `disarmed` |
+
+`threatLevel` values in the app: `DEFAULT`, `SAFE`, `ALERT`, `AUTO_PROTECTION`, `DANGER`,
+`DETERRENCE`, `DETERRENCE_CONFIRMED`, `INTRUSION`, `INTRUSION_CONFIRMED`. The entity reports
+**triggered** only for `INTRUSION`, `INTRUSION_CONFIRMED` and `DANGER`; the raw value stays in the
+`threat_level` attribute. That split is a first pass — none of this has run against a real
+installation yet.
+
 ## Scenarios (api-enki-scenario-prod)
 
 Base: `https://enki.api.devportal.adeo.cloud/api-enki-scenario-prod/v1/scenarios`

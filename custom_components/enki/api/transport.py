@@ -215,12 +215,19 @@ class EnkiHttpClient:
         params: dict[str, Any] | None = None,
         json: Any = None,
         not_found_ok: bool = False,
+        method: str = "POST",
+        ok_statuses: frozenset[int] | None = None,
     ) -> None:
-        """POST a command endpoint; accepts HTTP 202/204 as success."""
+        """Send a command (POST by default); accepts HTTP 202/204 as success.
+
+        ``ok_statuses`` widens that for the rare endpoint that answers 200 with a
+        body — the home alarm replies to an arming PATCH with its new state.
+        """
         url = f"{ENKI_BASE_URL}{path}"
 
         async def _post() -> aiohttp.ClientResponse:
-            return await self._session.post(
+            return await self._session.request(
+                method,
                 url,
                 headers=self._headers(service, home_id),
                 params=params,
@@ -230,15 +237,20 @@ class EnkiHttpClient:
         response = await self._with_auth_retry(_post)
         async with response:
             if response.status == 404 and not_found_ok:
-                raise EnkiApiNotFoundError(f"POST {path} not found", status=404)
-            if not is_command_success_status(response.status):
+                raise EnkiApiNotFoundError(f"{method} {path} not found", status=404)
+            accepted = (
+                response.status in ok_statuses
+                if ok_statuses is not None
+                else is_command_success_status(response.status)
+            )
+            if not accepted:
                 body = await response.text()
                 raise EnkiConnectionError(
-                    _http_error_message("POST", path, response.status, body),
+                    _http_error_message(method, path, response.status, body),
                     status=response.status,
                     service=service,
                     report=build_request_report(
-                        "POST",
+                        method,
                         path,
                         self._headers(service, home_id),
                         json,
@@ -250,7 +262,8 @@ class EnkiHttpClient:
             # endpoint selector on multi-endpoint fans) are visible in debug logs
             # without a proxy capture.
             LOGGER.debug(
-                "Enki command accepted: POST %s params=%s json=%s -> HTTP %s",
+                "Enki command accepted: %s %s params=%s json=%s -> HTTP %s",
+                method,
                 path,
                 params,
                 json,
@@ -564,6 +577,47 @@ class EnkiHttpClient:
         if isinstance(items, list):
             return [item for item in items if isinstance(item, dict)]
         return []
+
+    async def get_security_state(self, home_id: str) -> dict[str, Any]:
+        """Home alarm state (APK mhm.b → GET security?homeId=)."""
+        if not self._service_api_key("home_security"):
+            return {}
+        prefix = WIRED_PATH_PREFIXES["home_security"]
+        return await self.get_json(
+            "home_security",
+            f"{prefix}/security",
+            params={"homeId": home_id},
+            not_found_ok=True,
+        )
+
+    async def get_security_modes(self, home_id: str) -> dict[str, Any]:
+        """Modes configured for the home's alarm (APK mhm.f → GET modes?homeId=)."""
+        if not self._service_api_key("home_security"):
+            return {}
+        prefix = WIRED_PATH_PREFIXES["home_security"]
+        return await self.get_json(
+            "home_security",
+            f"{prefix}/modes",
+            params={"homeId": home_id},
+            not_found_ok=True,
+        )
+
+    async def set_security_mode(self, home_id: str, security_id: str, mode: str) -> None:
+        """Arm or disarm (APK mhm.d → PATCH security/{id}/homes/{homeId}/currentMode)."""
+        if not self._service_api_key("home_security"):
+            raise EnkiConnectionError(
+                "Home security API key is not configured.",
+                service="home_security",
+            )
+        prefix = WIRED_PATH_PREFIXES["home_security"]
+        await self.post_command(
+            "home_security",
+            f"{prefix}/security/{security_id}/homes/{home_id}/currentMode",
+            json={"currentMode": mode},
+            method="PATCH",
+            # Answers 200 with the updated state (APK: Response<CheckSecurityStateResponseDTO>).
+            ok_statuses=frozenset({200, 202, 204}),
+        )
 
     async def activate_scenario(self, home_id: str, scenario_id: str) -> None:
         """Run one Enki scenario (homeId header, APK rnl.a)."""
