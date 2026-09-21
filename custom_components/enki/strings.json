@@ -309,14 +309,6 @@
           "three_minutes": "3 min",
           "auto": "Auto"
         }
-      },
-      "camera_light_mode": {
-        "name": "Floodlight",
-        "state": {
-          "on": "On",
-          "off": "Off",
-          "auto": "Auto"
-        }
       }
     },
     "climate": {

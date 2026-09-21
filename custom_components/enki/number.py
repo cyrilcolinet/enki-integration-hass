@@ -14,9 +14,9 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
 from .coordinator import EnkiCoordinator
-from .domain.camera_settings import CAMERA_NUMBERS, CameraNumberSpec, number_range
+from .domain.camera_settings import CAMERA_NUMBERS, CameraSettingSpec, number_range
 from .domain.models import EnkiDevice
-from .entity import EnkiEntity
+from .entity import EnkiCameraSettingEntity, EnkiEntity
 from .lib.heating import offset_temperature_range
 
 
@@ -112,24 +112,19 @@ class EnkiOffsetTemperatureNumber(EnkiEntity, NumberEntity):
         )
 
 
-class EnkiCameraSensitivityNumber(EnkiEntity, NumberEntity):
+class EnkiCameraSensitivityNumber(EnkiCameraSettingEntity, NumberEntity):
     """A detection sensitivity of a meari camera, bounded by its referentiel."""
 
-    _attr_has_entity_name = True
-    _attr_entity_category = EntityCategory.CONFIG
     _attr_mode = NumberMode.SLIDER
 
     def __init__(
         self,
         coordinator: EnkiCoordinator,
         device: EnkiDevice,
-        spec: CameraNumberSpec,
+        spec: CameraSettingSpec,
         bounds: tuple[float, float, float],
     ) -> None:
-        super().__init__(coordinator, device)
-        self._spec = spec
-        self._attr_translation_key = spec.translation_key
-        self._attr_unique_id = f"{DOMAIN}-{device.node_id}-{spec.translation_key}"
+        super().__init__(coordinator, device, spec)
         (
             self._attr_native_min_value,
             self._attr_native_max_value,
@@ -138,12 +133,8 @@ class EnkiCameraSensitivityNumber(EnkiEntity, NumberEntity):
 
     @property
     def native_value(self) -> float | None:
-        value = self._device.last_reported_value.get(self._spec.state_key)
+        value = self._value
         return float(value) if isinstance(value, int) and not isinstance(value, bool) else None
 
     async def async_set_native_value(self, value: float) -> None:
-        level = int(value)
-        await self.coordinator.api.async_set_camera_setting(
-            self._device.home_id, self._device.node_id, self._spec.capability, level
-        )
-        self.coordinator.update_cached_value(self.node_id, self._spec.state_key, level)
+        await self._write(int(value))

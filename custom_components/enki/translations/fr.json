@@ -309,14 +309,6 @@
           "three_minutes": "3 min",
           "auto": "Auto"
         }
-      },
-      "camera_light_mode": {
-        "name": "Projecteur",
-        "state": {
-          "on": "Allumé",
-          "off": "Éteint",
-          "auto": "Auto"
-        }
       }
     },
     "climate": {

@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+from typing import Any
+
+from homeassistant.const import EntityCategory
 from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .coordinator import EnkiCoordinator
+from .domain.camera_settings import CameraSettingSpec
 from .domain.models import EnkiDevice
 
 
@@ -59,3 +63,27 @@ class EnkiEntity(CoordinatorEntity[EnkiCoordinator]):
             sw_version=str(firmware) if firmware else None,
             serial_number=metadata.get("eui64") or self._device.node_id,
         )
+
+
+class EnkiCameraSettingEntity(EnkiEntity):
+    """One setting of a meari camera: read from its status, written back as-is."""
+
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(
+        self, coordinator: EnkiCoordinator, device: EnkiDevice, spec: CameraSettingSpec
+    ) -> None:
+        super().__init__(coordinator, device)
+        self._spec = spec
+        self._attr_translation_key = spec.translation_key
+        self._attr_unique_id = f"{DOMAIN}-{device.node_id}-{spec.translation_key}"
+
+    @property
+    def _value(self) -> Any:
+        return self._device.last_reported_value.get(self._spec.state_key)
+
+    async def _write(self, value: Any) -> None:
+        await self.coordinator.api.async_set_camera_setting(
+            self._device.home_id, self._device.node_id, self._spec.capability, value
+        )
+        self.coordinator.update_cached_value(self.node_id, self._spec.state_key, value)
