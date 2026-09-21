@@ -265,10 +265,10 @@ ENKI_MICRO_SERVICES: tuple[EnkiMicroService, ...] = (
     EnkiMicroService(
         "api-enki-lexman-camera-meari-prod",
         "ENKI_LEXMAN_CAMERA_MEARI_API_KEY",
-        "",
-        "/api-enki-lexman-camera-meari-prod/v1/lexman-camera-meari",
-        wired=False,
-        notes="",
+        "camera_meari",
+        "/api-enki-lexman-camera-meari-prod/v1/camera",
+        wired=True,
+        notes="Meari-generation camera settings and live-view signaling (#216)",
     ),
     EnkiMicroService(
         "api-enki-lexman-camera-prod",

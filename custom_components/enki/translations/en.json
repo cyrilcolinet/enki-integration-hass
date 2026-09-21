@@ -128,6 +128,30 @@
       },
       "camera_last_event": {
         "name": "Last event"
+      },
+      "camera_wifi_strength": {
+        "name": "Wi-Fi signal"
+      },
+      "camera_battery_charging": {
+        "name": "Charging",
+        "state": {
+          "not_charging": "Not charging",
+          "charging": "Charging",
+          "charging_full": "Fully charged"
+        }
+      },
+      "camera_sd_card": {
+        "name": "SD card",
+        "state": {
+          "no_card_inserted": "No card",
+          "normal_use": "OK",
+          "abnormal_card_read_write": "Read/write error",
+          "formatting": "Formatting",
+          "file_system_not_supported": "Unsupported file system",
+          "card_being_recognized": "Detecting",
+          "not_formatted": "Not formatted",
+          "other_errors": "Error"
+        }
       }
     },
     "camera": {
@@ -211,6 +235,12 @@
       },
       "preheating": {
         "name": "Preheating"
+      },
+      "camera_indicator_light": {
+        "name": "Status light"
+      },
+      "camera_flip_screen": {
+        "name": "Flip image"
       }
     },
     "number": {
@@ -219,6 +249,12 @@
       },
       "offset_temperature": {
         "name": "Temperature offset"
+      },
+      "camera_motion_sensitivity": {
+        "name": "Motion sensitivity"
+      },
+      "camera_human_sensitivity": {
+        "name": "Human shape sensitivity"
       }
     },
     "cover": {
@@ -243,6 +279,43 @@
         "state": {
           "normal": "Normal",
           "inverted": "Inverted"
+        }
+      },
+      "camera_night_vision": {
+        "name": "Night vision",
+        "state": {
+          "smart": "Adaptive",
+          "full_color": "Color",
+          "black_and_white": "Black and white"
+        }
+      },
+      "camera_motion_detection": {
+        "name": "Motion detection",
+        "state": {
+          "on": "Any motion",
+          "off": "Off",
+          "human_form": "Human shape only"
+        }
+      },
+      "camera_recording_duration": {
+        "name": "Recording duration",
+        "state": {
+          "ten_seconds": "10 s",
+          "twenty_seconds": "20 s",
+          "thirty_seconds": "30 s",
+          "forty_seconds": "40 s",
+          "one_minute": "1 min",
+          "two_minutes": "2 min",
+          "three_minutes": "3 min",
+          "auto": "Auto"
+        }
+      },
+      "camera_light_mode": {
+        "name": "Floodlight",
+        "state": {
+          "on": "On",
+          "off": "Off",
+          "auto": "Auto"
         }
       }
     },

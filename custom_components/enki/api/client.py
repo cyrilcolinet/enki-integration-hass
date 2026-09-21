@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from dataclasses import replace
 from typing import Any
 
@@ -11,6 +12,7 @@ import aiohttp
 
 from ..const import DEVICE_TYPE_LIGHTS, LOGGER
 from ..domain.camera_events import parse_camera_events
+from ..domain.camera_settings import parse_camera_status
 from ..domain.capabilities import EnkiCapabilityProfile
 from ..domain.models import EnkiDevice, EnkiDiscoveryRecord, EnkiScenario
 from ..domain.profile import (
@@ -43,6 +45,7 @@ from .gateway_keys import fetch_mobile_config
 from .transport import EnkiHttpClient
 
 _DISCOVERY_CONCURRENCY = 8
+_CAMERA_SETTINGS_TTL_SECONDS = 300.0
 
 
 def _referentiel_model(node_info: dict[str, Any], device_info: dict[str, Any]) -> str | None:
@@ -73,6 +76,8 @@ class EnkiAPI:
         self._security_ids: dict[str, str] = {}
         self._pending_security_ids: dict[str, str] = {}
         self._security: tuple[EnkiSecuritySystem, ...] = ()
+        # node_id -> (monotonic time, parsed settings) for meari cameras.
+        self._camera_settings_cache: dict[str, tuple[float, dict[str, Any]]] = {}
         self._node_fingerprints: dict[str, str] = {}
         self._profile_read_errors: dict[str, dict[str, str]] = {}
         self._profile_read_reports: dict[str, dict[str, dict[str, Any]]] = {}
@@ -478,7 +483,10 @@ class EnkiAPI:
             return await self._read_shutter_state(http, device)
 
         if profile.is_camera:
-            return await self._read_camera_state(http, home_id, node_id)
+            state = await self._read_camera_state(http, home_id, node_id)
+            if profile.supports_camera_settings:
+                state.update(await self._read_camera_settings(http, home_id, node_id))
+            return state
 
         state: dict[str, Any] = {}
 
@@ -633,6 +641,53 @@ class EnkiAPI:
             return {}
         items = data.get("items", []) if isinstance(data, dict) else []
         return parse_camera_events(items if isinstance(items, list) else [])
+
+    async def _read_camera_settings(
+        self,
+        http: EnkiHttpClient,
+        home_id: str,
+        node_id: str,
+    ) -> dict[str, Any]:
+        """Current settings of a meari camera, read at most every few minutes.
+
+        The solar camera runs on a battery: there is no reason to ask it for its
+        settings every poll, and a write invalidates the cache anyway.
+        """
+        cached = self._camera_settings_cache.get(node_id)
+        now = time.monotonic()
+        if cached is not None and now - cached[0] < _CAMERA_SETTINGS_TTL_SECONDS:
+            return cached[1]
+        try:
+            payload = await http.get_camera_status(home_id, node_id)
+        except EnkiConnectionError as err:
+            LOGGER.debug("Camera settings skipped for node %s: %s", node_id, err)
+            self._note_read_error(
+                node_id, service="camera_meari", capability="check_camera_state", err=err
+            )
+            return cached[1] if cached is not None else {}
+        state = parse_camera_status(payload)
+        self._camera_settings_cache[node_id] = (now, state)
+        return state
+
+    async def async_set_camera_setting(
+        self,
+        home_id: str,
+        node_id: str,
+        capability: str,
+        value: Any,
+    ) -> None:
+        """Change one meari camera setting; the next poll re-reads them all."""
+        http = await self._get_http()
+        await http.capability_post(
+            "camera_meari",
+            home_id,
+            node_id,
+            capability,
+            value,
+            # The meari routes answer with the updated setting in the body.
+            ok_statuses=frozenset({200, 202, 204}),
+        )
+        self._camera_settings_cache.pop(node_id, None)
 
     async def _read_fan_state(
         self,
