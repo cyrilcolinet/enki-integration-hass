@@ -32,7 +32,7 @@ Short version: [README](../README.md) · detailed view below.
 | 🔜 Soon | ACOVA ARLAN radiators | manufacturer allowlist OK, no test hardware |
 | 🔜 Soon | Camera config controls (motion on/off, sensitivity) | REST-doable on Meari cameras; needs an indoor-camera owner to validate write endpoints ([#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165)) |
 | ⏳ Not planned | Camera live video | TUTK Kalay Nebula P2P — native SDK, no Python path |
-| ⏳ Not planned | Enki alarm | no API identified |
+| 🔬 Beta | Enki alarm | `alarm_control_panel` — arm away / home / night and disarm, only the modes configured in the app; built from the app, looking for a tester ([#218](https://github.com/cyrilcolinet/enki-integration-hass/issues/218)) |
 | ✅ Published | Default HACS store | listed in the default store — install from HACS directly (see [HACS.md](HACS.md)) |
 
 ## Tooling
