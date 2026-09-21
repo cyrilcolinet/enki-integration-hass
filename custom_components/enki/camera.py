@@ -55,7 +55,8 @@ class EnkiEventSnapshotCamera(EnkiEntity, Camera):
         EnkiEntity.__init__(self, coordinator, device)
         Camera.__init__(self)
         self._attr_unique_id = f"{DOMAIN}-{device.node_id}-event-snapshot"
-        self._cache: tuple[str, bytes] | None = None
+        # Not `_cache`: Camera keeps its cached properties there.
+        self._snapshot: tuple[str, bytes] | None = None
 
     async def async_camera_image(
         self, width: int | None = None, height: int | None = None
@@ -63,19 +64,19 @@ class EnkiEventSnapshotCamera(EnkiEntity, Camera):
         url = self._device.reported.camera_last_image_url
         if not url:
             return None
-        if self._cache is not None and self._cache[0] == url:
-            return self._cache[1]
+        if self._snapshot is not None and self._snapshot[0] == url:
+            return self._snapshot[1]
         session = async_get_clientsession(self.hass)
         try:
             async with session.get(url) as response:
                 if response.status != 200:
                     LOGGER.debug("Camera snapshot HTTP %s for %s", response.status, self.node_id)
-                    return self._cache[1] if self._cache else None
+                    return self._snapshot[1] if self._snapshot else None
                 data = await response.read()
         except Exception as err:  # noqa: BLE001 - a broken snapshot must not crash HA
             LOGGER.debug("Camera snapshot fetch failed for %s: %s", self.node_id, err)
-            return self._cache[1] if self._cache else None
-        self._cache = (url, data)
+            return self._snapshot[1] if self._snapshot else None
+        self._snapshot = (url, data)
         return data
 
 

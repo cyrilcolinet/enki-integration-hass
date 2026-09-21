@@ -49,6 +49,14 @@ def _session_returning(status: int, body: bytes) -> MagicMock:
     return session
 
 
+def test_keeps_camera_property_cache() -> None:
+    # Camera's cached properties (camera_capabilities) live in self._cache.
+    cam = _camera({})
+    cam._cache = {}
+    EnkiEventSnapshotCamera.__init__(cam, cam.coordinator, cam.device)
+    assert cam._cache == {}
+
+
 @pytest.mark.asyncio
 async def test_no_url_returns_none() -> None:
     cam = _camera({})
