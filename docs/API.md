@@ -330,6 +330,8 @@ Errors arrive as `{sid, method, action, cmd, errid, errstr}` (plus `desc` when t
 asleep). `errstr` values `device dormancy`, `device awaken timeout`, `device offline` and
 `session not found` mean "wake the camera and retry", not "wrong request".
 
+The `camera` entity of a meari camera runs this sequence for Home Assistant's frontend (`api/meari_signaling.py`): the browser's offer and ICE candidates are relayed as `offer` / `candidate` frames, the camera's `answer` and candidates are sent back to the browser, and `settings` / `preview` starts the stream once the answer is in (`stop: 1` on close). Errors are fatal only until the answer. The TURN relay from the `option` reply is **not** given to the browser: it only arrives after authentication, and Home Assistant configures the browser before its offer.
+
 `scripts/probe_camera_stream.py` replays the whole sequence and prints, per camera, whether
 it is a meari device, whether signaling authenticates and whether the camera answers an SDP
 offer.

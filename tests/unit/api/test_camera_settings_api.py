@@ -83,3 +83,46 @@ async def test_status_failure_keeps_the_last_known_settings() -> None:
     assert await api._read_camera_settings(http, "home-1", "node-1") == {
         "camera_night_vision_mode": "SMART"
     }
+
+
+@pytest.mark.asyncio
+async def test_live_view_wakes_the_camera_then_starts_with_fresh_credentials() -> None:
+    with aioresponses() as mocked:
+        _login(mocked)
+        mocked.post(f"{_MEARI}/node-1/wake-up", status=500)  # best-effort: tolerated
+        mocked.get(
+            re.compile(rf"{re.escape(_MEARI)}/node-1/check-camera-connect-wss"),
+            status=200,
+            payload={"wssUrl": "wss://signal", "callee": "cam", "deviceCode": "dev"},
+        )
+        api = EnkiAPI("user@example.com", "secret")
+        await api.async_connect()
+        session = MagicMock()
+        session.start = AsyncMock()
+
+        await api.async_start_camera_live("home-1", "node-1", session, "OFFER")
+        await api.async_close()
+
+    _, info, offer = session.start.await_args.args
+    assert info["wssUrl"] == "wss://signal"
+    assert offer == "OFFER"
+
+
+@pytest.mark.asyncio
+async def test_live_view_without_access_is_refused() -> None:
+    from enki.api.meari_signaling import MeariSignalingError
+
+    with aioresponses() as mocked:
+        _login(mocked)
+        mocked.post(f"{_MEARI}/node-1/wake-up", status=200)
+        mocked.get(re.compile(rf"{re.escape(_MEARI)}/node-1/check-camera-connect-wss"), status=404)
+        api = EnkiAPI("user@example.com", "secret")
+        await api.async_connect()
+        session = MagicMock()
+        session.start = AsyncMock()
+
+        with pytest.raises(MeariSignalingError):
+            await api.async_start_camera_live("home-1", "node-1", session, "OFFER")
+        await api.async_close()
+
+    session.start.assert_not_awaited()

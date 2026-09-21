@@ -149,8 +149,13 @@ Config controls (night vision, motion detection, indicator light, …) exist onl
 | Motion / human-shape sensitivity | `number` | bounds from the referentiel; no entity without them |
 | Status light, image flip | `switch` | |
 | Battery, Wi-Fi, charging, SD card | `sensor` (diagnostic) | |
+| Live view | `camera` | WebRTC, with the last event's snapshot as the still image |
 
-Settings are read from `check-camera-status` at most every 5 minutes — the camera runs on a battery — and re-read right after a change. Reads are confirmed on a real camera; writes still need field validation ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)).
+Settings are read from `check-camera-status` at most every 5 minutes — the camera runs on a battery — and re-read right after a change.
+
+**Live view:** Home Assistant's frontend is the WebRTC peer; the integration only relays signaling to the camera, no video goes through it. The camera is woken first (it sleeps between events). The camera's own TURN credentials are not handed to the browser — they only exist after authentication, while the browser is configured before it makes its offer — so the browser relies on Home Assistant's ICE servers and on the camera's relay candidates.
+
+Reads are confirmed on a real camera; writes and the live view still need field validation ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)).
 
 **Blueprint:** motion → notify with the last snapshot — `blueprints/automation/enki/camera_motion_notification.yaml`.
 
@@ -244,7 +249,7 @@ Reads are best-effort (404 skipped) and driven by referentiel capabilities, not 
 | 🔬 Beta | Cameras (event snapshot — no live video), covers, Lexman water leak, scenarios — feedback welcome |
 | 🔬 Beta | Thermostat config knobs (offset, child-lock, preheating) — decoded, real-hardware validation welcome |
 | 🔬 Beta | ACOVA radiators — discovered and driven through the shared heating API (towel rail reported in [#190](https://github.com/cyrilcolinet/enki-integration-hass/issues/190)) |
-| 🔬 Beta | Lexman solar camera: settings and diagnostics; live view in progress ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)) |
+| 🔬 Beta | Lexman solar camera: settings, diagnostics and live view — to be validated on hardware ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)) |
 | 🔬 Beta | Enki alarm — built from the app's API, not yet validated on a real installation: feedback welcome |
 | Not planned | Camera live video and pan/tilt on Lexman IPC1xxKF cameras (Kalay P2P only, no HTTP route) |
 | Out of scope | Enki pairing and device setup, Leroy Merlin account management → [Enki support](https://support.enki-home.com/) (configure devices in the app before HA) |

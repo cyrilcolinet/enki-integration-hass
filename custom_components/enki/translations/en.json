@@ -157,6 +157,9 @@
     "camera": {
       "event_snapshot": {
         "name": "Last event snapshot"
+      },
+      "live": {
+        "name": "Live view"
       }
     },
     "button": {

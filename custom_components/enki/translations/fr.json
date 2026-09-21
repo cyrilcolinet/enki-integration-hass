@@ -157,6 +157,9 @@
     "camera": {
       "event_snapshot": {
         "name": "Dernier aperçu"
+      },
+      "live": {
+        "name": "Vue en direct"
       }
     },
     "button": {
