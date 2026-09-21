@@ -42,6 +42,7 @@ from .auth import EnkiAuthSession
 from .capability_routing import CAPABILITY_READS, CapabilityRead
 from .device_metadata import refresh_device_metadata
 from .gateway_keys import fetch_mobile_config
+from .meari_signaling import MeariSignalingError, MeariSignalingSession
 from .transport import OK_WITH_BODY, EnkiHttpClient
 
 _DISCOVERY_CONCURRENCY = 8
@@ -687,6 +688,26 @@ class EnkiAPI:
             ok_statuses=OK_WITH_BODY,
         )
         self._camera_settings_cache.pop(node_id, None)
+
+    async def async_start_camera_live(
+        self,
+        home_id: str,
+        node_id: str,
+        session: MeariSignalingSession,
+        offer_sdp: str,
+    ) -> None:
+        """Negotiate a live view with a meari camera for a WebRTC peer."""
+        http = await self._get_http()
+        # The solar camera sleeps between events; the app has a route for this.
+        # Best-effort: the signaling server may well wake it on its own.
+        try:
+            await http.wake_camera(home_id, node_id)
+        except EnkiConnectionError as err:
+            LOGGER.debug("Camera wake-up skipped for node %s: %s", node_id, err)
+        info = await http.get_camera_connect_info(home_id, node_id)
+        if not info:
+            raise MeariSignalingError("the camera service returned no live-view access")
+        await session.start(http.session, info, offer_sdp)
 
     async def _read_fan_state(
         self,

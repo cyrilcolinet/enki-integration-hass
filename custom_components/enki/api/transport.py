@@ -565,6 +565,25 @@ class EnkiHttpClient:
             "camera_meari", f"/{node_id}/check-camera-status", home_id=home_id, not_found_ok=True
         )
 
+    async def get_camera_connect_info(self, home_id: str, node_id: str) -> dict[str, Any]:
+        """Signaling address and one-shot credentials (APK udf.p → check-camera-connect-wss)."""
+        return await self._read_optional(
+            "camera_meari",
+            f"/{node_id}/check-camera-connect-wss",
+            home_id=home_id,
+            not_found_ok=True,
+        )
+
+    async def wake_camera(self, home_id: str, node_id: str) -> None:
+        """Wake a battery camera before a live view (APK udf.e → wake-up)."""
+        prefix = WIRED_PATH_PREFIXES["camera_meari"]
+        await self.post_command(
+            "camera_meari",
+            f"{prefix}/{node_id}/wake-up",
+            home_id=home_id,
+            ok_statuses=OK_WITH_BODY,
+        )
+
     async def get_security_state(self, home_id: str) -> dict[str, Any]:
         """Home alarm state (APK mhm.b → GET security?homeId=)."""
         return await self._read_optional(

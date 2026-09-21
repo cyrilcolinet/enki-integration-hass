@@ -284,6 +284,39 @@ _binary_sensor.BinarySensorDeviceClass = MagicMock()
 _camera = sys.modules["homeassistant.components.camera"]
 _camera.Camera = _HaEntity
 
+# Real value types for the WebRTC messages the live camera sends: tests compare
+# them, which a MagicMock would accept whatever the content.
+import dataclasses as _dataclasses  # noqa: E402
+import enum as _camera_enum  # noqa: E402
+
+
+class _CameraEntityFeature(_camera_enum.IntFlag):
+    ON_OFF = 1
+    STREAM = 2
+
+
+@_dataclasses.dataclass(frozen=True)
+class _WebRTCAnswer:
+    answer: str
+
+
+@_dataclasses.dataclass(frozen=True)
+class _WebRTCCandidate:
+    candidate: object
+
+
+@_dataclasses.dataclass(frozen=True)
+class _WebRTCError:
+    code: str
+    message: str
+
+
+_camera.CameraEntityFeature = _CameraEntityFeature
+_camera.WebRTCAnswer = _WebRTCAnswer
+_camera.WebRTCCandidate = _WebRTCCandidate
+_camera.WebRTCError = _WebRTCError
+_camera.WebRTCSendMessage = object
+
 # Real enums, not mocks: the alarm entity combines feature flags and compares
 # states, and a MagicMock would make every such assertion pass.
 import enum as _enum  # noqa: E402
