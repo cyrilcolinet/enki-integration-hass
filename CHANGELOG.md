@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.24.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.23.0...v1.24.0) (2026-09-21)
+
+
+### Features
+
+* **alarm:** add the Enki home alarm as an alarm panel ([f4cdcb0](https://github.com/cyrilcolinet/enki-integration-hass/commit/f4cdcb05082517d764502830e935bb72bd412f5c))
+
 ## [1.23.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.22.0...v1.23.0) (2026-09-17)
 
 
