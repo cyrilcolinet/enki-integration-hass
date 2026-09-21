@@ -5,7 +5,7 @@ Technical documentation for contributing, testing, and releasing the integration
 ## Prerequisites
 
 - Python 3.12+
-- Home Assistant 2024.12+ (for testing on a real instance)
+- Home Assistant 2025.1+ (for testing on a real instance — same floor as `hacs.json`)
 
 ```bash
 git clone https://github.com/cyrilcolinet/enki-integration-hass.git
@@ -53,7 +53,7 @@ Scripts in `scripts/` run **on your dev machine**, not inside the HA container. 
 | Script | Usage |
 |--------|--------|
 | `scripts/fetch_gateway_keys.py` | Verify login and read `mobile-config` `/settings` (not gateway keys) |
-| `scripts/extract_gateway_keys.py` | Extract gateway keys from an APK (jadx + DI module); `--apply` updates `const.py` |
+| `scripts/extract_gateway_keys.py` | Extract gateway keys from an APK (jadx + DI module); `--apply` updates `gateway_keys_data.py` |
 | `scripts/extract_api_routes.py` | Regenerate the capability→route catalogue (`api/capability_routes_data.py`) from an APK |
 | `scripts/capability_coverage.py` | Report capabilities the app exposes but the integration doesn't handle yet |
 | `scripts/discover_devices.py` | Export anonymized device profiles from the account |
@@ -75,7 +75,7 @@ When APK extraction misses a key or you need to validate one against live traffi
 1. PC and phone on the same Wi‑Fi. Start [mitmproxy](https://mitmproxy.org/): `mitmweb` (proxy on `:8080`, UI on `:8081`).
 2. Phone Wi‑Fi → manual proxy → PC IP, port `8080`. Install the mitmproxy cert from `http://mitm.it`.
 3. Trigger the action in the Enki app, filter for the micro-service (e.g. `rolling-prod`), and copy the `X-Gateway-APIKey` request header.
-4. Compare it to the matching `ENKI_*_API_KEY` in `const.py`. Disable the proxy when done.
+4. Compare it to the matching `ENKI_*_API_KEY` in `gateway_keys_data.py`. Disable the proxy when done.
 
 The key is an Adeo/Leroy Merlin app key (reusable, not a personal secret), but **never capture or share** the account password, Bearer token, `homeId`, or `nodeId`.
 
@@ -176,7 +176,8 @@ custom_components/enki/
 ├── __init__.py, manifest.json, config_flow.py, coordinator.py, entity.py
 ├── alarm_control_panel.py
 ├── binary_sensor.py, button.py, camera.py, climate.py, cover.py, fan.py, light.py
-├── number.py, select.py, sensor.py, switch.py, diagnostics.py
+├── number.py, select.py, sensor.py, switch.py, update.py
+├── device_trigger.py, diagnostics.py
 ├── const.py, exceptions.py, migration.py, notifications.py, gateway_keys_data.py
 ├── strings.json, translations/, brand/
 │
@@ -186,12 +187,13 @@ custom_components/enki/
 │   ├── transport.py           # HTTP per micro-service
 │   ├── gateway_registry.py    # APK micro-service catalogue
 │   ├── gateway_keys.py        # runtime key store + mobile-config settings path
+│   ├── device_metadata.py     # firmware / update / connectivity reads
 │   ├── capability_routing.py  # capability → read routing table
 │   └── capability_routes_data.py  # generated capability→route catalogue (APK)
 │
 ├── domain/                 # business model (no HA import)
 │   ├── models.py, capabilities.py, state.py, profile.py, camera_events.py, security.py
-│   ├── telemetry_coverage.py, telemetry_enrichment.py
+│   ├── telemetry_coverage.py, telemetry_enrichment.py, unknown_brands.py
 │
 ├── platforms/              # shared internal logic
 │   ├── light/behavior.py
@@ -203,7 +205,8 @@ custom_components/enki/
 │
 └── lib/                    # pure functions (0 HA import)
     ├── conversion.py, bff.py, battery.py, capability_path.py, production.py
-    ├── heating.py, shutter.py, enki_scope.py, command_override.py
+    ├── heating.py, shutter.py, enki_scope.py, command_override.py, fan_endpoints.py
+    ├── request_report.py, telemetry_labels.py
     ├── fan_endpoints.py, request_report.py, telemetry_labels.py
 ```
 

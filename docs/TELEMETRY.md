@@ -18,7 +18,7 @@ Local JSON export: anonymized profiles (type, manufacturer, capabilities). Attac
 
 When a **new** profile is detected (unique fingerprint) **and support is missing** (unsupported device or unimplemented capabilities):
 
-1. A **persistent notification** appears in Home Assistant
+1. A **repair issue** appears in Home Assistant (**Settings → Repairs**)
 2. The link opens GitHub with a **pre-filled** title and body
 3. You **confirm** issue creation — nothing is sent without that click
 
