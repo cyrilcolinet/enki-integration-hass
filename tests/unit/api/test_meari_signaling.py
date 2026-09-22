@@ -211,12 +211,14 @@ CHROME_OFFER = (
     "a=fmtp:63 111/111\r\na=rtpmap:9 G722/8000\r\na=rtpmap:0 PCMU/8000\r\n"
     "a=rtpmap:8 PCMA/8000\r\na=rtpmap:13 CN/8000\r\na=rtpmap:110 telephone-event/48000\r\n"
     "a=rtpmap:126 telephone-event/8000\r\n"
-    "m=video 9 UDP/TLS/RTP/SAVPF 96 97 102 103 45\r\n"
+    "m=video 9 UDP/TLS/RTP/SAVPF 96 97 102 103 45 108\r\n"
     "c=IN IP4 0.0.0.0\r\na=mid:1\r\na=recvonly\r\n"
     "a=rtpmap:96 VP8/90000\r\na=rtcp-fb:96 nack\r\na=rtpmap:97 rtx/90000\r\n"
     "a=fmtp:97 apt=96\r\na=rtpmap:102 H264/90000\r\na=rtcp-fb:102 nack pli\r\n"
     "a=fmtp:102 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f\r\n"
     "a=rtpmap:103 rtx/90000\r\na=fmtp:103 apt=102\r\na=rtpmap:45 AV1/90000\r\n"
+    "a=rtpmap:108 H264/90000\r\n"
+    "a=fmtp:108 level-asymmetry-allowed=1;packetization-mode=0;profile-level-id=42e01f\r\n"
     "m=application 9 UDP/DTLS/SCTP webrtc-datachannel\r\n"
     "c=IN IP4 0.0.0.0\r\na=mid:2\r\na=sctp-port:5000\r\n"
 )
@@ -227,7 +229,7 @@ def test_offer_keeps_only_what_the_camera_speaks() -> None:
     assert "m=audio 9 UDP/TLS/RTP/SAVPF 111 0 8\r\n" in slim
     assert "m=video 9 UDP/TLS/RTP/SAVPF 102\r\n" in slim
     assert "m=application 9 UDP/DTLS/SCTP webrtc-datachannel\r\n" in slim
-    for gone in ("extmap", "VP8", "AV1", "rtx", "red/", "G722", "apt=", "rtcp-fb:96"):
+    for gone in ("extmap", "VP8", "AV1", "rtx", "red/", "G722", "apt=", "rtcp-fb:96", ":108 "):
         assert gone not in slim
     for kept in ("a=fmtp:102 ", "a=rtcp-fb:102 nack pli", "a=fmtp:111 ", "a=mid:2", "a=recvonly"):
         assert kept in slim
