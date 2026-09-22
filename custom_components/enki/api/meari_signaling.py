@@ -68,7 +68,14 @@ def _slim_section(section: str) -> str:
         for line in lines
         if line.startswith("a=rtpmap:") and " " in line
     }
-    kept = [fmt for fmt in formats if codecs.get(fmt) in _CAMERA_CODECS.get(kind, ())]
+    fmtp = {line[7:].split(" ")[0]: line for line in lines if line.startswith("a=fmtp:")}
+    kept = [
+        fmt
+        for fmt in formats
+        if codecs.get(fmt) in _CAMERA_CODECS.get(kind, ())
+        # The camera fragments its frames: H264 in packetization mode 1 only.
+        and (codecs[fmt] != "h264" or "packetization-mode=1" in fmtp.get(fmt, ""))
+    ]
     if not kept:  # the data channel, or nothing the camera would take anyway
         return section
 
@@ -295,6 +302,10 @@ class MeariSignalingSession:
         elif method == "candidate":
             candidate = params.get("candidate")
             if isinstance(candidate, dict) and isinstance(candidate.get("candidate"), str):
+                LOGGER.debug(
+                    "Camera signaling candidate: %s",
+                    candidate["candidate"].partition(" typ ")[2].split(" ")[0] or "?",
+                )
                 self._on_candidate(
                     MeariCandidate(
                         candidate["candidate"],
