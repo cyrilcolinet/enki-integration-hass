@@ -317,6 +317,17 @@ _camera.WebRTCCandidate = _WebRTCCandidate
 _camera.WebRTCError = _WebRTCError
 _camera.WebRTCSendMessage = object
 
+
+# webrtc_models ships with Home Assistant, which CI does not install.
+@_dataclasses.dataclass(frozen=True)
+class _RTCIceCandidateInit:
+    candidate: str
+    sdp_mid: str | None = None
+    sdp_m_line_index: int | None = None
+
+
+sys.modules["webrtc_models"] = MagicMock(RTCIceCandidateInit=_RTCIceCandidateInit)
+
 # Real enums, not mocks: the alarm entity combines feature flags and compares
 # states, and a MagicMock would make every such assertion pass.
 import enum as _enum  # noqa: E402
