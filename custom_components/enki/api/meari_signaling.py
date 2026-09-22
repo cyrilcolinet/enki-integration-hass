@@ -39,6 +39,11 @@ DORMANT_ERRORS = frozenset(
 _AUTH_TIMEOUT_SECONDS = 15.0
 
 
+def _media_lines(sdp: str) -> list[str]:
+    """The m= lines of an SDP: enough to debug a refusal, no credentials."""
+    return [line for line in sdp.splitlines() if line.startswith("m=")]
+
+
 @dataclass(frozen=True, slots=True)
 class MeariCandidate:
     candidate: str
@@ -133,6 +138,7 @@ class MeariSignalingSession:
             raise MeariSignalingError("signaling authentication timed out") from err
         if self._closed or self._failed:  # already reported through on_error
             return
+        LOGGER.debug("Camera signaling offer: %s", _media_lines(offer_sdp))
         await self._send(
             "offer",
             {
@@ -201,18 +207,23 @@ class MeariSignalingSession:
 
     async def _dispatch(self, payload: dict[str, Any]) -> None:
         if "errid" in payload:
-            error = MeariSignalingError(str(payload.get("errstr") or ""))
-            if self._answered:
-                LOGGER.debug("Camera signaling error after answer: %s", error)
-            else:
-                self._fail(error)
+            LOGGER.debug(
+                "Camera signaling error %s: %s (%s)",
+                payload.get("errid"),
+                payload.get("errstr"),
+                payload.get("desc"),
+            )
+            if not self._answered:  # afterwards the peer's own ICE decides
+                self._fail(MeariSignalingError(str(payload.get("errstr") or "")))
             return
         method = payload.get("method")
         params = payload.get("params")
         params = params if isinstance(params, dict) else {}
         if method == "option":
+            LOGGER.debug("Camera signaling authenticated")
             self._authenticated.set()
         elif method == "answer" and isinstance(params.get("sdp"), str):
+            LOGGER.debug("Camera signaling answer: %s", _media_lines(params["sdp"]))
             self._answered = True
             self._on_answer(params["sdp"])
             await self._preview(stop=False)

@@ -18,7 +18,8 @@ This script replays that handshake to find out, per camera:
   3. (``--handshake``) whether the signaling server authenticates us and returns
      the coturn relay parameters;
   4. (``--offer``) whether the camera answers an SDP offer — i.e. whether a live
-     stream is reachable without the app.
+     stream is reachable without the app. ``--offer ha`` sends the offer Home
+     Assistant's frontend makes instead (recv-only audio, plus a data channel).
 
 Steps 1 and 2 are read-only. ``--handshake`` and ``--offer`` open a signaling
 session exactly like the app does (a battery camera wakes up, as it would if you
@@ -33,6 +34,7 @@ Usage:
     python3 scripts/probe_camera_stream.py '<email>' '<password>'
     python3 scripts/probe_camera_stream.py '<email>' '<password>' --handshake
     python3 scripts/probe_camera_stream.py '<email>' '<password>' --offer
+    python3 scripts/probe_camera_stream.py '<email>' '<password>' --offer ha
 """
 
 from __future__ import annotations
@@ -124,13 +126,16 @@ async def _post(http: Any, home_id: str, path: str) -> tuple[int, Any]:
         return response.status, _parse(await response.text())
 
 
-def _synthetic_offer() -> str:
+def _synthetic_offer(shape: str) -> str:
     """A syntactically valid offer shaped like the app's (audio sendrecv + video recvonly).
 
     The app offers with ``OfferToReceiveAudio``/``OfferToReceiveVideo`` plus a
-    sendrecv audio transceiver (two-way talk). We never complete DTLS here — the
-    point is only to see whether the camera answers.
+    sendrecv audio transceiver (two-way talk). The ``ha`` shape is Home
+    Assistant's frontend offer: audio and video recvonly, then a data channel.
+    We never complete DTLS here — the point is only to see whether the camera
+    answers.
     """
+    ha = shape == "ha"
     ufrag = secrets.token_hex(4)
     pwd = secrets.token_hex(12)
     fingerprint = ":".join(f"{byte:02X}" for byte in secrets.token_bytes(32))
@@ -149,12 +154,12 @@ def _synthetic_offer() -> str:
         "o=- 4611731400430051336 2 IN IP4 127.0.0.1",
         "s=-",
         "t=0 0",
-        "a=group:BUNDLE 0 1",
+        "a=group:BUNDLE 0 1 2" if ha else "a=group:BUNDLE 0 1",
         "a=msid-semantic: WMS",
         "m=audio 9 UDP/TLS/RTP/SAVPF 111 8 0",
         *common,
         "a=mid:0",
-        "a=sendrecv",
+        "a=recvonly" if ha else "a=sendrecv",
         "a=rtpmap:111 opus/48000/2",
         "a=fmtp:111 minptime=10;useinbandfec=1",
         "a=rtpmap:8 PCMA/8000",
@@ -166,6 +171,15 @@ def _synthetic_offer() -> str:
         "a=rtpmap:96 H264/90000",
         "a=fmtp:96 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f",
     ]
+    if ha:
+        lines += [
+            "m=application 9 UDP/DTLS/SCTP webrtc-datachannel",
+            *common[:1],
+            *common[2:7],
+            "a=mid:2",
+            "a=sctp-port:5000",
+            "a=max-message-size:262144",
+        ]
     return "\r\n".join(lines) + "\r\n"
 
 
@@ -219,7 +233,9 @@ def _describe(message: dict[str, Any]) -> str:
     return f"{method!r} {json.dumps(anonymize(message))[:200]}"
 
 
-async def _signaling(http: Any, connect: dict[str, Any], send_offer: bool, timeout: float) -> None:
+async def _signaling(
+    http: Any, connect: dict[str, Any], send_offer: str | None, timeout: float
+) -> None:
     """Replay the app's signaling session: auth, then optionally an SDP offer."""
     session_id = str(uuid.uuid4()).upper()
     caller = uuid.uuid4().hex[:16]
@@ -288,12 +304,12 @@ async def _signaling(http: Any, connect: dict[str, Any], send_offer: bool, timeo
                         "caller": caller,
                         "callee": callee,
                         "devicecode": device_code,
-                        "sdp": _synthetic_offer(),
+                        "sdp": _synthetic_offer(send_offer),
                         "settings": {"method": _METHOD_PREVIEW},
                     },
                 }
                 await websocket.send_str(json.dumps(offer))
-                print(f"    -> {_METHOD_OFFER} (synthetic SDP, audio sendrecv + video recvonly)")
+                print(f"    -> {_METHOD_OFFER} (synthetic SDP, {send_offer} shape)")
             if answered:
                 preview = {
                     "sid": session_id,
@@ -406,7 +422,7 @@ async def _probe_camera(
     device_id: str,
     caps: list[str],
     handshake: bool,
-    send_offer: bool,
+    send_offer: str | None,
     wake: bool,
     timeout: float,
 ) -> None:
@@ -469,7 +485,7 @@ async def sweep(
     username: str,
     password: str,
     handshake: bool,
-    send_offer: bool,
+    send_offer: str | None,
     wake: bool,
     timeout: float,
 ) -> None:
@@ -525,8 +541,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--offer",
-        action="store_true",
-        help="Also send an SDP offer and report the camera's answer (implies --handshake)",
+        nargs="?",
+        const="app",
+        choices=("app", "ha"),
+        help="Also send an SDP offer, shaped like the app's or Home Assistant's "
+        "(default: app), and report the camera's answer (implies --handshake)",
     )
     parser.add_argument(
         "--wake",
