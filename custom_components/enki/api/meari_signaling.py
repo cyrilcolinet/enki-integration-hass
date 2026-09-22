@@ -39,10 +39,46 @@ DORMANT_ERRORS = frozenset(
 
 _AUTH_TIMEOUT_SECONDS = 15.0
 
+# What the camera answered with, on an offer it accepted (#216).
+_CAMERA_CODECS = {"audio": {"opus", "pcmu", "pcma"}, "video": {"h264"}}
+_PER_FORMAT = ("a=rtpmap:", "a=fmtp:", "a=rtcp-fb:")
+
 
 def _media_lines(sdp: str) -> list[str]:
     """The m= lines of an SDP: enough to debug a refusal, no credentials."""
     return [line for line in sdp.splitlines() if line.startswith("m=")]
+
+
+def slim_offer(sdp: str) -> str:
+    """Cut a browser offer down to the codecs the camera speaks.
+
+    The camera answers a short offer, but refuses the browser's full one (488,
+    "remote sdp error"): VP8/VP9/AV1, RTX, RED and header extensions go.
+    """
+    header, *sections = re.split(r"\r?\n(?=m=)", sdp.strip())
+    header = "\r\n".join(x for x in header.splitlines() if not x.startswith("a=extmap"))
+    return "\r\n".join([header, *map(_slim_section, sections)]) + "\r\n"
+
+
+def _slim_section(section: str) -> str:
+    lines = section.splitlines()
+    kind, port, proto, *formats = lines[0][2:].split(" ")
+    codecs = {
+        line[9:].split(" ")[0]: line.split(" ", 1)[1].split("/")[0].lower()
+        for line in lines
+        if line.startswith("a=rtpmap:") and " " in line
+    }
+    kept = [fmt for fmt in formats if codecs.get(fmt) in _CAMERA_CODECS.get(kind, ())]
+    if not kept:  # the data channel, or nothing the camera would take anyway
+        return section
+
+    def keep(line: str) -> bool:
+        if line.startswith("a=extmap"):
+            return False
+        prefix = next((p for p in _PER_FORMAT if line.startswith(p)), None)
+        return prefix is None or line[len(prefix) :].split(" ")[0] in kept
+
+    return "\r\n".join([f"m={kind} {port} {proto} {' '.join(kept)}", *filter(keep, lines[1:])])
 
 
 def reject_unanswered(offer: str, answer: str) -> str:
@@ -161,13 +197,19 @@ class MeariSignalingSession:
             raise MeariSignalingError("signaling authentication timed out") from err
         if self._closed or self._failed:  # already reported through on_error
             return
-        LOGGER.debug("Camera signaling offer: %s", _media_lines(offer_sdp))
+        slim = slim_offer(offer_sdp)
+        LOGGER.debug(
+            "Camera signaling offer (%d of %d bytes): %s",
+            len(slim),
+            len(offer_sdp),
+            _media_lines(slim),
+        )
         await self._send(
             "offer",
             {
                 **self._peer,
                 "devicecode": self._info.get("deviceCode"),
-                "sdp": offer_sdp,
+                "sdp": slim,
                 "settings": {"method": "preview"},
             },
         )
