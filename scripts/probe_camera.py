@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Intelligent, read-only sweep of every Enki camera on the account.
 
+``--device-type`` sweeps another family the same way (``videophones`` for the
+Lexman video doorbell, #233); the camera-only extras are then skipped.
+
 For each camera found on the dashboard it:
   1. identifies it (manufacturer / model / referentiel type + i18n key) so a
      Lexman camera is easy to tell apart from a Google Nest one;
@@ -17,6 +20,7 @@ redacted, so only the response *shape* and status codes are shown.
 
 Usage:
     python3 scripts/probe_camera.py '<email>' '<password>'
+    python3 scripts/probe_camera.py '<email>' '<password>' --device-type videophones
 """
 
 from __future__ import annotations
@@ -128,7 +132,7 @@ async def _identify(http: Any, home_id: str, node_id: str, device_id: str) -> di
 
 
 async def _probe_camera(
-    http: Any, home_id: str, node_id: str, info: dict[str, Any], day: str
+    http: Any, home_id: str, node_id: str, info: dict[str, Any], day: str, camera: bool
 ) -> None:
     print(f"    manufacturer={info['manufacturer']!r} model={info['model']!r}")
     print(f"    type={info['type']!r} i18n={info['i18n']!r}")
@@ -140,11 +144,15 @@ async def _probe_camera(
         for cap in info["capabilities"]
         if cap.startswith("check_") and cap not in _SKIP_CAPABILITIES
     }
-    forced = {
-        "check_camera_status",
-        "check_detection_zone",
-        "check_firmware_update_status",
-    }
+    forced = (
+        {
+            "check_camera_status",
+            "check_detection_zone",
+            "check_firmware_update_status",
+        }
+        if camera
+        else set()
+    )
     read_caps = sorted(advertised | forced)
     if not read_caps:
         print("    no readable check_* capabilities advertised")
@@ -181,7 +189,7 @@ async def _probe_camera(
                 print(f"    {cap} [{slug}]{label}: HTTP {status}{suffix}")
                 (authorized if status == 200 else rejected).add(slug)
 
-    for label, const_key, template in _EXTRA_GETS:
+    for label, const_key, template in _EXTRA_GETS if camera else ():
         api_key = getattr(keys_mod, const_key, "")
         if not api_key:
             continue
@@ -202,7 +210,7 @@ async def _probe_camera(
         print(f"    => all reads rejected (tried: {', '.join(sorted(rejected))})")
 
 
-async def sweep(username: str, password: str, day: str) -> None:
+async def sweep(username: str, password: str, day: str, device_type: str) -> None:
     api = EnkiAPI(username, password)
     await api.async_connect()
     http = await api._get_http()
@@ -214,19 +222,19 @@ async def sweep(username: str, password: str, day: str) -> None:
         for section in sections:
             for item in section.get("items", []) if isinstance(section, dict) else []:
                 metadata = item.get("metadata", {}) if isinstance(item, dict) else {}
-                if metadata.get("deviceType") != "cameras":
+                if metadata.get("deviceType") != device_type:
                     continue
                 node_id = metadata.get("nodeId")
                 device_id = metadata.get("deviceId")
                 if not node_id or not device_id:
                     continue
-                print(f"=== camera #{index} ===")
+                print(f"=== {device_type} #{index} ===")
                 info = await _identify(http, home_id, node_id, device_id)
-                await _probe_camera(http, home_id, node_id, info, day)
+                await _probe_camera(http, home_id, node_id, info, day, device_type == "cameras")
                 index += 1
 
     if index == 0:
-        print("No camera found on the dashboard (deviceType == 'cameras').")
+        print(f"Nothing on the dashboard with deviceType == {device_type!r}.")
 
     await api.async_close()
 
@@ -240,9 +248,14 @@ def parse_args() -> argparse.Namespace:
         default=date.today().isoformat(),
         help="Day (YYYY-MM-DD) for check-camera-events; defaults to today",
     )
+    parser.add_argument(
+        "--device-type",
+        default="cameras",
+        help="Dashboard deviceType to sweep (e.g. videophones); defaults to cameras",
+    )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    asyncio.run(sweep(args.username, args.password, args.day))
+    asyncio.run(sweep(args.username, args.password, args.day, args.device_type))
