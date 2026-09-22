@@ -8,7 +8,8 @@ the exchange is plain WebRTC:
 1. ``option`` — authenticate; the reply carries the camera's TURN relay;
 2. ``offer`` — our SDP; the camera replies ``answer``;
 3. ``candidate`` — ICE candidates, both ways;
-4. ``settings`` / ``preview`` — start the stream once the answer is in.
+4. ``settings`` / ``preview`` — start the stream once the camera reports the
+   connection up (``errid`` 0, "Connect Success"), like the app.
 
 Errors arrive as ``{"errid", "errstr"}``; a sleeping camera says so in ``errstr``.
 
@@ -152,6 +153,7 @@ class MeariSignalingSession:
         self._authenticated = asyncio.Event()
         self._offered = False
         self._answered = False
+        self._streaming = False
         self._closed = False
         self._failed = False
         self._pending_candidates: list[MeariCandidate] = []
@@ -285,7 +287,10 @@ class MeariSignalingSession:
                 payload.get("errstr"),
                 payload.get("desc"),
             )
-            if not self._answered:  # afterwards the peer's own ICE decides
+            if payload.get("errid") == 0:  # "Connect Success": the app starts the stream here
+                self._streaming = True
+                await self._preview(stop=False)
+            elif not self._answered:  # afterwards the peer's own ICE decides
                 self._fail(MeariSignalingError(str(payload.get("errstr") or "")))
             return
         method = payload.get("method")
@@ -298,7 +303,6 @@ class MeariSignalingSession:
             LOGGER.debug("Camera signaling answer: %s", _media_lines(params["sdp"]))
             self._answered = True
             self._on_answer(reject_unanswered(self._offer_sdp, params["sdp"]))
-            await self._preview(stop=False)
         elif method == "candidate":
             candidate = params.get("candidate")
             if isinstance(candidate, dict) and isinstance(candidate.get("candidate"), str):
@@ -330,7 +334,7 @@ class MeariSignalingSession:
         self._closed = True
         if self._ws is not None and not self._ws.closed:
             with contextlib.suppress(aiohttp.ClientError, ConnectionError):
-                if self._answered:
+                if self._streaming:
                     await self._preview(stop=True)
                 await self._ws.close()
         if self._reader is not None and self._reader is not asyncio.current_task():

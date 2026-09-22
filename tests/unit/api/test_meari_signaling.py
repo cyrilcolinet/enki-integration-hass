@@ -101,6 +101,10 @@ class _FakeMeari:
                         "params": {"candidate": CAMERA_CANDIDATE},
                     }
                 )
+                if self.mode != "no_connect":
+                    await ws.send_json(
+                        {"sid": frame["sid"], "errid": 0, "errstr": "Connect Success"}
+                    )
                 if self.mode == "late_error":
                     await ws.send_json(
                         {
@@ -146,7 +150,7 @@ async def test_full_negotiation_relays_offer_answer_and_candidates() -> None:
     assert errors == []
 
     methods = [frame["method"] for frame in fake.frames]
-    # Early candidate held back until the offer is out; preview after the answer;
+    # Early candidate held back until the offer is out; preview on Connect Success;
     # stop-preview on close. The end-of-candidates marker is never sent.
     assert methods == ["option", "offer", "candidate", "settings", "settings"]
     option, offer = fake.frames[0], fake.frames[1]
@@ -156,6 +160,15 @@ async def test_full_negotiation_relays_offer_answer_and_candidates() -> None:
     start, stop = fake.frames[3], fake.frames[4]
     assert start["params"]["settings"]["streams"] == [{"channel": 0, "stream": 1, "stop": 0}]
     assert stop["params"]["settings"]["streams"] == [{"channel": 0, "stream": 1, "stop": 1}]
+
+
+@pytest.mark.asyncio
+async def test_no_stream_request_before_connect_success() -> None:
+    fake = _FakeMeari("no_connect")
+    answers, _, errors = await _run(fake)
+    assert answers == [CAMERA_ANSWER]
+    assert errors == []
+    assert [frame["method"] for frame in fake.frames] == ["option", "offer"]
 
 
 @pytest.mark.asyncio
