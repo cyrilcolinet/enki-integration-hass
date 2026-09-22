@@ -13,9 +13,10 @@ the exchange is plain WebRTC:
 
 Errors arrive as ``{"errid", "errstr"}``; a sleeping camera says so in ``errstr``.
 
-Confirmed on a real solar camera up to the answer and its candidates (#216), with
-a synthetic offer — so without media yet. The media itself never goes through
-here: Home Assistant's frontend is the WebRTC peer, this only relays signaling.
+Confirmed end to end on a real solar camera (#216). The media itself never goes
+through here: Home Assistant's frontend is the WebRTC peer, this only relays
+signaling — trimming the browser's offer to what the camera takes, and padding
+its answer back to the offer's shape.
 """
 
 from __future__ import annotations
