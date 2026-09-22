@@ -13,7 +13,12 @@ import aiohttp
 import pytest
 from aiohttp import web
 from aiohttp.test_utils import TestServer
-from enki.api.meari_signaling import MeariCandidate, MeariSignalingError, MeariSignalingSession
+from enki.api.meari_signaling import (
+    MeariCandidate,
+    MeariSignalingError,
+    MeariSignalingSession,
+    reject_unanswered,
+)
 
 CAMERA_ANSWER = "v=0\r\nm=audio 9 UDP/TLS/RTP/SAVPF 0\r\nm=video 9 UDP/TLS/RTP/SAVPF 96\r\n"
 CAMERA_CANDIDATE = {
@@ -177,3 +182,17 @@ async def test_missing_signaling_address_is_refused() -> None:
     async with aiohttp.ClientSession() as http:
         with pytest.raises(MeariSignalingError):
             await session.start(http, {}, "OFFER")
+
+
+def test_answer_gets_the_dropped_data_channel_back_as_rejected() -> None:
+    # Home Assistant's frontend offers a data channel; the camera drops it.
+    offer = (
+        "v=0\r\nm=audio 9 UDP/TLS/RTP/SAVPF 0\r\na=mid:0\r\n"
+        "m=video 9 UDP/TLS/RTP/SAVPF 96\r\na=mid:1\r\n"
+        "m=application 9 UDP/DTLS/SCTP webrtc-datachannel\r\na=mid:2\r\na=sctp-port:5000\r\n"
+    )
+    assert reject_unanswered(offer, CAMERA_ANSWER) == (
+        CAMERA_ANSWER
+        + "m=application 0 UDP/DTLS/SCTP webrtc-datachannel\r\nc=IN IP4 0.0.0.0\r\na=mid:2\r\n"
+    )
+    assert reject_unanswered("v=0\r\nm=audio 9 X 0\r\n", CAMERA_ANSWER) == CAMERA_ANSWER

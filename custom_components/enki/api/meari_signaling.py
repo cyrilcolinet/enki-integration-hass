@@ -22,6 +22,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import json
+import re
 import uuid
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -42,6 +43,26 @@ _AUTH_TIMEOUT_SECONDS = 15.0
 def _media_lines(sdp: str) -> list[str]:
     """The m= lines of an SDP: enough to debug a refusal, no credentials."""
     return [line for line in sdp.splitlines() if line.startswith("m=")]
+
+
+def reject_unanswered(offer: str, answer: str) -> str:
+    """Add back, as rejected, the offer's trailing m-sections the camera dropped.
+
+    The camera answers audio and video only and drops the frontend's data
+    channel, but a browser refuses an answer with fewer m-sections than its offer.
+    """
+    # ponytail: assumes the camera keeps the offer's order and only drops the tail.
+    sections = re.split(r"\r?\n(?=m=)", offer)[1:]
+    missing = sections[len(_media_lines(answer)) :]
+    if not missing:
+        return answer
+    rejected = []
+    for section in missing:
+        lines = section.splitlines()
+        kind, _port, proto, *formats = lines[0][2:].split(" ")
+        rejected += [f"m={kind} 0 {proto} {' '.join(formats)}", "c=IN IP4 0.0.0.0"]
+        rejected += [line for line in lines if line.startswith("a=mid:")]
+    return answer.rstrip("\r\n") + "\r\n" + "\r\n".join(rejected) + "\r\n"
 
 
 @dataclass(frozen=True, slots=True)
@@ -77,6 +98,7 @@ class MeariSignalingSession:
         # No I/O here: the session must exist before the first network call, so
         # the peer's early ICE candidates have somewhere to wait.
         self._info: dict[str, Any] = {}
+        self._offer_sdp = ""
         self._on_answer = on_answer
         self._on_candidate = on_candidate
         self._on_error = on_error
@@ -108,6 +130,7 @@ class MeariSignalingSession:
     ) -> None:
         """Authenticate, then hand the peer's offer to the camera."""
         self._info = connect_info
+        self._offer_sdp = offer_sdp
         url = connect_info.get("wssUrl")
         if not isinstance(url, str) or not url:
             raise MeariSignalingError("no signaling address for this camera")
@@ -225,7 +248,7 @@ class MeariSignalingSession:
         elif method == "answer" and isinstance(params.get("sdp"), str):
             LOGGER.debug("Camera signaling answer: %s", _media_lines(params["sdp"]))
             self._answered = True
-            self._on_answer(params["sdp"])
+            self._on_answer(reject_unanswered(self._offer_sdp, params["sdp"]))
             await self._preview(stop=False)
         elif method == "candidate":
             candidate = params.get("candidate")
