@@ -257,9 +257,8 @@ generation ([#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/
 So on that generation both live video and settings are out of reach, and it is not a matter of
 finding the right endpoint: there is none. The meari generation, whose devices carry the
 `tr_device_lexman_camera_meari_solar_label` referentiel key, is the one the sections below
-describe. The REST reads are **confirmed on a real solar camera** ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)); the writes and the live-view
-signaling are reconstructed from the app and not exercised yet — `scripts/probe_camera_stream.py`
-is what will confirm them.
+describe. Reads, writes and the live view are all **confirmed on a real solar camera**
+([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)); `scripts/probe_camera_stream.py` replays the signaling without Home Assistant.
 
 ### REST
 
@@ -322,15 +321,31 @@ frames; every frame shares the same envelope:
 3. **Answer** — inbound `method: "answer"`, `params.sdp`.
 4. **ICE** — `method: "candidate"` both ways, `params: {caller, callee,
    candidate: {candidate, sdpMid, sdpMLineIndex}}`.
-5. **Start the stream** — `method: "settings"`, `params: {caller, callee,
+5. **Connection up** — inbound `{errid: 0, errstr: "Connect Success"}` once the camera
+   reaches the peer. **Only then** does the app ask for the stream — asking earlier is ignored.
+6. **Start the stream** — `method: "settings"`, `params: {caller, callee,
    settings: {sid, method: "preview", streams: [{channel: 0, stream: 1, stop: 0}]}}`.
    Recorded playback uses the same shape with `method: "playback"`.
 
 Errors arrive as `{sid, method, action, cmd, errid, errstr}` (plus `desc` when the camera is
 asleep). `errstr` values `device dormancy`, `device awaken timeout`, `device offline` and
-`session not found` mean "wake the camera and retry", not "wrong request".
+`session not found` mean "wake the camera and retry", not "wrong request". `errid` 488
+(`remote sdp error`) means the offer itself was refused: the camera takes a short SDP, not a
+browser's full one.
 
-The `camera` entity of a meari camera runs this sequence for Home Assistant's frontend (`api/meari_signaling.py`): the browser's offer and ICE candidates are relayed as `offer` / `candidate` frames, the camera's `answer` and candidates are sent back to the browser, and `settings` / `preview` starts the stream once the answer is in (`stop: 1` on close). Errors are fatal only until the answer. The TURN relay from the `option` reply is **not** given to the browser: it only arrives after authentication, and Home Assistant configures the browser before its offer.
+The `camera` entity of a meari camera runs this sequence for Home Assistant's frontend
+(`api/meari_signaling.py`), and two adjustments are what make a browser work as the peer:
+
+- **The offer is slimmed** to opus / PCMU / PCMA and H264, without header extensions. Chrome's
+  full offer (~7 kB, VP8, AV1, RTX, RED, …) is refused with `errid` 488.
+- **The answer is padded back**: the camera answers audio and video only, so the offer's
+  remaining m-sections (the frontend's data channel) are added as rejected, since a browser
+  refuses an answer with fewer sections than its offer.
+
+The stream is then requested on `Connect Success`, and stopped (`stop: 1`) on close. Errors are
+fatal only until the answer. The TURN relay from the `option` reply is **not** given to the
+browser: it only arrives after authentication, and Home Assistant configures the browser before
+its offer — the browser uses its own ICE servers and the camera's relay candidates.
 
 `scripts/probe_camera_stream.py` replays the whole sequence and prints, per camera, whether
 it is a meari device, whether signaling authenticates and whether the camera answers an SDP
