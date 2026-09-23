@@ -131,28 +131,35 @@ async def _identify(http: Any, home_id: str, node_id: str, device_id: str) -> di
     }
 
 
+# Reads worth trying even when the referentiel does not advertise them: the app
+# calls these, and a device's capability names do not always match the routes.
+_FORCED_READS = {
+    "cameras": {
+        "check_camera_status",
+        "check_detection_zone",
+        "check_firmware_update_status",
+    },
+    "videophones": {
+        "check_videophone_state",
+        "check_videophone_events",
+        "check_turn_info",
+        "check_sdp_candidates_info",
+    },
+}
+
+
 async def _probe_camera(
-    http: Any, home_id: str, node_id: str, info: dict[str, Any], day: str, camera: bool
+    http: Any, home_id: str, node_id: str, info: dict[str, Any], day: str, device_type: str
 ) -> None:
     print(f"    manufacturer={info['manufacturer']!r} model={info['model']!r}")
     print(f"    type={info['type']!r} i18n={info['i18n']!r}")
 
-    # Force-try every meari camera GET even if the referentiel doesn't advertise
-    # it — status/detection-zone/firmware need no day param and might return data.
     advertised = {
         cap
         for cap in info["capabilities"]
         if cap.startswith("check_") and cap not in _SKIP_CAPABILITIES
     }
-    forced = (
-        {
-            "check_camera_status",
-            "check_detection_zone",
-            "check_firmware_update_status",
-        }
-        if camera
-        else set()
-    )
+    forced = _FORCED_READS.get(device_type, set())
     read_caps = sorted(advertised | forced)
     if not read_caps:
         print("    no readable check_* capabilities advertised")
@@ -189,7 +196,7 @@ async def _probe_camera(
                 print(f"    {cap} [{slug}]{label}: HTTP {status}{suffix}")
                 (authorized if status == 200 else rejected).add(slug)
 
-    for label, const_key, template in _EXTRA_GETS if camera else ():
+    for label, const_key, template in _EXTRA_GETS if device_type == "cameras" else ():
         api_key = getattr(keys_mod, const_key, "")
         if not api_key:
             continue
@@ -230,7 +237,7 @@ async def sweep(username: str, password: str, day: str, device_type: str) -> Non
                     continue
                 print(f"=== {device_type} #{index} ===")
                 info = await _identify(http, home_id, node_id, device_id)
-                await _probe_camera(http, home_id, node_id, info, day, device_type == "cameras")
+                await _probe_camera(http, home_id, node_id, info, day, device_type)
                 index += 1
 
     if index == 0:
