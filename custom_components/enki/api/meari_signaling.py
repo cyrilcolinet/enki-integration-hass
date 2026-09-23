@@ -26,7 +26,7 @@ import contextlib
 import json
 import re
 import uuid
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import Any
 
@@ -40,9 +40,10 @@ DORMANT_ERRORS = frozenset(
 )
 
 _AUTH_TIMEOUT_SECONDS = 15.0
-# The camera stops sending after about two minutes, with no error and the
-# signaling still up (#216); the app has no keepalive, so this re-asks.
-_PREVIEW_REFRESH_SECONDS = 60.0
+# The signaling session dies about two minutes in: the stream stops and the next
+# request answers "session not found" (#216). The app re-authenticates with fresh
+# credentials on that error, so this re-asks often enough to catch it early.
+_PREVIEW_REFRESH_SECONDS = 45.0
 
 # What the camera answered with, on an offer it accepted (#216).
 _CAMERA_CODECS = {"audio": {"opus", "pcmu", "pcma"}, "video": {"h264"}}
@@ -150,6 +151,8 @@ class MeariSignalingSession:
         self._on_answer = on_answer
         self._on_candidate = on_candidate
         self._on_error = on_error
+        # Fetches fresh connect-wss credentials, as the app does on a dead session.
+        self._renew: Callable[[], Awaitable[dict[str, Any]]] | None = None
         self._sid = str(uuid.uuid4()).upper()
         self._caller = uuid.uuid4().hex[:16]
         self._ws: aiohttp.ClientWebSocketResponse | None = None
@@ -184,26 +187,13 @@ class MeariSignalingSession:
         url = connect_info.get("wssUrl")
         if not isinstance(url, str) or not url:
             raise MeariSignalingError("no signaling address for this camera")
+        LOGGER.debug("Camera signaling session expires=%s", connect_info.get("expires"))
         self._ws = await http.ws_connect(url, heartbeat=30)
         if self._closed:  # the peer gave up while we were connecting
             await self._ws.close()
             return
         self._reader = asyncio.create_task(self._read_loop())
-        await self._send(
-            "option",
-            {
-                **self._peer,
-                "devicecode": self._info.get("deviceCode"),
-                "expires": self._info.get("expires"),
-                "continent": "Europe",
-                "country": "France",
-            },
-            auth={
-                "accessId": self._info.get("accessId"),
-                "signature": self._info.get("signature"),
-                "token": self._info.get("token"),
-            },
-        )
+        await self._authenticate()
         try:
             await asyncio.wait_for(self._authenticated.wait(), _AUTH_TIMEOUT_SECONDS)
         except TimeoutError as err:
@@ -231,6 +221,39 @@ class MeariSignalingSession:
         pending, self._pending_candidates = self._pending_candidates, []
         for candidate in pending:
             await self._send_candidate(candidate)
+
+    def renew_with(self, renew: Callable[[], Awaitable[dict[str, Any]]]) -> None:
+        """How to fetch fresh credentials when the session dies mid-stream."""
+        self._renew = renew
+
+    async def _authenticate(self) -> None:
+        await self._send(
+            "option",
+            {
+                **self._peer,
+                "devicecode": self._info.get("deviceCode"),
+                "expires": self._info.get("expires"),
+                "continent": "Europe",
+                "country": "France",
+            },
+            auth={
+                "accessId": self._info.get("accessId"),
+                "signature": self._info.get("signature"),
+                "token": self._info.get("token"),
+            },
+        )
+
+    async def _renew_session(self) -> None:
+        """Re-authenticate with fresh credentials, as the app does on a dead session."""
+        if self._renew is None:
+            return
+        info = await self._renew()
+        if not info or self._closed:
+            return
+        LOGGER.debug("Camera signaling renewing the session, expires=%s", info.get("expires"))
+        self._info = info
+        await self._authenticate()
+        await self._preview(stop=False)
 
     async def add_candidate(self, candidate: MeariCandidate) -> None:
         """Relay one of the peer's ICE candidates (held until the offer is out)."""
@@ -307,6 +330,8 @@ class MeariSignalingSession:
                 await self._preview(stop=False)
                 if self._refresher is None:
                     self._refresher = asyncio.create_task(self._refresh_preview())
+            elif self._streaming and str(payload.get("errstr") or "") in DORMANT_ERRORS:
+                await self._renew_session()
             elif not self._answered:  # afterwards the peer's own ICE decides
                 self._fail(MeariSignalingError(str(payload.get("errstr") or "")))
             return

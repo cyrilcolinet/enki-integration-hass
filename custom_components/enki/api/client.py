@@ -704,6 +704,7 @@ class EnkiAPI:
             await http.wake_camera(home_id, node_id)
         except EnkiConnectionError as err:
             LOGGER.debug("Camera wake-up skipped for node %s: %s", node_id, err)
+        session.renew_with(lambda: http.get_camera_connect_info(home_id, node_id))
         info = await http.get_camera_connect_info(home_id, node_id)
         if not info:
             raise MeariSignalingError("the camera service returned no live-view access")
