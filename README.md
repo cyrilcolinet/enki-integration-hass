@@ -33,7 +33,7 @@
 
 ---
 
-The **Enki** app controls hundreds of products (Lexman, Equation, Inspire, Edisio, Evology, Noirot, Envertech, DIO, …) through the **Leroy Merlin cloud**. This integration exposes in Home Assistant **everything visible in the Enki app** — using Enki **API capabilities** from the referentiel, like the mobile app, rather than a fixed model list.
+The **Enki** app controls hundreds of products (Lexman, Equation, Inspire, Edisio, Evology, Noirot, Envertech, DIO, EssentielB, …) through the **Leroy Merlin cloud**. This integration exposes in Home Assistant **everything visible in the Enki app** — using Enki **API capabilities** from the referentiel, like the mobile app, rather than a fixed model list.
 
 > **Disclaimer — unofficial project:** This is a community-maintained integration. It is **not** official, **not** affiliated with, and **not** endorsed by Leroy Merlin, ADEO, or Enki. The author and maintainers are **independent** and do **not** work for Enki. Full details: [docs/DISCLAIMER.md](docs/DISCLAIMER.md).
 
@@ -65,7 +65,7 @@ The **Enki** app controls hundreds of products (Lexman, Equation, Inspire, Edisi
 
 - **Covers** (Evology, Nodon, …) — `cover`
 - **Water leak** (Lexman) — `binary_sensor`, `sensor` (on-site leak test pending — [#36](https://github.com/cyrilcolinet/enki-integration-hass/issues/36))
-- **Cameras** (Lexman/Meari) — `camera` (last-event snapshot), `sensor` (last motion, last event, last sound on models that report it), `binary_sensor` (SD card). Live video, settings and pan/tilt are out of reach on the Lexman IPC1xxKF cameras (proprietary P2P, no HTTP route — [#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165)); the **solar camera** (other camera backend) adds its settings — night vision, motion detection, sensitivities, status light, flip, recording duration — plus battery, Wi-Fi, charging and SD-card sensors, and a **live view** over WebRTC (confirmed on hardware) — [#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)
+- **Cameras** (Lexman/Meari) — `camera` (last-event snapshot), `sensor` (last motion, last event, last sound on models that report it), `binary_sensor` (SD card). Live video, settings and pan/tilt are out of reach on the Lexman IPC1xxKF cameras (proprietary P2P, no HTTP route — [#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165)); the **solar camera** (other camera backend) adds its settings — night vision, motion detection, sensitivities, status light, flip, recording duration — plus battery, Wi-Fi, charging and SD-card sensors, and a **live view** over WebRTC, confirmed on hardware and limited to about two minutes per session by the camera itself — [#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)
 - **Scenarios** (Enki cloud) — `button`
 - **Alarm** (Enki home security) — `alarm_control_panel`: arm away / home / night and disarm, only with the modes configured in the app (beta, since **v1.24**)
 
