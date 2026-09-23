@@ -105,8 +105,14 @@ class _FakeMeari:
                     await ws.send_json(
                         {"sid": frame["sid"], "errid": 0, "errstr": "Connect Success"}
                     )
+                    # The reason is in desc, not errstr, as the real server sends it.
                     await ws.send_json(
-                        {"sid": frame["sid"], "errid": 400, "errstr": "session not found"}
+                        {
+                            "sid": frame["sid"],
+                            "errid": 400,
+                            "errstr": "Bad Request",
+                            "desc": "session not found",
+                        }
                     )
                 elif self.mode != "no_connect":
                     await ws.send_json(
