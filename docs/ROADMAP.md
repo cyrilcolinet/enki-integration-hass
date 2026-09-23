@@ -12,7 +12,7 @@ Short version: [README](../README.md) · detailed view below.
 | Status | Device | Features |
 |--------|----------|-------------------|
 | ✅ Supported | Inspire fans (Siroco+, Cadix, Radix, …) | `fan`, LED kit `light`, speed, direction, modes (per referentiel); Cadix exposes main + ambient ring as separate lights with optimistic fan/light coupling (**v1.11**) |
-| ✅ Supported | Enki lights (Eglo, Lexman, …) | ON/OFF, brightness, tunable white, RGB (HS) if `change_hue` + `change_saturation` |
+| ✅ Supported | Enki lights (Eglo, Lexman, EssentielB, …) | ON/OFF, brightness, tunable white, RGB (HS) if `change_hue` + `change_saturation` |
 | ✅ Supported | Outlets / switches (Edisio, Equation, …) | `switch` ON/OFF via `switch-electrical-power`; instant consumption refused by the Enki cloud since August 2026 |
 | ✅ Supported | DIO outlets (433 MHz RF) | `switch` with assumed state — one-way RF, nothing reports back ([#203](https://github.com/cyrilcolinet/enki-integration-hass/issues/203)) |
 | ✅ Supported | Evology 2-channel in-wall module | one `switch` per channel (`check_channel1/2_electrical_power`) |
@@ -31,7 +31,7 @@ Short version: [README](../README.md) · detailed view below.
 | 🔬 Beta | Lexman water leak detector | leak `binary_sensor` + battery `sensor`; reads OK remotely — on-site wet test pending ([#36](https://github.com/cyrilcolinet/enki-integration-hass/issues/36)) |
 | 🔬 Beta | Enki scenarios (“Open living room”, …) | `button` (v1.6.0+) |
 | 🔬 Beta | ACOVA radiators | discovered and driven through the shared heating API (towel rail reported in [#190](https://github.com/cyrilcolinet/enki-integration-hass/issues/190)) |
-| 🔬 Beta | Lexman solar camera (meari) | settings as `select` / `switch` / `number` (night vision, motion detection, sensitivities, status light, flip, recording duration) + battery, Wi-Fi, charging and SD-card sensors; live view over Home Assistant's native WebRTC, confirmed on hardware ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)) |
+| 🔬 Beta | Lexman solar camera (meari) | settings as `select` / `switch` / `number` (night vision, motion detection, sensitivities, status light, flip, recording duration) + battery, Wi-Fi, charging and SD-card sensors; live view over Home Assistant's native WebRTC, confirmed on hardware and capped at about two minutes by the camera ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)) |
 | ⏳ Not planned | Live video, settings and pan/tilt on Lexman IPC1xxKF cameras | proprietary P2P tunnel, no HTTP route ([#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165)) |
 | 🔬 Beta | Enki alarm | `alarm_control_panel` — arm away / home / night and disarm, only the modes configured in the app; built from the app, looking for a tester ([#218](https://github.com/cyrilcolinet/enki-integration-hass/issues/218)) |
 | ✅ Published | Default HACS store | listed in the default store — install from HACS directly (see [HACS.md](HACS.md)) |

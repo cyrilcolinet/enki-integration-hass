@@ -20,7 +20,7 @@ The integration talks to the **Enki cloud API** — the same Adeo / Leroy Merlin
 
 ## Trademarks
 
-"Enki", "Leroy Merlin", "ADEO", and device brand names (Lexman, Equation, Inspire, Eglo, Sedea, Edisio, Evology, Nodon, …) are trademarks of their respective owners. Their use in this repository is for **identification only** (compatible hardware and services). No affiliation or endorsement is implied.
+"Enki", "Leroy Merlin", "ADEO", and device brand names (Lexman, Equation, Inspire, Eglo, Sedea, Edisio, Evology, Nodon, EssentielB, …) are trademarks of their respective owners. Their use in this repository is for **identification only** (compatible hardware and services). No affiliation or endorsement is implied.
 
 ## No warranty
 
