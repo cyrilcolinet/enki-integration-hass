@@ -40,6 +40,9 @@ DORMANT_ERRORS = frozenset(
 )
 
 _AUTH_TIMEOUT_SECONDS = 15.0
+# The camera stops sending after about two minutes, with no error and the
+# signaling still up (#216); the app has no keepalive, so this re-asks.
+_PREVIEW_REFRESH_SECONDS = 60.0
 
 # What the camera answered with, on an offer it accepted (#216).
 _CAMERA_CODECS = {"audio": {"opus", "pcmu", "pcma"}, "video": {"h264"}}
@@ -155,6 +158,7 @@ class MeariSignalingSession:
         self._offered = False
         self._answered = False
         self._streaming = False
+        self._refresher: asyncio.Task[None] | None = None
         self._closed = False
         self._failed = False
         self._pending_candidates: list[MeariCandidate] = []
@@ -263,6 +267,15 @@ class MeariSignalingSession:
             },
         )
 
+    async def _refresh_preview(self) -> None:
+        """Re-ask for the stream while the view is open, to outlast the cut."""
+        while not self._closed:
+            await asyncio.sleep(_PREVIEW_REFRESH_SECONDS)
+            if self._closed:
+                return
+            LOGGER.debug("Camera signaling refreshing the stream request")
+            await self._preview(stop=False)
+
     async def _read_loop(self) -> None:
         assert self._ws is not None
         try:
@@ -292,6 +305,8 @@ class MeariSignalingSession:
             if payload.get("errid") == 0:  # "Connect Success": the app starts the stream here
                 self._streaming = True
                 await self._preview(stop=False)
+                if self._refresher is None:
+                    self._refresher = asyncio.create_task(self._refresh_preview())
             elif not self._answered:  # afterwards the peer's own ICE decides
                 self._fail(MeariSignalingError(str(payload.get("errstr") or "")))
             return
@@ -334,6 +349,8 @@ class MeariSignalingSession:
         if self._closed:
             return
         self._closed = True
+        if self._refresher is not None:
+            self._refresher.cancel()
         if self._ws is not None and not self._ws.closed:
             with contextlib.suppress(aiohttp.ClientError, ConnectionError):
                 if self._streaming:
