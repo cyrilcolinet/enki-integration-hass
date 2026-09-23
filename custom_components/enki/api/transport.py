@@ -29,6 +29,9 @@ _ERROR_BODY_MAX = 200
 # It is a standing decision on their side, not a transient failure: every read
 # on that micro-service answers the same 403 until they re-open it.
 _SERVICE_FORBIDDEN_MARKER = "cannot consume this service"
+# The gateway also refuses single routes of a service it otherwise serves, e.g.
+# "GET /shutter/.*/check-roller-shutter-mode/?$ not allowed" (#216 logs).
+_ROUTE_FORBIDDEN_MARKER = "not allowed"
 
 
 def _http_error_message(method: str, path: str, status: int, body: str) -> str:
@@ -67,6 +70,7 @@ class EnkiHttpClient:
         self._auth = auth
         self._session = session
         self._forbidden_services: set[str] = set()
+        self._forbidden_routes: set[tuple[str, str]] = set()
 
     @property
     def session(self) -> aiohttp.ClientSession:
@@ -80,6 +84,11 @@ class EnkiHttpClient:
         """Micro-services the gateway refused to serve during this session."""
         return frozenset(self._forbidden_services)
 
+    @staticmethod
+    def _endpoint(path: str) -> str:
+        """Last path segment, which is what the gateway's rules key on."""
+        return path.split("?", 1)[0].rstrip("/").rsplit("/", 1)[-1]
+
     def _note_forbidden(self, service: str, path: str, body: str) -> None:
         """Remember a gateway-level refusal so we stop polling that service.
 
@@ -88,7 +97,10 @@ class EnkiHttpClient:
         reads run every polling cycle, so without this they flood the log until
         the next restart. The first one still raises, so diagnostics keep a trace.
         """
-        if _SERVICE_FORBIDDEN_MARKER not in body.lower():
+        lowered = body.lower()
+        if _SERVICE_FORBIDDEN_MARKER not in lowered:
+            if _ROUTE_FORBIDDEN_MARKER in lowered:
+                self._note_forbidden_route(service, path)
             return
         if service not in self._forbidden_services:
             self._forbidden_services.add(service)
@@ -98,6 +110,23 @@ class EnkiHttpClient:
                 service,
                 path,
             )
+
+    def _note_forbidden_route(self, service: str, path: str) -> None:
+        """Remember a route-level refusal: the service works, that endpoint does not.
+
+        One shutter's refused mode read is every shutter's, on every poll — so
+        without this it is a handful of log lines per cycle, forever.
+        """
+        route = (service, self._endpoint(path))
+        if route in self._forbidden_routes:
+            return
+        self._forbidden_routes.add(route)
+        LOGGER.warning(
+            "Enki gateway refuses %s on service %r (403); skipping that read "
+            "until Home Assistant restarts",
+            route[1],
+            service,
+        )
 
     def _service_api_key(self, service: str) -> str | None:
         api_key = transport_key(service)
@@ -149,6 +178,8 @@ class EnkiHttpClient:
     ) -> dict[str, Any]:
         """GET returning parsed JSON; raises on unexpected status."""
         if service in self._forbidden_services:
+            return {}
+        if (service, self._endpoint(path)) in self._forbidden_routes:
             return {}
         url = f"{ENKI_BASE_URL}{path}"
 

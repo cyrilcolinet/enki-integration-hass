@@ -143,6 +143,30 @@ async def test_gateway_403_stops_further_reads_on_that_service() -> None:
 
 
 @pytest.mark.asyncio
+async def test_gateway_403_on_one_route_spares_the_rest_of_the_service() -> None:
+    """A route-level 403 skips that read on every node, not the whole service."""
+    body = '{"message":"GET /shutter/.*/check-roller-shutter-mode/?$ not allowed"}'
+    base = f"{ENKI_BASE_URL}/api-enki-rolling-prod/v1/shutter"
+    mode = "/api-enki-rolling-prod/v1/shutter/{node}/check-roller-shutter-mode"
+    state = "/api-enki-rolling-prod/v1/shutter/n2/check-shutter-state"
+
+    async with aiohttp.ClientSession() as session:
+        with aioresponses() as mocked:
+            mocked.get(f"{base}/n1/check-roller-shutter-mode", status=403, body=body)
+            mocked.get(f"{base}/n2/check-shutter-state", status=200, payload={"ok": True})
+            client = EnkiHttpClient(_FakeAuth(), session)
+
+            with pytest.raises(EnkiConnectionError):
+                await client.get_json("motorization", mode.format(node="n1"))
+
+            # Another shutter's mode read is skipped without hitting the network.
+            assert await client.get_json("motorization", mode.format(node="n2")) == {}
+            # The service itself still works for its other routes.
+            assert await client.get_json("motorization", state) == {"ok": True}
+            assert "motorization" not in client.forbidden_services
+
+
+@pytest.mark.asyncio
 async def test_unrelated_403_still_raises_every_time() -> None:
     """A 403 without the gateway's wording is not a service-wide refusal."""
     async with aiohttp.ClientSession() as session:
