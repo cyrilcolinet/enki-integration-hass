@@ -277,6 +277,7 @@ class MeariSignalingSession:
                     await self._dispatch(payload)
         except aiohttp.ClientError as err:
             LOGGER.debug("Camera signaling read failed: %s", err)
+        LOGGER.debug("Camera signaling closed (streaming=%s)", self._streaming)
         if not self._closed and not self._answered:
             self._fail(MeariSignalingError("signaling connection closed"))
 
