@@ -47,6 +47,7 @@ class _FakeMeari:
     def __init__(self, mode: str = "answer") -> None:
         self.mode = mode
         self.frames: list[dict] = []
+        self.options = 0
         self.closed = asyncio.Event()
 
     async def handler(self, request: web.Request) -> web.WebSocketResponse:
@@ -57,6 +58,18 @@ class _FakeMeari:
             self.frames.append(frame)
             method = frame.get("method")
             if method == "option":
+                self.options += 1
+                if self.mode == "dormant_after_renewal" and self.options > 1:
+                    # Renewed, but the camera went back to sleep meanwhile.
+                    await ws.send_json(
+                        {
+                            "sid": frame["sid"],
+                            "errid": 400,
+                            "errstr": "Bad Request",
+                            "desc": "dormancy",
+                        }
+                    )
+                    continue
                 if self.mode == "asleep":
                     await ws.send_json(
                         {
@@ -101,7 +114,7 @@ class _FakeMeari:
                         "params": {"candidate": CAMERA_CANDIDATE},
                     }
                 )
-                if self.mode == "dead_session":
+                if self.mode in {"dead_session", "dormant_after_renewal"}:
                     await ws.send_json(
                         {"sid": frame["sid"], "errid": 0, "errstr": "Connect Success"}
                     )
@@ -194,6 +207,18 @@ async def test_dead_session_is_renewed_with_fresh_credentials() -> None:
     methods = [frame["method"] for frame in fake.frames]
     assert methods.count("option") == 2
     assert methods[methods.index("option", 1) :][:2] == ["option", "settings"]
+
+
+@pytest.mark.asyncio
+async def test_camera_asleep_after_renewal_is_reported_to_the_viewer() -> None:
+    async def renew() -> dict:
+        return {"callee": "cam", "deviceCode": "dev", "token": "fresh"}
+
+    answers, _, errors = await _run(_FakeMeari("dormant_after_renewal"), renew=renew)
+    assert answers == [CAMERA_ANSWER]
+    # The browser cannot be re-offered, so the viewer is told instead of waiting.
+    (error,) = errors
+    assert error.camera_asleep is True
 
 
 @pytest.mark.asyncio

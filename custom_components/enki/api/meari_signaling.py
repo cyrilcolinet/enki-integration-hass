@@ -38,7 +38,14 @@ from ..const import LOGGER
 
 # What the app treats as "the camera is asleep or unreachable", not as a bug.
 DORMANT_ERRORS = frozenset(
-    {"device dormancy", "device awaken timeout", "device offline", "session not found"}
+    {
+        "device dormancy",
+        "device awaken timeout",
+        "device offline",
+        # What the server actually answers mid-stream, in ``desc`` (#216).
+        "dormancy",
+        "session not found",
+    }
 )
 
 _AUTH_TIMEOUT_SECONDS = 15.0
@@ -168,6 +175,7 @@ class MeariSignalingSession:
         self._offered = False
         self._answered = False
         self._streaming = False
+        self._renewed = False
         self._refresher: asyncio.Task[None] | None = None
         self._closed = False
         self._failed = False
@@ -337,8 +345,14 @@ class MeariSignalingSession:
                 await self._preview(stop=False)
                 if self._refresher is None:
                     self._refresher = asyncio.create_task(self._refresh_preview())
-            elif self._streaming and _dormant(payload):
+            elif self._streaming and _dormant(payload) and not self._renewed:
+                self._renewed = True
                 await self._renew_session()
+            elif self._streaming and _dormant(payload):
+                # Still asleep after a renewal: the camera ended the call, and the
+                # browser cannot be re-offered, so say so instead of freezing.
+                self._streaming = False
+                self._on_error(MeariSignalingError(str(payload.get("desc") or "")))
             elif not self._answered:  # afterwards the peer's own ICE decides
                 reason = payload.get("desc") if _dormant(payload) else payload.get("errstr")
                 self._fail(MeariSignalingError(str(reason or payload.get("errstr") or "")))
