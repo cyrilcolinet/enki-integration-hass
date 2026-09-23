@@ -155,6 +155,8 @@ Settings are read from `check-camera-status` at most every 5 minutes — the cam
 
 **Live view:** Home Assistant's frontend is the WebRTC peer; the integration only relays signaling to the camera, no video goes through it. The camera is woken first (it sleeps between events). The browser's offer is trimmed to the codecs the camera speaks, and the stream is requested once the camera reports the connection up — see [API.md](API.md#live-video--meari-webrtc-signaling). The camera's own TURN credentials are not handed to the browser — they only exist after authentication, while the browser is configured before it makes its offer — so the browser relies on Home Assistant's ICE servers and on the camera's relay candidates.
 
+**The live view lasts about two minutes**, then the camera goes back to sleep and the picture stops. The Enki app behaves the same way and offers to reload the video; reopening the camera in Home Assistant starts a new session.
+
 Reads, writes and the live view are confirmed on a real camera ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)).
 
 **Blueprint:** motion → notify with the last snapshot — `blueprints/automation/enki/camera_motion_notification.yaml`.

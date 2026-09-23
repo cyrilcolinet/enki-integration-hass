@@ -342,7 +342,11 @@ The `camera` entity of a meari camera runs this sequence for Home Assistant's fr
   remaining m-sections (the frontend's data channel) are added as rejected, since a browser
   refuses an answer with fewer sections than its offer.
 
-The stream is then requested on `Connect Success`, and stopped (`stop: 1`) on close. Errors are
+The stream is then requested on `Connect Success`, and stopped (`stop: 1`) on close.
+About two minutes in, the camera goes back to sleep: the next request answers `400`
+with `desc` `session not found`, and re-authenticating with fresh credentials then
+answers `dormancy`. The app hits the same limit and offers to reload the video, so
+the integration reports the end of the live view rather than trying to carry on. Errors are
 fatal only until the answer. The TURN relay from the `option` reply is **not** given to the
 browser: it only arrives after authentication, and Home Assistant configures the browser before
 its offer — the browser uses its own ICE servers and the camera's relay candidates.
