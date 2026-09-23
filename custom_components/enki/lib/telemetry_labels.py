@@ -72,6 +72,7 @@ TELEMETRY_GITHUB_ORPHAN_LABELS: tuple[str, ...] = (
     "brand-sedea",
     "brand-envertech",
     "brand-acova",
+    "brand-essentielb",
 )
 
 _DEVICE_TYPE_LABELS: dict[str, str] = {

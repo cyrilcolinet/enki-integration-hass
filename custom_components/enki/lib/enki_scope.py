@@ -15,6 +15,10 @@ _ENKI_ECOSYSTEM_MANUFACTURERS = frozenset(
         "enki",
         "envertech",
         "equation",
+        # Boulanger's own brand, served by the Enki referentiel itself
+        # (tr_device_essentielb_… keys) on the same Adeo platform (#237).
+        "essentielb",
+        "essentiel b",
         "evology",
         "inspire",
         "lexman",

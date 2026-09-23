@@ -11,7 +11,7 @@ Summary: [ROADMAP.md](ROADMAP.md)
 
 ## Scope
 
-This integration covers **only the Enki / Leroy Merlin ecosystem**: Lexman, Equation, Inspire, Noirot, Edisio, Eglo, Sedea, Evology, Nodon, ACOVA, Envertech, Meari, DIO, etc. (exact list: [`lib/enki_scope.py`](../custom_components/enki/lib/enki_scope.py)).
+This integration covers **only the Enki / Leroy Merlin ecosystem**: Lexman, Equation, Inspire, Noirot, Edisio, Eglo, Sedea, Evology, Nodon, ACOVA, Envertech, Meari, DIO, EssentielB, etc. (exact list: [`lib/enki_scope.py`](../custom_components/enki/lib/enki_scope.py)).
 
 **In scope:** anything **visible and working in the Enki app** — Wi‑Fi devices (no hub required) and Zigbee devices paired on the Enki hub.
 
