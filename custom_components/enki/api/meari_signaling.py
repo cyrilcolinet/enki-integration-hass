@@ -11,7 +11,9 @@ the exchange is plain WebRTC:
 4. ``settings`` / ``preview`` — start the stream once the camera reports the
    connection up (``errid`` 0, "Connect Success"), like the app.
 
-Errors arrive as ``{"errid", "errstr"}``; a sleeping camera says so in ``errstr``.
+Errors arrive as ``{"errid", "errstr", "desc"}``; the reason can be in either
+string — a dead session is ``errstr`` "Bad Request" with ``desc`` "session not
+found" — so both are matched.
 
 Confirmed end to end on a real solar camera (#216). The media itself never goes
 through here: Home Assistant's frontend is the WebRTC peer, this only relays
@@ -48,6 +50,11 @@ _PREVIEW_REFRESH_SECONDS = 45.0
 # What the camera answered with, on an offer it accepted (#216).
 _CAMERA_CODECS = {"audio": {"opus", "pcmu", "pcma"}, "video": {"h264"}}
 _PER_FORMAT = ("a=rtpmap:", "a=fmtp:", "a=rtcp-fb:")
+
+
+def _dormant(payload: dict[str, Any]) -> bool:
+    """True when the camera says it is asleep, unreachable or its session is gone."""
+    return any(str(payload.get(field) or "") in DORMANT_ERRORS for field in ("errstr", "desc"))
 
 
 def _media_lines(sdp: str) -> list[str]:
@@ -330,10 +337,11 @@ class MeariSignalingSession:
                 await self._preview(stop=False)
                 if self._refresher is None:
                     self._refresher = asyncio.create_task(self._refresh_preview())
-            elif self._streaming and str(payload.get("errstr") or "") in DORMANT_ERRORS:
+            elif self._streaming and _dormant(payload):
                 await self._renew_session()
             elif not self._answered:  # afterwards the peer's own ICE decides
-                self._fail(MeariSignalingError(str(payload.get("errstr") or "")))
+                reason = payload.get("desc") if _dormant(payload) else payload.get("errstr")
+                self._fail(MeariSignalingError(str(reason or payload.get("errstr") or "")))
             return
         method = payload.get("method")
         params = payload.get("params")
