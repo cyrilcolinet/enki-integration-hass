@@ -37,6 +37,10 @@ import aiohttp
 from ..const import LOGGER
 
 # What the app treats as "the camera is asleep or unreachable", not as a bug.
+# The camera goes back to sleep about two minutes into a live view, and the Enki
+# app hits the same wall — it then offers to reload the video (#216).
+_LIVE_ENDED = "the camera ended the live view; open it again to resume"
+
 DORMANT_ERRORS = frozenset(
     {
         "device dormancy",
@@ -45,6 +49,7 @@ DORMANT_ERRORS = frozenset(
         # What the server actually answers mid-stream, in ``desc`` (#216).
         "dormancy",
         "session not found",
+        _LIVE_ENDED,
     }
 )
 
@@ -349,10 +354,11 @@ class MeariSignalingSession:
                 self._renewed = True
                 await self._renew_session()
             elif self._streaming and _dormant(payload):
-                # Still asleep after a renewal: the camera ended the call, and the
-                # browser cannot be re-offered, so say so instead of freezing.
+                # Still asleep after a renewal: the camera ends its live view after
+                # about two minutes, the app included. The browser cannot be
+                # re-offered from here, so say so instead of freezing.
                 self._streaming = False
-                self._on_error(MeariSignalingError(str(payload.get("desc") or "")))
+                self._on_error(MeariSignalingError(_LIVE_ENDED))
             elif not self._answered:  # afterwards the peer's own ICE decides
                 reason = payload.get("desc") if _dormant(payload) else payload.get("errstr")
                 self._fail(MeariSignalingError(str(reason or payload.get("errstr") or "")))
