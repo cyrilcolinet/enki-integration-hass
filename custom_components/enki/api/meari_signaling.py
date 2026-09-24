@@ -28,7 +28,7 @@ import contextlib
 import json
 import re
 import uuid
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
@@ -37,27 +37,22 @@ import aiohttp
 from ..const import LOGGER
 
 # What the app treats as "the camera is asleep or unreachable", not as a bug.
-# The camera goes back to sleep about two minutes into a live view, and the Enki
-# app hits the same wall — it then offers to reload the video (#216).
-_LIVE_ENDED = "the camera ended the live view; open it again to resume"
-
 DORMANT_ERRORS = frozenset(
     {
         "device dormancy",
         "device awaken timeout",
         "device offline",
-        # What the server actually answers mid-stream, in ``desc`` (#216).
+        # What the server answers mid-stream, in ``desc`` (#216).
         "dormancy",
         "session not found",
-        _LIVE_ENDED,
     }
 )
+# The camera ends its live view about two minutes in — the Enki app hits the same
+# wall and offers to reload the video (#216).
+_LIVE_ENDED = "the camera ended the live view; open it again to resume"
+_LIVE_SECONDS = 110.0
 
 _AUTH_TIMEOUT_SECONDS = 15.0
-# The signaling session dies about two minutes in: the stream stops and the next
-# request answers "session not found" (#216). The app re-authenticates with fresh
-# credentials on that error, so this re-asks often enough to catch it early.
-_PREVIEW_REFRESH_SECONDS = 45.0
 
 # What the camera answered with, on an offer it accepted (#216).
 _CAMERA_CODECS = {"audio": {"opus", "pcmu", "pcma"}, "video": {"h264"}}
@@ -143,9 +138,9 @@ class MeariCandidate:
 class MeariSignalingError(Exception):
     """The signaling server or the camera refused or dropped the session."""
 
-    @property
-    def camera_asleep(self) -> bool:
-        return str(self) in DORMANT_ERRORS
+    def __init__(self, message: str, *, camera_asleep: bool = False) -> None:
+        super().__init__(message)
+        self.camera_asleep = camera_asleep
 
 
 class MeariSignalingSession:
@@ -170,8 +165,6 @@ class MeariSignalingSession:
         self._on_answer = on_answer
         self._on_candidate = on_candidate
         self._on_error = on_error
-        # Fetches fresh connect-wss credentials, as the app does on a dead session.
-        self._renew: Callable[[], Awaitable[dict[str, Any]]] | None = None
         self._sid = str(uuid.uuid4()).upper()
         self._caller = uuid.uuid4().hex[:16]
         self._ws: aiohttp.ClientWebSocketResponse | None = None
@@ -180,8 +173,7 @@ class MeariSignalingSession:
         self._offered = False
         self._answered = False
         self._streaming = False
-        self._renewed = False
-        self._refresher: asyncio.Task[None] | None = None
+        self._watchdog: asyncio.Task[None] | None = None
         self._closed = False
         self._failed = False
         self._pending_candidates: list[MeariCandidate] = []
@@ -207,7 +199,6 @@ class MeariSignalingSession:
         url = connect_info.get("wssUrl")
         if not isinstance(url, str) or not url:
             raise MeariSignalingError("no signaling address for this camera")
-        LOGGER.debug("Camera signaling session expires=%s", connect_info.get("expires"))
         self._ws = await http.ws_connect(url, heartbeat=30)
         if self._closed:  # the peer gave up while we were connecting
             await self._ws.close()
@@ -242,10 +233,6 @@ class MeariSignalingSession:
         for candidate in pending:
             await self._send_candidate(candidate)
 
-    def renew_with(self, renew: Callable[[], Awaitable[dict[str, Any]]]) -> None:
-        """How to fetch fresh credentials when the session dies mid-stream."""
-        self._renew = renew
-
     async def _authenticate(self) -> None:
         await self._send(
             "option",
@@ -262,18 +249,6 @@ class MeariSignalingSession:
                 "token": self._info.get("token"),
             },
         )
-
-    async def _renew_session(self) -> None:
-        """Re-authenticate with fresh credentials, as the app does on a dead session."""
-        if self._renew is None:
-            return
-        info = await self._renew()
-        if not info or self._closed:
-            return
-        LOGGER.debug("Camera signaling renewing the session, expires=%s", info.get("expires"))
-        self._info = info
-        await self._authenticate()
-        await self._preview(stop=False)
 
     async def add_candidate(self, candidate: MeariCandidate) -> None:
         """Relay one of the peer's ICE candidates (held until the offer is out)."""
@@ -310,13 +285,11 @@ class MeariSignalingSession:
             },
         )
 
-    async def _refresh_preview(self) -> None:
-        """Re-ask for the stream while the view is open, to outlast the cut."""
-        while not self._closed:
-            await asyncio.sleep(_PREVIEW_REFRESH_SECONDS)
-            if self._closed:
-                return
-            LOGGER.debug("Camera signaling refreshing the stream request")
+    async def _watch_live(self) -> None:
+        """Ask for the stream once more near the end, to learn it is over."""
+        await asyncio.sleep(_LIVE_SECONDS)
+        if not self._closed and self._streaming:
+            LOGGER.debug("Camera signaling checking the stream is still up")
             await self._preview(stop=False)
 
     async def _read_loop(self) -> None:
@@ -348,20 +321,18 @@ class MeariSignalingSession:
             if payload.get("errid") == 0:  # "Connect Success": the app starts the stream here
                 self._streaming = True
                 await self._preview(stop=False)
-                if self._refresher is None:
-                    self._refresher = asyncio.create_task(self._refresh_preview())
-            elif self._streaming and _dormant(payload) and not self._renewed:
-                self._renewed = True
-                await self._renew_session()
+                if self._watchdog is None:
+                    self._watchdog = asyncio.create_task(self._watch_live())
             elif self._streaming and _dormant(payload):
-                # Still asleep after a renewal: the camera ends its live view after
-                # about two minutes, the app included. The browser cannot be
-                # re-offered from here, so say so instead of freezing.
-                self._streaming = False
-                self._on_error(MeariSignalingError(_LIVE_ENDED))
+                self._end_live()
             elif not self._answered:  # afterwards the peer's own ICE decides
-                reason = payload.get("desc") if _dormant(payload) else payload.get("errstr")
-                self._fail(MeariSignalingError(str(reason or payload.get("errstr") or "")))
+                asleep = _dormant(payload)
+                reason = payload.get("desc") if asleep else payload.get("errstr")
+                self._fail(
+                    MeariSignalingError(
+                        str(reason or payload.get("errstr") or ""), camera_asleep=asleep
+                    )
+                )
             return
         method = payload.get("method")
         params = payload.get("params")
@@ -388,6 +359,11 @@ class MeariSignalingSession:
                     )
                 )
 
+    def _end_live(self) -> None:
+        """Tell the viewer the camera hung up: the browser cannot be re-offered."""
+        self._streaming = False
+        self._on_error(MeariSignalingError(_LIVE_ENDED, camera_asleep=True))
+
     def _fail(self, error: MeariSignalingError) -> None:
         if self._closed or self._failed:
             return
@@ -402,8 +378,8 @@ class MeariSignalingSession:
         if self._closed:
             return
         self._closed = True
-        if self._refresher is not None:
-            self._refresher.cancel()
+        if self._watchdog is not None:
+            self._watchdog.cancel()
         if self._ws is not None and not self._ws.closed:
             with contextlib.suppress(aiohttp.ClientError, ConnectionError):
                 if self._streaming:
