@@ -60,14 +60,14 @@ The **Enki** app controls hundreds of products (Lexman, Equation, Inspire, Edisi
 - **Siren** (Lexman) — `switch`
 - **Heating** (Noirot radiator, Equation pilot wire) — `climate`, `select` (stable since **v1.6.8**); config knobs — temperature offset `number`, child-lock + preheating `switch` (**v1.18**)
 - **Gate / garage / electric-strike dry contact** (Lexman 83424576, Nodon SIN-4-1-20, Evology) — `button` impulse (stable since **v1.6.17**) + `binary_sensor` contact state (since **v1.13**)
+- **Covers** (Evology, Nodon, …) — `cover`
+- **Cameras** (Lexman/Meari) — `camera` (last-event snapshot), `sensor` (last motion, last event, last sound on models that report it), `binary_sensor` (SD card). Live video, settings and pan/tilt are out of reach on the Lexman IPC1xxKF cameras (proprietary P2P, no HTTP route — [#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165)); the **solar camera** (other camera backend) adds its settings — night vision, motion detection, sensitivities, status light, flip, recording duration — plus battery, Wi-Fi, charging and SD-card sensors, and a **live view** over WebRTC, confirmed on hardware and limited to about two minutes per session by the camera itself — [#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)
+- **Alarm** (Enki home security) — `alarm_control_panel`: arm away / home / night and disarm, only with the modes configured in the app (since **v1.24**)
 
 ### Beta
 
-- **Covers** (Evology, Nodon, …) — `cover`
 - **Water leak** (Lexman) — `binary_sensor`, `sensor` (on-site leak test pending — [#36](https://github.com/cyrilcolinet/enki-integration-hass/issues/36))
-- **Cameras** (Lexman/Meari) — `camera` (last-event snapshot), `sensor` (last motion, last event, last sound on models that report it), `binary_sensor` (SD card). Live video, settings and pan/tilt are out of reach on the Lexman IPC1xxKF cameras (proprietary P2P, no HTTP route — [#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165)); the **solar camera** (other camera backend) adds its settings — night vision, motion detection, sensitivities, status light, flip, recording duration — plus battery, Wi-Fi, charging and SD-card sensors, and a **live view** over WebRTC, confirmed on hardware and limited to about two minutes per session by the camera itself — [#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)
 - **Scenarios** (Enki cloud) — `button`
-- **Alarm** (Enki home security) — `alarm_control_panel`: arm away / home / night and disarm, only with the modes configured in the app (beta, since **v1.24**)
 
 ### Refused by the Enki cloud
 

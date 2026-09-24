@@ -129,7 +129,7 @@ Gateway keys in `gateway_keys_data.py`.
 | `check_battery_health` | `battery-health` | ✅ stable |
 | `check_water_sensor_state` | `water-leak-detector` | 🔬 beta — reads OK remotely; on-site wet test pending |
 
-## Cameras (Lexman / Meari) — beta
+## Cameras (Lexman / Meari)
 
 **HA entities:** `camera` (last-event snapshot), `sensor` (last event type, last motion, last sound on models that report `SOUND_DETECTED`), `binary_sensor` (SD-card removed)
 
@@ -137,7 +137,7 @@ Events come from `api-enki-lexman-camera-prod` (`GET /events?nodeId=…`), snaps
 
 Config controls (night vision, motion detection, indicator light, …) exist only on the Meari service, for the Meari generation (e.g. the solar camera). The Lexman IPC1xxKF cameras are not in that backend: settings, pan/tilt and live video all go through the Kalay P2P tunnel, with no HTTP route — measured in [#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165), details in [API.md](API.md#lexman-cameras-api-enki-lexman-camera-meari-prod). Field work: [#135](https://github.com/cyrilcolinet/enki-integration-hass/issues/135).
 
-### Lexman solar camera (meari) — beta
+### Lexman solar camera (meari)
 
 **HA entities**, created from what the camera's referentiel declares:
 
@@ -184,9 +184,9 @@ Extra referentiel controls, exposed when the thermostat advertises them. Routes 
 
 **Note:** `consumption-prod` refuses every account since August 2026, so consumption sensors stay unknown — controls still work.
 
-## Roller shutters — beta (Evology, Nodon, Lexman RTS, …)
+## Roller shutters (Evology, Nodon, Lexman RTS, …)
 
-**HA entity:** `cover` “Shutter (beta)”
+**HA entity:** `cover` “Shutter”
 
 | Function | Detail |
 |----------|--------|
@@ -197,14 +197,14 @@ Extra referentiel controls, exposed when the thermostat advertises them. Routes 
 | Wiring direction | `select` entity — `NORMAL` / `INVERTED` |
 | Presets | `button` per referentiel preset when `execute_preset` lists values |
 
-**Current state:** `ENKI_ACCESS_MOTORIZATION_API_KEY` included. Micro-service: `api-enki-rolling-prod` (not `access-and-motorizations`). **“Shutter (beta)”** entity if the shutter is active in the Enki app.
+**Current state:** `ENKI_ACCESS_MOTORIZATION_API_KEY` included. Micro-service: `api-enki-rolling-prod` (not `access-and-motorizations`). **“Shutter”** entity if the shutter is active in the Enki app.
 
 Validating the gateway key with mitmproxy: [DEVELOPMENT.md](DEVELOPMENT.md#capturing-a-gateway-key-with-mitmproxy-fallback).
 
 ### For testers (covers)
 
 1. Update the Enki integration via HACS, then restart Home Assistant.
-2. Check the **“Shutter (beta)”** entity under Enki.
+2. Check the **“Shutter”** entity under Enki.
 3. Test open / close / position vs the Enki mobile app.
 4. Report results (model, HA version, integration version, `enki` log excerpt if it fails).
 
@@ -248,11 +248,12 @@ Reads are best-effort (404 skipped) and driven by referentiel capabilities, not 
 | ✅ Stable | Heating (Noirot, pilot wire, Equation relay) since v1.6.8 |
 | ✅ Stable | Dry-contact gate / garage receiver (Lexman 83424576) since v1.6.17 |
 | ✅ Stable | Water-heater relay, Evology 2-channel module, Evology multisensor |
-| 🔬 Beta | Cameras (event snapshot; live video on the solar camera only), covers, Lexman water leak, scenarios — feedback welcome |
+| ✅ Stable | Cameras (event snapshot; live video on the solar camera only) and covers |
+| ✅ Stable | Enki alarm — arm away / home / night and disarm, only the modes configured in the app |
+| 🔬 Beta | Lexman water leak and scenarios — feedback welcome |
 | 🔬 Beta | Thermostat config knobs (offset, child-lock, preheating) — decoded, real-hardware validation welcome |
 | 🔬 Beta | ACOVA radiators — discovered and driven through the shared heating API (towel rail reported in [#190](https://github.com/cyrilcolinet/enki-integration-hass/issues/190)) |
-| 🔬 Beta | Lexman solar camera: settings, diagnostics and live view — confirmed on hardware ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)) |
-| 🔬 Beta | Enki alarm — built from the app's API, not yet validated on a real installation: feedback welcome |
+| ✅ Stable | Lexman solar camera: settings, diagnostics and live view — confirmed on hardware ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)) |
 | Not planned | Camera live video and pan/tilt on Lexman IPC1xxKF cameras (Kalay P2P only, no HTTP route) |
 | Out of scope | Enki pairing and device setup, Leroy Merlin account management → [Enki support](https://support.enki-home.com/) (configure devices in the app before HA) |
 

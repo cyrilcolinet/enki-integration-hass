@@ -26,14 +26,14 @@ Short version: [README](../README.md) · detailed view below.
 | ✅ Supported | Noirot radiator | `climate` + window / presence `binary_sensor`; stable since **v1.6.8** (`thermostat-prod` + `presence-detector-prod`) |
 | ✅ Supported | Thermostat config knobs | temperature offset `number`, child-lock + preheating `switch` (**v1.18**, decoded from the app — real-hardware validation welcome) |
 | ✅ Supported | Lexman / Nodon dry-contact gate receiver | `button` “Trigger” via `power_on_with_timer` (`api-enki-power-prod`); Mpulse mode; stable since **v1.6.17** ([#56](https://github.com/cyrilcolinet/enki-integration-hass/issues/56)); electric-strike contact `binary_sensor` (**v1.13**) |
-| 🔬 Beta | Cameras (Lexman/Meari) | last-event snapshot `camera`, last motion / event / sound `sensor`, SD-card `binary_sensor` ([#135](https://github.com/cyrilcolinet/enki-integration-hass/issues/135)) |
-| 🔬 Beta | Roller shutters (Evology, Nodon, Lexman RTS, …) | `cover` “Shutter (beta)”; position when advertised, otherwise open/close/stop (RTS); `select` wiring direction; `ENKI_ACCESS_MOTORIZATION_API_KEY` |
+| ✅ Supported | Cameras (Lexman/Meari) | last-event snapshot `camera`, last motion / event / sound `sensor`, SD-card `binary_sensor` ([#135](https://github.com/cyrilcolinet/enki-integration-hass/issues/135)) |
+| ✅ Supported | Roller shutters (Evology, Nodon, Lexman RTS, …) | `cover` “Shutter”; position when advertised, otherwise open/close/stop (RTS); `select` wiring direction; `ENKI_ACCESS_MOTORIZATION_API_KEY` |
 | 🔬 Beta | Lexman water leak detector | leak `binary_sensor` + battery `sensor`; reads OK remotely — on-site wet test pending ([#36](https://github.com/cyrilcolinet/enki-integration-hass/issues/36)) |
 | 🔬 Beta | Enki scenarios (“Open living room”, …) | `button` (v1.6.0+) |
 | 🔬 Beta | ACOVA radiators | discovered and driven through the shared heating API (towel rail reported in [#190](https://github.com/cyrilcolinet/enki-integration-hass/issues/190)) |
-| 🔬 Beta | Lexman solar camera (meari) | settings as `select` / `switch` / `number` (night vision, motion detection, sensitivities, status light, flip, recording duration) + battery, Wi-Fi, charging and SD-card sensors; live view over Home Assistant's native WebRTC, confirmed on hardware and capped at about two minutes by the camera ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)) |
+| ✅ Supported | Lexman solar camera (meari) | settings as `select` / `switch` / `number` (night vision, motion detection, sensitivities, status light, flip, recording duration) + battery, Wi-Fi, charging and SD-card sensors; live view over Home Assistant's native WebRTC, confirmed on hardware and capped at about two minutes by the camera ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)) |
 | ⏳ Not planned | Live video, settings and pan/tilt on Lexman IPC1xxKF cameras | proprietary P2P tunnel, no HTTP route ([#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165)) |
-| 🔬 Beta | Enki alarm | `alarm_control_panel` — arm away / home / night and disarm, only the modes configured in the app; built from the app, looking for a tester ([#218](https://github.com/cyrilcolinet/enki-integration-hass/issues/218)) |
+| ✅ Supported | Enki alarm | `alarm_control_panel` — arm away / home / night and disarm, only the modes configured in the app ([#218](https://github.com/cyrilcolinet/enki-integration-hass/issues/218)) |
 | ✅ Published | Default HACS store | listed in the default store — install from HACS directly (see [HACS.md](HACS.md)) |
 
 ## Tooling
