@@ -31,97 +31,41 @@
   <a href="CONTRIBUTING.md">Contributing</a>
 </p>
 
+
 ---
 
-The **Enki** app controls hundreds of products (Lexman, Equation, Inspire, Edisio, Evology, Noirot, Envertech, DIO, EssentielB, …) through the **Leroy Merlin cloud**. This integration exposes in Home Assistant **everything visible in the Enki app** — using Enki **API capabilities** from the referentiel, like the mobile app, rather than a fixed model list.
+Use your Enki devices in Home Assistant, with the same email and password as the Enki app. Lights, blinds, heating, cameras, sensors and scenes appear as normal Home Assistant devices, ready for dashboards, automations and voice assistants.
 
-> **Disclaimer — unofficial project:** This is a community-maintained integration. It is **not** official, **not** affiliated with, and **not** endorsed by Leroy Merlin, ADEO, or Enki. The author and maintainers are **independent** and do **not** work for Enki. Full details: [docs/DISCLAIMER.md](docs/DISCLAIMER.md).
+> **Unofficial project.** Community-maintained, **not** affiliated with or endorsed by Leroy Merlin, ADEO or Enki. See the [disclaimer](docs/DISCLAIMER.md).
 
-## Why this integration?
+## What you get
 
-- **Connection** — Enki email + password (OAuth Keycloak)
-- **Requirements** — Enki account; devices **already set up and visible in the Enki app** (Wi‑Fi or via the Enki hub — the hub is not mandatory for all devices)
-- **Before Home Assistant** — Pair and configure devices in the **Enki app first**; this integration does not replace Enki pairing or device setup
-- **Architecture** — Cloud polling (`iot_class: cloud_polling`), Enki micro-services
-- **Detection** — Capability-first: new API-compatible devices without forced updates
+- **Lights and outlets** — switch, dim, change colour and white temperature
+- **Blinds and shutters** — open, close, stop, set a position
+- **Heating** — radiators and pilot wire, with target temperature and modes
+- **Ceiling fans** — speed, direction and the light kit
+- **Cameras** — the latest motion snapshot, and a live view on the solar camera
+- **Alarm** — arm and disarm, with the modes set up in the app
+- **Sensors** — motion, opening, temperature, humidity, water leak, battery, solar production
+- **Scenes** — run the scenes you created in the Enki app
 
-> **Out of scope:** third-party Zigbee paired on the hub (Sonoff, Tuya, Aqara, …) → use [Zigbee2MQTT](https://www.zigbee2mqtt.io/) or ZHA. Only Enki / Leroy Merlin brands listed in [`lib/enki_scope.py`](custom_components/enki/lib/enki_scope.py) are imported.
+The full list, device by device, is in [supported devices](docs/SUPPORTED_DEVICES.md).
 
-## Features
+Home Assistant also gets ready-made automations — notify on camera motion, alert on a water leak, close the blinds at sunset, and [a dozen more](docs/BLUEPRINTS.md).
 
-### Supported
+## Before you start
 
-- **Ventilation** (Inspire Siroco+, Cadix, Radix, …) — `fan`, `light` (LED kit); the **Cadix** exposes its main light and ambient ring as separate lights with optimistic fan/light coupling (since **v1.11**)
-- **Lighting** (Eglo, Lexman, dimmables, RGB) — `light`
-- **Outlets & relays** (Edisio, Equation ON/OFF) — `switch`; **Evology 2-channel module** — one `switch` per channel; **DIO outlets** — `switch` with assumed state (one-way 433 MHz RF, nothing reports back) (since **v1.21**)
-- **Water heater relay** (Lexman/Nodon on-off relay re-typed as boiler) — `switch`
-- **Solar** (Envertech-Lexman) — `sensor` (production W)
-- **Sensors** (Lexman, Sedea, Evology multisensor, …) — `binary_sensor` (motion, presence, contact), `sensor` (temp, humidity, battery, brightness)
-- **Siren** (Lexman) — `switch`
-- **Heating** (Noirot radiator, Equation pilot wire) — `climate`, `select` (stable since **v1.6.8**); config knobs — temperature offset `number`, child-lock + preheating `switch` (**v1.18**)
-- **Gate / garage / electric-strike dry contact** (Lexman 83424576, Nodon SIN-4-1-20, Evology) — `button` impulse (stable since **v1.6.17**) + `binary_sensor` contact state (since **v1.13**)
-- **Covers** (Evology, Nodon, …) — `cover`
-- **Cameras** (Lexman/Meari) — `camera` (last-event snapshot), `sensor` (last motion, last event, last sound on models that report it), `binary_sensor` (SD card). Live video, settings and pan/tilt are out of reach on the Lexman IPC1xxKF cameras (proprietary P2P, no HTTP route — [#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165)); the **solar camera** (other camera backend) adds its settings — night vision, motion detection, sensitivities, status light, flip, recording duration — plus battery, Wi-Fi, charging and SD-card sensors, and a **live view** over WebRTC, confirmed on hardware and limited to about two minutes per session by the camera itself — [#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)
-- **Alarm** (Enki home security) — `alarm_control_panel`: arm away / home / night and disarm, only with the modes configured in the app (since **v1.24**)
+- An **Enki account** — the one you use in the app
+- Your devices **already installed in the Enki app**: this integration reads your Enki home, it does not replace pairing
+- A few Enki services have been closed by Leroy Merlin's cloud for everyone, so instant consumption and a few other readings stay empty ([details](docs/API.md#authentication))
 
-### Beta
-
-- **Water leak** (Lexman) — `binary_sensor`, `sensor` (on-site leak test pending — [#36](https://github.com/cyrilcolinet/enki-integration-hass/issues/36))
-- **Scenarios** (Enki cloud) — `button`
-
-### Refused by the Enki cloud
-
-Since August–September 2026, Enki's API gateway refuses a few services to **every account** — these are server-side decisions, not bugs, and no update of the integration can bring them back:
-
-- instant power consumption,
-- firmware version and update check,
-- ceiling-fan connectivity,
-- brightness / illuminance sensors.
-
-The integration notices the refusal once and stops asking; the matching sensors stay unknown, everything else keeps working. Details: [API.md](docs/API.md#authentication).
-
-### Device triggers
-
-Enki sensors expose native automation triggers in the HA editor — **"motion detected"**, **"leak detected"**, **"window opened"**, **"vibration detected"**, etc. — so you can build automations without hand-writing state triggers (**Settings → Automations → Create → Device**).
-
-### Blueprints
-
-Ready-made automations under `blueprints/automation/enki/` — import via **Settings → Automations & scenes → Blueprints → Import**.
-
-**Security & alerts**
-
-- **Camera motion notification** — notify with the last-event snapshot on motion (`camera_motion_notification.yaml`)
-- **Camera tamper alert** — notify when a camera reports its SD card removed (`camera_tamper_alert.yaml`)
-- **Water leak alert** — urgent notification on a leak, optional siren + power cut-off (`water_leak_alert.yaml`)
-- **Vibration / glass-break alert** — notify (+ optional siren) on a vibration sensor (`vibration_glass_break_alert.yaml`)
-- **Siren on motion when armed** — sound the siren + notify on motion while an "armed" toggle is on (`siren_on_motion_when_armed.yaml`)
-- **Contact open reminder** — notify when a door/window stays open too long (`contact_open_reminder.yaml`)
-- **Low battery alert** — notify when an Enki battery sensor drops below a threshold (`low_battery_alert.yaml`)
-- **High consumption alert** — notify when a power sensor stays above a threshold (`high_consumption_alert.yaml`)
-- **Device offline alert** — notify when a device goes offline or unavailable (`device_offline_alert.yaml`)
-- **Firmware update available** — notify when a device has an update (`firmware_update_notification.yaml`)
-
-**Comfort, energy & scheduling**
-
-- **Motion-activated light** — light on with motion, off after a delay, optionally only when dark (`motion_activated_light.yaml`)
-- **Lights on at sunset** — lights on at sunset, off at a set time (`lights_on_at_sunset.yaml`)
-- **Fan auto by temperature** — run a ceiling fan from a temperature sensor with hysteresis (`fan_auto_temperature.yaml`)
-- **Fan auto by humidity** — run a fan from a humidity sensor with hysteresis (bathroom, laundry) (`humidity_ventilation.yaml`)
-- **Covers sun schedule** — open shutters at sunrise, close them at sunset (`covers_sun_schedule.yaml`)
-- **Heating pause on open window** — turn a radiator off while a window is open, back on when it closes (`heating_pause_on_open_window.yaml`)
-- **Frost protection when away** — drop radiators to a frost temp on an away toggle, restore on return (`away_heating_frost.yaml`)
-- **Pilot-wire day/night schedule** — switch a pilot-wire heater between two modes at two times (`pilot_wire_day_night.yaml`)
-- **Turn everything off when away** — switch off chosen lights and outlets on an away toggle (`turn_off_when_away.yaml`)
-- **Solar surplus switch** — run a load when solar production exceeds a threshold (`solar_surplus_switch.yaml`)
-- **Run scenario on schedule** — press an Enki scenario at a time on chosen days (`run_scenario_on_schedule.yaml`)
-
-Per-device detail: [docs/SUPPORTED_DEVICES.md](docs/SUPPORTED_DEVICES.md) · History: [docs/ROADMAP.md](docs/ROADMAP.md)
+Devices paired on the hub that are not Enki brands — Sonoff, Tuya, Aqara and the like — are not imported. [Zigbee2MQTT](https://www.zigbee2mqtt.io/) or ZHA handle those.
 
 ## Installation
 
-### HACS (recommended)
+### With HACS (recommended)
 
-Enki is in the **default HACS store** — no custom repository needed.
+Enki is in the default HACS store, so there is nothing to add by hand.
 
 <p align="center">
   <a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=cyrilcolinet&repository=enki-integration-hass&category=integration">
@@ -129,57 +73,54 @@ Enki is in the **default HACS store** — no custom repository needed.
   </a>
 </p>
 
-1. **HACS** → search **Enki** → **Download** (the badge above opens it directly on your instance)
+1. **HACS** → search **Enki** → **Download** (the button above opens it on your own instance)
 2. **Restart** Home Assistant
-3. **Settings** → **Devices & services** → **Add integration** → **Enki** — enter your Enki email and password
-4. Entities appear after the first poll (~30 s)
+3. **Settings** → **Devices & services** → **Add integration** → **Enki**, then enter your Enki email and password
+4. Your devices show up after about 30 seconds
 
 <details>
-<summary>Not listed yet? Add it as a custom repository</summary>
+<summary>Enki does not appear in the HACS search?</summary>
 
-A freshly added default-store entry can take a while to reach every HACS instance. Until it shows up in search:
+A new entry can take a while to reach every HACS instance. In the meantime:
 
 1. **HACS** → **⋮** → **Custom repositories**
 2. URL `https://github.com/cyrilcolinet/enki-integration-hass`, category **Integration** → **Add**
-3. Search **Enki** → **Download** → **Restart** Home Assistant
+3. Search **Enki** → **Download** → restart Home Assistant
 </details>
 
-### Manual install
+### By hand
 
-Download a [release](https://github.com/cyrilcolinet/enki-integration-hass/releases) or clone this repo, copy `custom_components/enki/` into `config/custom_components/`, restart HA, then add the integration under **Settings → Devices & services**.
+Download a [release](https://github.com/cyrilcolinet/enki-integration-hass/releases), copy the `custom_components/enki/` folder into your `config/custom_components/` folder, restart Home Assistant, then add the integration from **Settings → Devices & services**.
 
-Upgrading from [CyrilP/hass-enki-component](https://github.com/CyrilP/hass-enki-component)? See [docs/MIGRATION.md](docs/MIGRATION.md).
+Coming from [CyrilP/hass-enki-component](https://github.com/CyrilP/hass-enki-component)? Follow the [migration guide](docs/MIGRATION.md).
 
-## Configuration
+## Settings
 
 **Settings** → **Devices & services** → **Enki** → **Configure**
 
-- **Refresh interval** — Cloud poll frequency (default 30 s)
-- **Telemetry (opt-in)** — Notification + pre-filled GitHub link for unknown devices; nothing is sent without a click
-- **Reconfigure** — Change email / password
+- **Refresh interval** — how often Home Assistant asks Enki for news, every 30 seconds by default
+- **Telemetry** — off unless you turn it on. It offers a pre-filled GitHub link when an unknown device shows up; nothing leaves your home until you click
+- **Reconfigure** — change the email or password
 
-## Troubleshooting
+## If something goes wrong
 
-- **Invalid credentials** — Home Assistant prompts you to **re-authenticate** (notification + **Settings → Repairs**); enter your Enki password to reconnect
-- **HTTP 403** — Outdated gateway key after an Enki app update → surfaced as a repair in **Settings → Repairs**; see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
-- **No devices** — Device active in the app, same home
-- **Commands accepted but device doesn't react** — enable debug logging (`logger:` → `custom_components.enki: debug`); each accepted command logs its exact route and endpoint, which pinpoints a wrong-endpoint routing issue
-- **Bug** — [Issue](https://github.com/cyrilcolinet/enki-integration-hass/issues/new?template=bug.yml) + `enki` logs
+- **Wrong password** — Home Assistant asks you to sign in again, from **Settings → Repairs**
+- **No device appears** — check the device is visible in the Enki app, in the same home
+- **A device does not react** — open an [issue](https://github.com/cyrilcolinet/enki-integration-hass/issues/new?template=bug.yml); the bug form lists what to attach
+- **A message in Settings → Repairs** — it usually explains what to do; if not, the issue link above works too
 
-## Resources
+## Learn more
 
 - 📋 [Supported devices](docs/SUPPORTED_DEVICES.md)
+- ⚡ [Ready-made automations](docs/BLUEPRINTS.md)
 - 🗺️ [Roadmap](docs/ROADMAP.md)
-- 🛠️ [Development & APK keys](docs/DEVELOPMENT.md)
-- 📡 [Opt-in telemetry](docs/TELEMETRY.md)
-- ⚠️ [Disclaimer — unofficial project](docs/DISCLAIMER.md)
+- 🛠️ [Development notes](docs/DEVELOPMENT.md) and [API notes](docs/API.md)
+- 📡 [Telemetry, opt-in](docs/TELEMETRY.md)
+- ⚠️ [Disclaimer](docs/DISCLAIMER.md)
 - 🏠 [Enki support](https://support.enki-home.com/)
-- 🔗 [CyrilP/hass-enki-component](https://github.com/CyrilP/hass-enki-component)
 
-## Credits & license
+## Credits and licence
 
-**Community** integration, not affiliated with Leroy Merlin, ADEO, or Enki — see the [disclaimer](docs/DISCLAIMER.md). Unofficial cloud API, subject to change.
+Community integration, based on [CyrilP/hass-enki-component](https://github.com/CyrilP/hass-enki-component), not affiliated with Leroy Merlin, ADEO or Enki — see the [disclaimer](docs/DISCLAIMER.md).
 
-- Based on [CyrilP/hass-enki-component](https://github.com/CyrilP/hass-enki-component)
-
-[MIT](LICENSE) license
+[MIT](LICENSE) licence
