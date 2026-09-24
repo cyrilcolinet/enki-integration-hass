@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.25.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.24.0...v1.25.0) (2026-09-24)
+
+
+### Features
+
+* **camera:** expose the solar camera's settings ([3e40e2f](https://github.com/cyrilcolinet/enki-integration-hass/commit/3e40e2f109da366682e2cc70ef16cc737f8db7a6)), closes [#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)
+* **camera:** stream the solar camera through native WebRTC ([f95badc](https://github.com/cyrilcolinet/enki-integration-hass/commit/f95badc7487c9d3a9a08045e7b6fa6db77b33b6c)), closes [#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)
+* **scope:** add EssentielB to the Enki brands ([10f31d8](https://github.com/cyrilcolinet/enki-integration-hass/commit/10f31d83b08fc2fbc56cff8110f5dbf0e83a1a56))
+
+
+### Bug Fixes
+
+* **api:** remember route-level gateway refusals ([05866e7](https://github.com/cyrilcolinet/enki-integration-hass/commit/05866e781a6861fe2c06be8afc3de54d479ec18b))
+* **camera:** log live view signaling in debug ([7c9d642](https://github.com/cyrilcolinet/enki-integration-hass/commit/7c9d6421ca7c9ae53d6b693490699b5298a8d386))
+* **camera:** log when live signaling ends ([ab98344](https://github.com/cyrilcolinet/enki-integration-hass/commit/ab983447e43fe96f3afb597ae1d88bae734be9f2))
+* **camera:** offer only H264 packetization mode 1 ([4903131](https://github.com/cyrilcolinet/enki-integration-hass/commit/49031310f3e2122e3035304dfc8714b4b3b49b25))
+* **camera:** reject dropped data channel in answer ([14a2427](https://github.com/cyrilcolinet/enki-integration-hass/commit/14a24273eac5ead8c0caef6e5674cf6cbbf4d90e))
+* **camera:** renew the live session when it dies ([ef597da](https://github.com/cyrilcolinet/enki-integration-hass/commit/ef597da0d47d7daaa4829bb97032fabfb724a81f))
+* **camera:** renew when the reason is in desc ([79c9cd3](https://github.com/cyrilcolinet/enki-integration-hass/commit/79c9cd34ba561c431f046d26b3b2940040101b0d))
+* **camera:** request stream on Connect Success ([1fb9f6c](https://github.com/cyrilcolinet/enki-integration-hass/commit/1fb9f6ca6b57c0fd2e42118005a9655e49a9b03c))
+* **camera:** slim browser offer to camera codecs ([6d96c68](https://github.com/cyrilcolinet/enki-integration-hass/commit/6d96c685be20923881005c288a37fe18515aa556))
+* **camera:** stop clobbering camera property cache ([3439e9f](https://github.com/cyrilcolinet/enki-integration-hass/commit/3439e9fe30699c0e6884cf8b136c7ae92b832f89))
+* **camera:** wake the camera before renewing ([3988abe](https://github.com/cyrilcolinet/enki-integration-hass/commit/3988abe416b0cef0c2648d7b1f20741b96429daf))
+
 ## [1.24.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.23.0...v1.24.0) (2026-09-21)
 
 
