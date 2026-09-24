@@ -47,7 +47,6 @@ class _FakeMeari:
     def __init__(self, mode: str = "answer") -> None:
         self.mode = mode
         self.frames: list[dict] = []
-        self.options = 0
         self.closed = asyncio.Event()
 
     async def handler(self, request: web.Request) -> web.WebSocketResponse:
@@ -58,18 +57,6 @@ class _FakeMeari:
             self.frames.append(frame)
             method = frame.get("method")
             if method == "option":
-                self.options += 1
-                if self.mode == "dormant_after_renewal" and self.options > 1:
-                    # Renewed, but the camera went back to sleep meanwhile.
-                    await ws.send_json(
-                        {
-                            "sid": frame["sid"],
-                            "errid": 400,
-                            "errstr": "Bad Request",
-                            "desc": "dormancy",
-                        }
-                    )
-                    continue
                 if self.mode == "asleep":
                     await ws.send_json(
                         {
@@ -114,7 +101,7 @@ class _FakeMeari:
                         "params": {"candidate": CAMERA_CANDIDATE},
                     }
                 )
-                if self.mode in {"dead_session", "dormant_after_renewal"}:
+                if self.mode == "dead_session":
                     await ws.send_json(
                         {"sid": frame["sid"], "errid": 0, "errstr": "Connect Success"}
                     )
@@ -143,7 +130,7 @@ class _FakeMeari:
         return ws
 
 
-async def _run(fake: _FakeMeari, *, early_candidate: bool = False, renew=None):
+async def _run(fake: _FakeMeari, *, early_candidate: bool = False):
     app = web.Application()
     app.router.add_get("/ws", fake.handler)
     server = TestServer(app)
@@ -152,8 +139,6 @@ async def _run(fake: _FakeMeari, *, early_candidate: bool = False, renew=None):
     session = MeariSignalingSession(
         on_answer=answers.append, on_candidate=candidates.append, on_error=errors.append
     )
-    if renew is not None:
-        session.renew_with(renew)
     async with aiohttp.ClientSession() as http:
         if early_candidate:
             # Trickled by the browser before the offer is even sent.
@@ -191,34 +176,13 @@ async def test_full_negotiation_relays_offer_answer_and_candidates() -> None:
 
 
 @pytest.mark.asyncio
-async def test_dead_session_is_renewed_with_fresh_credentials() -> None:
-    fake = _FakeMeari("dead_session")
-    renewals = []
-
-    async def renew() -> dict:
-        renewals.append(1)
-        return {"callee": "cam", "deviceCode": "dev", "expires": "later", "token": "fresh"}
-
-    answers, _, errors = await _run(fake, renew=renew)
+async def test_the_end_of_the_live_view_is_reported_to_the_viewer() -> None:
+    """The camera hangs up after about two minutes; the browser cannot be re-offered."""
+    answers, _, errors = await _run(_FakeMeari("dead_session"))
     assert answers == [CAMERA_ANSWER]
-    assert errors == []  # a dead session is renewed, not reported to the browser
-    assert len(renewals) == 1
-    # Re-authenticated and asked for the stream again on the same websocket.
-    methods = [frame["method"] for frame in fake.frames]
-    assert methods.count("option") == 2
-    assert methods[methods.index("option", 1) :][:2] == ["option", "settings"]
-
-
-@pytest.mark.asyncio
-async def test_camera_asleep_after_renewal_is_reported_to_the_viewer() -> None:
-    async def renew() -> dict:
-        return {"callee": "cam", "deviceCode": "dev", "token": "fresh"}
-
-    answers, _, errors = await _run(_FakeMeari("dormant_after_renewal"), renew=renew)
-    assert answers == [CAMERA_ANSWER]
-    # The browser cannot be re-offered, so the viewer is told instead of waiting.
     (error,) = errors
     assert error.camera_asleep is True
+    assert "open it again" in str(error)
 
 
 @pytest.mark.asyncio

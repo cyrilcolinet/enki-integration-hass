@@ -698,18 +698,13 @@ class EnkiAPI:
     ) -> None:
         """Negotiate a live view with a meari camera for a WebRTC peer."""
         http = await self._get_http()
-
-        async def _wake_and_connect() -> dict[str, Any]:
-            # The solar camera sleeps between events, and goes back to sleep a
-            # couple of minutes into a live view (#216), so wake it every time.
-            try:
-                await http.wake_camera(home_id, node_id)
-            except EnkiConnectionError as err:
-                LOGGER.debug("Camera wake-up skipped for node %s: %s", node_id, err)
-            return await http.get_camera_connect_info(home_id, node_id)
-
-        session.renew_with(_wake_and_connect)
-        info = await _wake_and_connect()
+        # The solar camera sleeps between events; the app has a route for this.
+        # Best-effort: the signaling server may well wake it on its own.
+        try:
+            await http.wake_camera(home_id, node_id)
+        except EnkiConnectionError as err:
+            LOGGER.debug("Camera wake-up skipped for node %s: %s", node_id, err)
+        info = await http.get_camera_connect_info(home_id, node_id)
         if not info:
             raise MeariSignalingError("the camera service returned no live-view access")
         await session.start(http.session, info, offer_sdp)
