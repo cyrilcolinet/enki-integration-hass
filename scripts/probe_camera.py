@@ -15,6 +15,10 @@ For each camera found on the dashboard it:
      if any — authorized the reads.
 
 It never touches write / delete / pairing / stream (connect-wss) endpoints.
+``--show-media-urls`` keeps the event media links readable, to check whether a
+snapshot opens without being signed in — they point at your own recordings, so
+strip them before pasting the output anywhere.
+
 Output is anonymized: urls, ids, tokens, serials and long/opaque values are
 redacted, so only the response *shape* and status codes are shown.
 
@@ -91,7 +95,20 @@ def _day_formats(day: str) -> list[str]:
     ]
 
 
-async def _get(http: Any, home_id: str, path: str, api_key: str) -> tuple[int, Any]:
+def _with_media_urls(parsed: Any, raw: str) -> Any:
+    """Put the event media links back, from the untouched body."""
+    with contextlib.suppress(json.JSONDecodeError, AttributeError, TypeError):
+        for item, source in zip(
+            parsed.get("items", []), json.loads(raw).get("items", []), strict=False
+        ):
+            if isinstance(item.get("media"), dict) and isinstance(source.get("media"), dict):
+                item["media"]["url"] = source["media"].get("url")
+    return parsed
+
+
+async def _get(
+    http: Any, home_id: str, path: str, api_key: str, *, show_media_urls: bool = False
+) -> tuple[int, Any]:
     await http.ensure_token()
     headers = http._auth.auth_headers(
         {
@@ -106,6 +123,8 @@ async def _get(http: Any, home_id: str, path: str, api_key: str) -> tuple[int, A
         body = (await response.text()).strip()
         try:
             parsed = anonymize(json.loads(body)) if body else None
+            if show_media_urls and parsed is not None:
+                parsed = _with_media_urls(parsed, body)
         except json.JSONDecodeError:
             parsed = mask_ids(body[:300])
         return response.status, parsed
@@ -149,7 +168,13 @@ _FORCED_READS = {
 
 
 async def _probe_camera(
-    http: Any, home_id: str, node_id: str, info: dict[str, Any], day: str, device_type: str
+    http: Any,
+    home_id: str,
+    node_id: str,
+    info: dict[str, Any],
+    day: str,
+    device_type: str,
+    show_media_urls: bool,
 ) -> None:
     print(f"    manufacturer={info['manufacturer']!r} model={info['model']!r}")
     print(f"    type={info['type']!r} i18n={info['i18n']!r}")
@@ -187,7 +212,9 @@ async def _probe_camera(
                 attempts = [("", base_path)]
             for label, full_path in attempts:
                 try:
-                    status, parsed = await _get(http, home_id, full_path, api_key)
+                    status, parsed = await _get(
+                        http, home_id, full_path, api_key, show_media_urls=show_media_urls
+                    )
                 except Exception as err:  # noqa: BLE001 - report, never crash the sweep
                     print(f"    {cap} [{slug}]{label}: ERROR {type(err).__name__}: {err}")
                     continue
@@ -217,7 +244,9 @@ async def _probe_camera(
         print(f"    => all reads rejected (tried: {', '.join(sorted(rejected))})")
 
 
-async def sweep(username: str, password: str, day: str, device_type: str) -> None:
+async def sweep(
+    username: str, password: str, day: str, device_type: str, show_media_urls: bool = False
+) -> None:
     api = EnkiAPI(username, password)
     await api.async_connect()
     http = await api._get_http()
@@ -237,7 +266,7 @@ async def sweep(username: str, password: str, day: str, device_type: str) -> Non
                     continue
                 print(f"=== {device_type} #{index} ===")
                 info = await _identify(http, home_id, node_id, device_id)
-                await _probe_camera(http, home_id, node_id, info, day, device_type)
+                await _probe_camera(http, home_id, node_id, info, day, device_type, show_media_urls)
                 index += 1
 
     if index == 0:
@@ -256,6 +285,11 @@ def parse_args() -> argparse.Namespace:
         help="Day (YYYY-MM-DD) for check-camera-events; defaults to today",
     )
     parser.add_argument(
+        "--show-media-urls",
+        action="store_true",
+        help="Keep the event media links readable (your own recordings — strip before sharing)",
+    )
+    parser.add_argument(
         "--device-type",
         default="cameras",
         help="Dashboard deviceType to sweep (e.g. videophones); defaults to cameras",
@@ -265,4 +299,6 @@ def parse_args() -> argparse.Namespace:
 
 if __name__ == "__main__":
     args = parse_args()
-    asyncio.run(sweep(args.username, args.password, args.day, args.device_type))
+    asyncio.run(
+        sweep(args.username, args.password, args.day, args.device_type, args.show_media_urls)
+    )
