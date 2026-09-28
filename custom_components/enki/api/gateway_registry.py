@@ -593,10 +593,10 @@ ENKI_MICRO_SERVICES: tuple[EnkiMicroService, ...] = (
     EnkiMicroService(
         "api-enki-videophone-prod",
         "ENKI_VIDEOPHONE_API_KEY",
-        "",
+        "videophone",
         "/api-enki-videophone-prod/v1/videophone",
-        wired=False,
-        notes="",
+        wired=True,
+        notes="Lexman video doorbell: calls, openings and their snapshots (#233)",
     ),
     EnkiMicroService(
         "api-enki-view-prod",

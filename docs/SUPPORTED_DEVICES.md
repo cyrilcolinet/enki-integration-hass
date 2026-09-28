@@ -161,6 +161,24 @@ Reads, writes and the live view are confirmed on a real camera ([#216](https://g
 
 **Blueprint:** motion → notify with the last snapshot — `blueprints/automation/enki/camera_motion_notification.yaml`.
 
+## Video doorbell (Lexman visiophone) — beta
+
+**HA entities:** `event` (doorbell), `camera` (last call snapshot), `binary_sensor` (connection, diagnostic)
+
+The doorbell has its own service, `api-enki-videophone-prod`, and its own event list:
+
+| Event | Carries a snapshot |
+|-------|--------------------|
+| `ACCEPTED_CALL`, `REJECTED_CALL`, `MISSED_CALL` | yes |
+| `CAPTURED_MEDIA` | yes |
+| `GATE_OPENED`, `STRIKE_OPENED` | no |
+
+The `event` entity fires when a newer entry appears, with the snapshot URL as an attribute — good for a notification with the caller's picture, or any automation. **It is not instant:** there is no push channel, so a ring shows up within a polling cycle, and the Enki app itself rings after the indoor handset.
+
+Gate and door opening (`change-portal-state`) and the doorbell's settings are left out until someone has one wired: the reporter's unit drives nothing yet, and it reports `connectors: none` ([#233](https://github.com/cyrilcolinet/enki-integration-hass/issues/233)).
+
+Reads are confirmed on a real doorbell, snapshots included; the pictures open without signing in.
+
 ## Heating — stable (v1.6.8+)
 
 Validated on real hardware (Noirot radiator, Equation pilot wire, Equation relay) since v1.6.8.
@@ -250,7 +268,7 @@ Reads are best-effort (404 skipped) and driven by referentiel capabilities, not 
 | ✅ Stable | Water-heater relay, Evology 2-channel module, Evology multisensor |
 | ✅ Stable | Cameras (event snapshot; live video on the solar camera only) and covers |
 | ✅ Stable | Enki alarm — arm away / home / night and disarm, only the modes configured in the app |
-| 🔬 Beta | Lexman water leak and scenarios — feedback welcome |
+| 🔬 Beta | Lexman water leak, scenarios and the video doorbell — feedback welcome |
 | 🔬 Beta | Thermostat config knobs (offset, child-lock, preheating) — decoded, real-hardware validation welcome |
 | 🔬 Beta | ACOVA radiators — discovered and driven through the shared heating API (towel rail reported in [#190](https://github.com/cyrilcolinet/enki-integration-hass/issues/190)) |
 | ✅ Stable | Lexman solar camera: settings, diagnostics and live view — confirmed on hardware ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)) |

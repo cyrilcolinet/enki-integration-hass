@@ -45,6 +45,7 @@ Use your Enki devices in Home Assistant, with the same email and password as the
 - **Heating** — radiators and pilot wire, with target temperature and modes
 - **Ceiling fans** — speed, direction and the light kit
 - **Cameras** — the latest motion snapshot, and a live view on the solar camera
+- **Video doorbell** — calls and openings as events, with the caller's picture
 - **Alarm** — arm and disarm, with the modes set up in the app
 - **Sensors** — motion, opening, temperature, humidity, water leak, battery, solar production
 - **Scenes** — run the scenes you created in the Enki app

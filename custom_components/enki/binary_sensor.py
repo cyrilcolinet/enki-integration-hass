@@ -109,6 +109,14 @@ _BINARY_SENSOR_SPECS: tuple[dict[str, str | BinarySensorDeviceClass], ...] = (
         "device_class": BinarySensorDeviceClass.OCCUPANCY,
     },
     {
+        "capability": "check_videophone_state",
+        "state_key": "videophone_connected",
+        "suffix": "videophone_connected",
+        "translation_key": "videophone_connected",
+        "device_class": BinarySensorDeviceClass.CONNECTIVITY,
+        "entity_category": EntityCategory.DIAGNOSTIC,
+    },
+    {
         "capability": "check_camera_events",
         "state_key": "camera_sd_removed",
         "suffix": "sd_card",
@@ -140,6 +148,7 @@ def _build_binary_sensor_entities(
     if (
         not profile.is_binary_sensor
         and not profile.is_camera
+        and not profile.is_videophone
         and not _device_has_metadata_sensors(device)
     ):
         return []

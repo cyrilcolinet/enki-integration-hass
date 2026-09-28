@@ -160,6 +160,9 @@
       },
       "live": {
         "name": "Vue en direct"
+      },
+      "videophone_snapshot": {
+        "name": "Dernier appel"
       }
     },
     "button": {
@@ -206,6 +209,9 @@
       },
       "firmware_update": {
         "name": "Mise à jour firmware"
+      },
+      "videophone_connected": {
+        "name": "Visiophone connecté"
       }
     },
     "switch": {
@@ -322,6 +328,23 @@
     "update": {
       "firmware": {
         "name": "Micrologiciel"
+      }
+    },
+    "event": {
+      "videophone": {
+        "name": "Sonnette",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "accepted_call": "Appel accepté",
+              "rejected_call": "Appel refusé",
+              "missed_call": "Appel manqué",
+              "captured_media": "Photo prise",
+              "gate_opened": "Portail ouvert",
+              "strike_opened": "Porte ouverte"
+            }
+          }
+        }
       }
     }
   },

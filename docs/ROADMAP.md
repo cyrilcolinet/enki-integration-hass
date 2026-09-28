@@ -32,6 +32,7 @@ Short version: [README](../README.md) · detailed view below.
 | 🔬 Beta | Enki scenarios (“Open living room”, …) | `button` (v1.6.0+) |
 | 🔬 Beta | ACOVA radiators | discovered and driven through the shared heating API (towel rail reported in [#190](https://github.com/cyrilcolinet/enki-integration-hass/issues/190)) |
 | ✅ Supported | Lexman solar camera (meari) | settings as `select` / `switch` / `number` (night vision, motion detection, sensitivities, status light, flip, recording duration) + battery, Wi-Fi, charging and SD-card sensors; live view over Home Assistant's native WebRTC, confirmed on hardware and capped at about two minutes by the camera ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)) |
+| 🔬 Beta | Lexman video doorbell | `event` for calls and openings, `camera` with the last call's snapshot, connection `binary_sensor`; gate/strike opening and live view still to come ([#233](https://github.com/cyrilcolinet/enki-integration-hass/issues/233)) |
 | ⏳ Not planned | Live video, settings and pan/tilt on Lexman IPC1xxKF cameras | proprietary P2P tunnel, no HTTP route ([#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165)) |
 | ✅ Supported | Enki alarm | `alarm_control_panel` — arm away / home / night and disarm, only the modes configured in the app ([#218](https://github.com/cyrilcolinet/enki-integration-hass/issues/218)) |
 | ✅ Published | Default HACS store | listed in the default store — install from HACS directly (see [HACS.md](HACS.md)) |

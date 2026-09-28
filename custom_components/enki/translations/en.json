@@ -160,6 +160,9 @@
       },
       "live": {
         "name": "Live view"
+      },
+      "videophone_snapshot": {
+        "name": "Last call snapshot"
       }
     },
     "button": {
@@ -206,6 +209,9 @@
       },
       "firmware_update": {
         "name": "Firmware update"
+      },
+      "videophone_connected": {
+        "name": "Doorbell connected"
       }
     },
     "switch": {
@@ -322,6 +328,23 @@
     "update": {
       "firmware": {
         "name": "Firmware"
+      }
+    },
+    "event": {
+      "videophone": {
+        "name": "Doorbell",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "accepted_call": "Call accepted",
+              "rejected_call": "Call rejected",
+              "missed_call": "Missed call",
+              "captured_media": "Snapshot taken",
+              "gate_opened": "Gate opened",
+              "strike_opened": "Door opened"
+            }
+          }
+        }
       }
     }
   },

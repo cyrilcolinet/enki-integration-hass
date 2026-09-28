@@ -61,6 +61,7 @@ _HA_STUBS = [
     "homeassistant.components.switch",
     "homeassistant.components.binary_sensor",
     "homeassistant.components.camera",
+    "homeassistant.components.event",
     "homeassistant.components.number",
     "homeassistant.components.select",
     "homeassistant.components.alarm_control_panel",
@@ -280,6 +281,9 @@ _switch.SwitchDeviceClass = MagicMock()
 _binary_sensor = sys.modules["homeassistant.components.binary_sensor"]
 _binary_sensor.BinarySensorEntity = _HaEntity
 _binary_sensor.BinarySensorDeviceClass = MagicMock()
+
+_event = sys.modules["homeassistant.components.event"]
+_event.EventEntity = _HaEntity
 
 _camera = sys.modules["homeassistant.components.camera"]
 _camera.Camera = _HaEntity
