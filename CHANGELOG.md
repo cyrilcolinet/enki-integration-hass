@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.26.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.25.0...v1.26.0) (2026-09-28)
+
+
+### Features
+
+* **videophone:** expose calls, snapshot and connection ([8574d37](https://github.com/cyrilcolinet/enki-integration-hass/commit/8574d37ca5d8949d22c77ac79eedc52b0b440621))
+
 ## [1.25.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.24.0...v1.25.0) (2026-09-24)
 
 
