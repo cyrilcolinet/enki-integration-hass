@@ -13,6 +13,7 @@ from ..const import (
     DEVICE_TYPE_FANS,
     DEVICE_TYPE_INVERTERS,
     DEVICE_TYPE_LIGHTS,
+    DEVICE_TYPE_VIDEOPHONES,
 )
 from ..lib.fan_endpoints import (
     endpoint_id_from_entry,
@@ -571,6 +572,15 @@ class EnkiCapabilityProfile:
         )
 
     @property
+    def is_videophone(self) -> bool:
+        """Lexman video doorbell — calls and openings via api-enki-videophone-prod (#233)."""
+        return self.device_type == DEVICE_TYPE_VIDEOPHONES or _supports(
+            self.capabilities,
+            self.possible_values,
+            "check_videophone_state",
+        )
+
+    @property
     def is_environment_sensor(self) -> bool:
         """Temperature, humidity, illuminance, or battery level sensors (not thermostats)."""
         if self.supports_thermostat:
@@ -646,6 +656,7 @@ class EnkiCapabilityProfile:
             or self.is_impulse_relay
             or self.is_boiler_switch
             or self.is_camera
+            or self.is_videophone
         )
 
     @property

@@ -114,6 +114,12 @@ _CAPABILITY_PROBES: dict[str, str] = {
     "check_water_sensor_state": "supports_water_leak",
     "check_camera_events": "is_camera",
     "check_camera_last_event": "is_camera",
+    # Lexman video doorbell (#233): calls, openings and connection.
+    "check_videophone_state": "is_videophone",
+    "check_videophone_events": "is_videophone",
+    "check_videophone_media_events": "is_videophone",
+    "check_videophone_call": "is_videophone",
+    "check_videophone_connector": "is_videophone",
     # Meari-generation camera settings (#216).
     "check_camera_state": "supports_camera_settings",
     **{capability: "supports_camera_settings" for capability in CAMERA_SETTING_CAPABILITIES},
@@ -129,6 +135,11 @@ NOT_PLANNED_CAPABILITIES = frozenset(
         "change_camera_orientation",
         # Meari cameras: the detection zone needs a drawing UI, and the rest is
         # destructive (wiping the SD card, deleting events, flashing firmware).
+        # The doorbell's own settings and its gate/strike outputs need a wired
+        # installation to validate: nobody has one yet (#233).
+        "change_videophone_config",
+        "change_portal_state",
+        "check_portal_state",
         "change_detection_zone",
         "check_detection_zone",
         "delete_camera_events",

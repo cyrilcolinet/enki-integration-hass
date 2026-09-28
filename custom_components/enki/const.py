@@ -45,6 +45,7 @@ DEVICE_TYPE_INVERTERS = "inverters"
 DEVICE_TYPE_ACCESS_MOTORIZATION = "access_and_motorizations"
 DEVICE_TYPE_SENSORS = "sensors"
 DEVICE_TYPE_CAMERAS = "cameras"
+DEVICE_TYPE_VIDEOPHONES = "videophones"
 DEVICE_TYPE_BOILER = "boiler"
 
 # Sent as ?version= on the referentiel endpoint. A stale value returns an older,

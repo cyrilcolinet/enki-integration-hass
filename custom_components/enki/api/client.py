@@ -28,6 +28,7 @@ from ..domain.security import (
     parse_security_state,
     security_id_from_tile,
 )
+from ..domain.videophone import parse_videophone_events, parse_videophone_state
 from ..exceptions import EnkiApiNotFoundError, EnkiConnectionError
 from ..lib.bff import parse_bff_power
 from ..lib.conversion import (
@@ -489,6 +490,9 @@ class EnkiAPI:
                 state.update(await self._read_camera_settings(http, home_id, node_id))
             return state
 
+        if profile.is_videophone:
+            return await self._read_videophone_state(http, home_id, node_id)
+
         state: dict[str, Any] = {}
 
         if profile.supports_light_state or device.device_type == DEVICE_TYPE_LIGHTS:
@@ -642,6 +646,30 @@ class EnkiAPI:
             return {}
         items = data.get("items", []) if isinstance(data, dict) else []
         return parse_camera_events(items if isinstance(items, list) else [])
+
+    async def _read_videophone_state(
+        self,
+        http: EnkiHttpClient,
+        home_id: str,
+        node_id: str,
+    ) -> dict[str, Any]:
+        """Connection and latest calls of a video doorbell (#233)."""
+        state: dict[str, Any] = {}
+        for label, read, parse in (
+            ("check-videophone-state", http.get_videophone_state, parse_videophone_state),
+            ("check-videophone-events", http.get_videophone_events, self._parse_events),
+        ):
+            try:
+                state.update(parse(await read(home_id, node_id)))
+            except EnkiConnectionError as err:
+                LOGGER.debug("Videophone %s skipped for node %s: %s", label, node_id, err)
+                self._note_read_error(node_id, service="videophone", capability=label, err=err)
+        return state
+
+    @staticmethod
+    def _parse_events(payload: dict[str, Any]) -> dict[str, Any]:
+        items = payload.get("items") if isinstance(payload, dict) else None
+        return parse_videophone_events(items if isinstance(items, list) else [])
 
     async def _read_camera_settings(
         self,

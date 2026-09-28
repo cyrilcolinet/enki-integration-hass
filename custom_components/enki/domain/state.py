@@ -74,6 +74,23 @@ class EnkiDeviceState:
 
     camera_last_image_url = _str_field("camera_last_image_url")
 
+    videophone_last_event_type = _str_field("videophone_last_event_type")
+
+    videophone_last_event_at = _str_field("videophone_last_event_at")
+
+    videophone_last_call_type = _str_field("videophone_last_call_type")
+
+    videophone_last_call_at = _str_field("videophone_last_call_at")
+
+    videophone_last_image_url = _str_field("videophone_last_image_url")
+
+    videophone_connectors = _str_field("videophone_connectors")
+
+    @property
+    def videophone_connected(self) -> bool | None:
+        value = self._data.get("videophone_connected")
+        return value if isinstance(value, bool) else None
+
     @property
     def camera_sd_removed(self) -> bool | None:
         value = self._data.get("camera_sd_removed")

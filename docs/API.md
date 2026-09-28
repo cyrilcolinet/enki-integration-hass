@@ -356,6 +356,39 @@ its offer — the browser uses its own ICE servers and the camera's relay candid
 it is a meari device, whether signaling authenticates and whether the camera answers an SDP
 offer.
 
+## Lexman video doorbell (api-enki-videophone-prod)
+
+Base: `https://enki.api.devportal.adeo.cloud/api-enki-videophone-prod/v1/videophone/`
+Gateway key: `ENKI_VIDEOPHONE_API_KEY`. Headers: `Authorization`, `X-Gateway-APIKey`, `homeId`.
+
+| Method | Path | Notes |
+|--------|------|-------|
+| GET | `{nodeId}/check-videophone-state` | `{"connected": true, "connectors": "none"}` |
+| GET | `{nodeId}/check-videophone-events` | calls, captures and openings, newest first |
+| GET | `{nodeId}/check-turn-info` | TURN relay, `ttl` 3600 — live view, not wired yet |
+| GET | `{nodeId}/check-sdp-candidates-info` | `204` outside a call |
+| POST | `{nodeId}/change-videophone-call` | answer / hang up |
+| POST | `{nodeId}/change-portal-state` | `GATE` / `STRIKE` |
+| POST | `{nodeId}/change-videophone-config`, `{nodeId}/record` | settings, recording |
+
+An event looks like this — the openings carry no media:
+
+```json
+{"items": [
+  {"eventType": "MISSED_CALL", "media": {"type": "image", "url": "…", "thumbnail": null},
+   "eventDate": "2026-09-25T17:57:28.347+02:00"},
+  {"eventType": "GATE_OPENED", "media": null, "eventDate": "2026-09-25T17:57:23.182+02:00"}
+]}
+```
+
+`eventType` is `ACCEPTED_CALL`, `REJECTED_CALL`, `MISSED_CALL`, `CAPTURED_MEDIA`, `GATE_OPENED` or
+`STRIKE_OPENED`. The media URLs are readable without authentication, so the camera entity fetches
+them directly. The referentiel advertises `check_videophone_media_events`, but the app calls
+`check-videophone-events`: the capability name and the route do not match ([#233](https://github.com/cyrilcolinet/enki-integration-hass/issues/233)).
+
+Unlike the meari camera, the live view here is plain WebRTC over REST (`check-turn-info` plus the
+SDP routes), not a signaling WebSocket — it is not implemented yet.
+
 ## Future device families
 
 The Enki app also controls alarms via other microservices. Use `scripts/discover_devices.py` to dump unknown `deviceType` values from your account before adding new platforms.

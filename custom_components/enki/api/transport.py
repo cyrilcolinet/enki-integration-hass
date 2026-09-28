@@ -590,6 +590,18 @@ class EnkiHttpClient:
             return [item for item in items if isinstance(item, dict)]
         return []
 
+    async def get_videophone_state(self, home_id: str, node_id: str) -> dict[str, Any]:
+        """Connection and wired connectors of a video doorbell (APK phf.d)."""
+        return await self._read_optional(
+            "videophone", f"/{node_id}/check-videophone-state", home_id=home_id, not_found_ok=True
+        )
+
+    async def get_videophone_events(self, home_id: str, node_id: str) -> dict[str, Any]:
+        """Calls, captures and openings, newest first (APK phf.g)."""
+        return await self._read_optional(
+            "videophone", f"/{node_id}/check-videophone-events", home_id=home_id, not_found_ok=True
+        )
+
     async def get_camera_status(self, home_id: str, node_id: str) -> dict[str, Any]:
         """Every current setting of a meari camera (APK udf.r → check-camera-status)."""
         return await self._read_optional(

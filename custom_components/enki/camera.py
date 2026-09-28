@@ -38,18 +38,25 @@ async def async_setup_entry(
 ) -> None:
     coordinator: EnkiCoordinator = entry.runtime_data
     async_add_entities(
-        (EnkiLiveCamera if device.profile.supports_camera_settings else EnkiEventSnapshotCamera)(
-            coordinator, device
-        )
+        _camera_class(device)(coordinator, device)
         for device in coordinator.data or []
-        if device.profile.is_camera
+        if device.profile.is_camera or device.profile.is_videophone
     )
+
+
+def _camera_class(device: EnkiDevice) -> type[EnkiEventSnapshotCamera]:
+    if device.profile.is_videophone:
+        return EnkiVideophoneCamera
+    if device.profile.supports_camera_settings:
+        return EnkiLiveCamera
+    return EnkiEventSnapshotCamera
 
 
 class EnkiEventSnapshotCamera(EnkiEntity, Camera):
     """Still image of the camera's most recent motion event."""
 
     _attr_translation_key = "event_snapshot"
+    _image_url_field = "camera_last_image_url"
 
     def __init__(self, coordinator: EnkiCoordinator, device: EnkiDevice) -> None:
         EnkiEntity.__init__(self, coordinator, device)
@@ -61,7 +68,7 @@ class EnkiEventSnapshotCamera(EnkiEntity, Camera):
     async def async_camera_image(
         self, width: int | None = None, height: int | None = None
     ) -> bytes | None:
-        url = self._device.reported.camera_last_image_url
+        url = getattr(self._device.reported, self._image_url_field)
         if not url:
             return None
         if self._snapshot is not None and self._snapshot[0] == url:
@@ -78,6 +85,13 @@ class EnkiEventSnapshotCamera(EnkiEntity, Camera):
             return self._snapshot[1] if self._snapshot else None
         self._snapshot = (url, data)
         return data
+
+
+class EnkiVideophoneCamera(EnkiEventSnapshotCamera):
+    """Still image of the doorbell's most recent call (#233)."""
+
+    _attr_translation_key = "videophone_snapshot"
+    _image_url_field = "videophone_last_image_url"
 
 
 class EnkiLiveCamera(EnkiEventSnapshotCamera):
