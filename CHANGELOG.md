@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.27.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.26.0...v1.27.0) (2026-09-29)
+
+
+### Features
+
+* **blueprint:** notify with the caller's picture ([bf39b4d](https://github.com/cyrilcolinet/enki-integration-hass/commit/bf39b4de7d0afcea17ea6eff73066a4049cb86b8))
+
 ## [1.26.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.25.0...v1.26.0) (2026-09-28)
 
 
