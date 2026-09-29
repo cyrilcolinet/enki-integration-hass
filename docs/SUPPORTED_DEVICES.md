@@ -106,7 +106,7 @@ Gateway keys in `gateway_keys_data.py`.
 | `check_current_temperature` | Temperature (°C) — except thermostats (temperature on `climate`) |
 | `check_current_humidity` | Humidity (%) |
 | `check_battery_health` | Battery (%, Enki mapping) |
-| `check_illuminance_level` / `check_brightness_level` | Brightness / illuminance (Evology multisensor, …) — the luminosity service is refused by the Enki cloud since September 2026 |
+| `check_illuminance_level` / `check_brightness_level` | Brightness / illuminance (Evology multisensor, Lexman 4-in-1, …) |
 
 **Sedea** thermometers (display): temperature, humidity, battery.
 

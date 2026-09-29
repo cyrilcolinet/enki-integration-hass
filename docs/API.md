@@ -19,7 +19,9 @@ Every microservice call sends:
 
 Gateway keys are bundled in `custom_components/enki/gateway_keys_data.py` (re-exported by `const.py`). They are **embedded in the Enki mobile APK** (one key per micro-service), not fetched from a central API. Refresh them after an app update with `scripts/extract_gateway_keys.py` (see [DEVELOPMENT.md](DEVELOPMENT.md)). A `401` means the credentials no longer work: Home Assistant opens its **reauthentication** flow. A `403` on the device poll usually means an outdated gateway key, and raises a **repair issue** with guidance.
 
-A `403 {"message":"You cannot consume this service"}` is different: the gateway is refusing the key for a whole micro-service, for every account, and no key refresh fixes it — Adeo has to re-open the API product. The transport records the first one (so it still reaches diagnostics and read-error telemetry), then stops reading that service until Home Assistant restarts, instead of retrying on every polling cycle. `api-enki-consumption-prod` and `api-enki-ota-prod` have been in that state since August 2026 — the keys we ship are byte-for-byte the ones the current app uses. The luminosity service followed in September.
+A `403 {"message":"You cannot consume this service"}` is different: the gateway is refusing the key for a whole micro-service, for every account, and no key refresh fixes it — Adeo has to re-open the API product. The transport records the first one (so it still reaches diagnostics and read-error telemetry), then stops reading that service until Home Assistant restarts, instead of retrying on every polling cycle. `api-enki-consumption-prod` and `api-enki-ota-prod` have been in that state since August 2026 — the keys we ship are byte-for-byte the ones the current app uses.
+
+A 403 on a single service is worth checking against the app before blaming the gateway: `api-enki-luminosity-sensor-prod` looked closed for weeks, and it was our own key — the extractor had picked a neighbouring one, while the app sends its own for both illuminance routes ([#256](https://github.com/cyrilcolinet/enki-integration-hass/issues/256)).
 
 ## Discovery flow
 
