@@ -8,6 +8,7 @@ Blueprints live in `blueprints/automation/enki/`. Import one from **Settings →
 |-----------|--------------|
 | `camera_motion_notification.yaml` | Notifies with the last snapshot when a camera sees motion |
 | `camera_tamper_alert.yaml` | Notifies when a camera reports its SD card removed |
+| `videophone_call_notification.yaml` | Notifies with the caller's picture when someone rings the video doorbell |
 | `water_leak_alert.yaml` | Urgent notification on a leak, with an optional siren and power cut-off |
 | `vibration_glass_break_alert.yaml` | Notifies, and optionally sounds a siren, on a vibration sensor |
 | `siren_on_motion_when_armed.yaml` | Sounds the siren and notifies on motion while an "armed" toggle is on |
