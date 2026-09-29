@@ -173,6 +173,8 @@ The doorbell has its own service, `api-enki-videophone-prod`, and its own event 
 | `CAPTURED_MEDIA` | yes |
 | `GATE_OPENED`, `STRIKE_OPENED` | no |
 
+The doorbell's own settings decide whether a capture is a picture or a short clip. A clip comes with a thumbnail, which is what the `camera` shows; the clip's own URL stays available as an event attribute.
+
 The `event` entity fires when a newer entry appears, with the snapshot URL as an attribute — good for a notification with the caller's picture, or any automation. **It is not instant:** there is no push channel, so a ring shows up within a polling cycle, and the Enki app itself rings after the indoor handset.
 
 Gate and door opening (`change-portal-state`) and the doorbell's settings are left out until someone has one wired: the reporter's unit drives nothing yet, and it reports `connectors: none` ([#233](https://github.com/cyrilcolinet/enki-integration-hass/issues/233)).

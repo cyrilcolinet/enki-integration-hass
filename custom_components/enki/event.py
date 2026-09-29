@@ -57,6 +57,13 @@ class EnkiVideophoneEvent(EnkiEntity, EventEntity):
             if event_type in self._attr_event_types:
                 self._trigger_event(
                     event_type,
-                    {"happened_at": happened_at, "image_url": reported.videophone_last_image_url},
+                    {
+                        "happened_at": happened_at,
+                        "image_url": reported.videophone_last_image_url,
+                        # A capture can be a clip: the picture above is then its
+                        # thumbnail, and the clip itself is here.
+                        "media_type": reported.videophone_last_media_type,
+                        "media_url": reported.videophone_last_media_url,
+                    },
                 )
         self.async_write_ha_state()
