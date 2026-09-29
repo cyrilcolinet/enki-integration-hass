@@ -6,6 +6,8 @@ Do not edit manually — refresh with:
 Source APK: Enki 2.25.1 (most keys). POWER and AIRFLOW verified against live
 api-enki-power-prod / api-enki-airflow-prod traffic (APK 2.25.1 extractor
 misassigned those two slugs — see #45). THERMOSTAT from zlo.java repository.
+LUMINOSITY_SENSOR likewise: the extractor picked a neighbouring key, while the
+app sends its own for both illuminance routes — see #256.
 """
 
 # Wired micro-services (used by the integration today).
@@ -57,7 +59,7 @@ ENKI_LEXMAN_CHARGEPOINT_API_KEY = "L9RRFgbJuvTgW0ZI03mQMTNtND8mzAUa"
 ENKI_LEXMAN_ENVERTECH_API_KEY = "HMGJVJ3f1K4pfr5h95ycgOixz6MKtPXF"
 ENKI_LIGHTING_REMOTE_CONTROL_API_KEY = "PCnbndkIqlfXwXGhFkqSWWMn4HcWza9J"
 ENKI_LOGBOOK_API_KEY = "ffm1enzaqMPG9rVCz2J0kX0sIqAGMB6m"
-ENKI_LUMINOSITY_SENSOR_API_KEY = "fFgGBdPnmCPgu5ouGylYtu7iLLtm5Q6x"
+ENKI_LUMINOSITY_SENSOR_API_KEY = "IofVn8vtD1xGGLPvbW9hn1oHfbcWW5Ks"
 ENKI_MOBILE_CONFIG_API_KEY = "TDp5cEkZOlakm1Z3sG1WfMkxHYl7Gu1Y"
 ENKI_MOBILE_HEATING_BFF_API_KEY = ""
 ENKI_MOBILE_PAIRING_WORKFLOW_API_KEY = "QegWuQR3zSKLlJZ2OITv94vjtSaaPkDp"
