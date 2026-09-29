@@ -1,0 +1,92 @@
+blueprint:
+  name: Enki videophone – call notification
+  description: >
+    Send a notification with the caller's picture when someone rings an Enki
+    (Lexman) video doorbell. Uses the doorbell's event entity as the trigger and
+    its snapshot camera for the image.
+
+    The doorbell has no push channel: the event reaches Home Assistant on the
+    next poll, up to 30 seconds after the ring. Good for a notification with the
+    picture, not for answering.
+  domain: automation
+  author: cyrilcolinet
+  source_url: https://github.com/cyrilcolinet/enki-integration-hass/blob/main/blueprints/automation/enki/videophone_call_notification.yaml
+  input:
+    doorbell_event:
+      name: Doorbell event entity
+      description: The videophone's "Doorbell" event entity.
+      selector:
+        entity:
+          filter:
+            - domain: event
+    snapshot_camera:
+      name: Snapshot camera
+      description: The videophone's "Last call snapshot" camera entity.
+      selector:
+        entity:
+          filter:
+            - domain: camera
+    call_types:
+      name: Calls to notify on
+      description: >
+        Which calls deserve a notification. A missed call usually matters more
+        than one you answered from the handset.
+      default:
+        - missed_call
+        - rejected_call
+      selector:
+        select:
+          multiple: true
+          options:
+            - label: Missed call
+              value: missed_call
+            - label: Call rejected
+              value: rejected_call
+            - label: Call accepted
+              value: accepted_call
+            - label: Snapshot taken
+              value: captured_media
+            - label: Gate opened
+              value: gate_opened
+            - label: Door opened
+              value: strike_opened
+    notify_action:
+      name: Notification action
+      description: The notify action to call, e.g. notify.mobile_app_your_phone.
+      default: notify.notify
+      selector:
+        text:
+    title:
+      name: Notification title
+      default: Someone rang
+      selector:
+        text:
+
+mode: single
+max_exceeded: silent
+
+variables:
+  snapshot_camera: !input snapshot_camera
+  call_types: !input call_types
+
+triggers:
+  - trigger: state
+    entity_id: !input doorbell_event
+
+conditions:
+  # An event entity also goes through unknown / unavailable on a restart.
+  - condition: template
+    value_template: >
+      {{ trigger.to_state is not none
+         and trigger.to_state.state not in ['unknown', 'unavailable', 'none']
+         and trigger.to_state.attributes.event_type in call_types }}
+
+actions:
+  - action: !input notify_action
+    data:
+      title: !input title
+      message: >
+        {{ trigger.to_state.attributes.event_type | replace('_', ' ') | capitalize }}
+        — {{ now().strftime('%d/%m %H:%M') }}
+      data:
+        image: "/api/camera_proxy/{{ snapshot_camera }}"

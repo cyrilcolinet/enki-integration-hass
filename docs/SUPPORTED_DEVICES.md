@@ -179,6 +179,8 @@ Gate and door opening (`change-portal-state`) and the doorbell's settings are le
 
 Reads are confirmed on a real doorbell, snapshots included; the pictures open without signing in.
 
+**Blueprint:** someone rings → notify with the caller's picture — `blueprints/automation/enki/videophone_call_notification.yaml`.
+
 ## Heating — stable (v1.6.8+)
 
 Validated on real hardware (Noirot radiator, Equation pilot wire, Equation relay) since v1.6.8.
