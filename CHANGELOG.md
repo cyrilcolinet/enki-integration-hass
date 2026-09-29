@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.27.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.27.0...v1.27.1) (2026-09-29)
+
+
+### Bug Fixes
+
+* **api:** send the app's key for luminosity ([a4aa54c](https://github.com/cyrilcolinet/enki-integration-hass/commit/a4aa54cb2bbf75e0254677833c7b35b489d4110c))
+* **videophone:** show a thumbnail when the capture is a clip ([7d9a110](https://github.com/cyrilcolinet/enki-integration-hass/commit/7d9a110f672ecfbb03f8ecd89904ee34acc9fb74))
+
 ## [1.27.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.26.0...v1.27.0) (2026-09-29)
 
 
