@@ -84,6 +84,10 @@ class EnkiDeviceState:
 
     videophone_last_image_url = _str_field("videophone_last_image_url")
 
+    videophone_last_media_type = _str_field("videophone_last_media_type")
+
+    videophone_last_media_url = _str_field("videophone_last_media_url")
+
     videophone_connectors = _str_field("videophone_connectors")
 
     @property

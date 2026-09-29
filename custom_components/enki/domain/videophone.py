@@ -4,7 +4,9 @@
 "media"}]}``, newest first. ``eventType`` is one of ``ACCEPTED_CALL``,
 ``REJECTED_CALL``, ``MISSED_CALL``, ``CAPTURED_MEDIA``, ``GATE_OPENED`` or
 ``STRIKE_OPENED``; calls and captures carry a ``media.url`` snapshot, the
-openings do not. ``check-videophone-state`` answers ``{"connected", "connectors"}``.
+openings do not. The doorbell's own settings decide whether a capture is an image
+or a video clip; a clip comes with a ``thumbnail``, which is the still to show
+(#233). ``check-videophone-state`` answers ``{"connected", "connectors"}``.
 """
 
 from __future__ import annotations
@@ -35,10 +37,21 @@ def _event_date(item: dict[str, Any]) -> str:
     return value if isinstance(value, str) else ""
 
 
-def _media_url(item: dict[str, Any]) -> str | None:
+def _url(media: dict[str, Any], field: str) -> str | None:
+    value = media.get(field)
+    return value if isinstance(value, str) and value else None
+
+
+def _media(item: dict[str, Any]) -> dict[str, Any] | None:
     media = item.get("media")
-    url = media.get("url") if isinstance(media, dict) else None
-    return url if isinstance(url, str) and url else None
+    return media if isinstance(media, dict) and _url(media, "url") else None
+
+
+def _still_url(media: dict[str, Any]) -> str | None:
+    """What to show as a picture: the capture itself, or a clip's thumbnail."""
+    if media.get("type") == "video":
+        return _url(media, "thumbnail")
+    return _url(media, "url")
 
 
 def parse_videophone_events(items: list[dict[str, Any]]) -> dict[str, Any]:
@@ -61,9 +74,13 @@ def parse_videophone_events(items: list[dict[str, Any]]) -> dict[str, Any]:
         state["videophone_last_call_type"] = call.get("eventType")
         state["videophone_last_call_at"] = _event_date(call) or None
 
-    image = next((url for e in events if (url := _media_url(e))), None)
-    if image is not None:
-        state["videophone_last_image_url"] = image
+    media = next((found for e in events if (found := _media(e))), None)
+    if media is not None:
+        state["videophone_last_media_type"] = media.get("type")
+        state["videophone_last_media_url"] = _url(media, "url")
+        still = _still_url(media)
+        if still is not None:
+            state["videophone_last_image_url"] = still
 
     return state
 

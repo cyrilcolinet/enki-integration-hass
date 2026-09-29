@@ -384,7 +384,8 @@ An event looks like this — the openings carry no media:
 ```
 
 `eventType` is `ACCEPTED_CALL`, `REJECTED_CALL`, `MISSED_CALL`, `CAPTURED_MEDIA`, `GATE_OPENED` or
-`STRIKE_OPENED`. The media URLs are readable without authentication, so the camera entity fetches
+`STRIKE_OPENED`. `media.type` is `image`, or `video` when the doorbell is set to record a clip —
+a clip then carries a `thumbnail`, which is the only still to show. The media URLs are readable without authentication, so the camera entity fetches
 them directly. The referentiel advertises `check_videophone_media_events`, but the app calls
 `check-videophone-events`: the capability name and the route do not match ([#233](https://github.com/cyrilcolinet/enki-integration-hass/issues/233)).
 

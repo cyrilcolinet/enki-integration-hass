@@ -75,6 +75,38 @@ def test_an_opening_does_not_hide_the_previous_call() -> None:
     assert state["videophone_last_image_url"] == "https://cdn/accepted.jpg"
 
 
+# The doorbell's settings can capture a clip instead of a picture (#233).
+VIDEO_CAPTURE = [
+    {
+        "eventType": "CAPTURED_MEDIA",
+        "media": {"type": "video", "url": "https://cdn/clip.mp4", "thumbnail": "https://cdn/t.jpg"},
+        "eventDate": "2026-09-29T13:34:54.000+02:00",
+    }
+]
+
+
+def test_a_video_capture_shows_its_thumbnail_and_keeps_the_clip() -> None:
+    state = parse_videophone_events(VIDEO_CAPTURE)
+    # The camera would choke on an MP4, so the picture is the thumbnail.
+    assert state["videophone_last_image_url"] == "https://cdn/t.jpg"
+    assert state["videophone_last_media_url"] == "https://cdn/clip.mp4"
+    assert state["videophone_last_media_type"] == "video"
+
+
+def test_an_image_capture_is_its_own_picture() -> None:
+    state = parse_videophone_events(REAL_EVENTS)
+    assert state["videophone_last_image_url"] == "https://cdn/missed.jpg"
+    assert state["videophone_last_media_url"] == "https://cdn/missed.jpg"
+    assert state["videophone_last_media_type"] == "image"
+
+
+def test_a_clip_without_thumbnail_leaves_the_camera_empty() -> None:
+    no_thumb = [{**VIDEO_CAPTURE[0], "media": {"type": "video", "url": "https://cdn/clip.mp4"}}]
+    state = parse_videophone_events(no_thumb)
+    assert "videophone_last_image_url" not in state
+    assert state["videophone_last_media_url"] == "https://cdn/clip.mp4"
+
+
 def test_state_read_gives_connection_and_connectors() -> None:
     assert parse_videophone_state({"connected": True, "connectors": "none"}) == {
         "videophone_connected": True,
