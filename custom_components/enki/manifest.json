@@ -5,6 +5,9 @@
     "@cyrilcolinet"
   ],
   "config_flow": true,
+  "dependencies": [
+    "media_source"
+  ],
   "documentation": "https://github.com/cyrilcolinet/enki-integration-hass",
   "integration_type": "hub",
   "iot_class": "cloud_polling",

@@ -54,13 +54,18 @@ def _still_url(media: dict[str, Any]) -> str | None:
     return _url(media, "url")
 
 
-def parse_videophone_events(items: list[dict[str, Any]]) -> dict[str, Any]:
-    """Reduce the event list to the flat state keys the entities read."""
-    events = sorted(
+def _newest_first(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The event list as the API means it to be read, defensively re-sorted."""
+    return sorted(
         (item for item in items if isinstance(item, dict)),
         key=_event_date,
         reverse=True,
     )
+
+
+def parse_videophone_events(items: list[dict[str, Any]]) -> dict[str, Any]:
+    """Reduce the event list to the flat state keys the entities read."""
+    events = _newest_first(items)
     if not events:
         return {}
 
@@ -83,6 +88,32 @@ def parse_videophone_events(items: list[dict[str, Any]]) -> dict[str, Any]:
             state["videophone_last_image_url"] = still
 
     return state
+
+
+def parse_videophone_captures(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Past events that carry a picture or a clip, newest first (#267).
+
+    ``stamp`` identifies a capture in a media source identifier: the event list
+    has no id of its own, and ``eventDate`` is unique to the millisecond, so its
+    digits make a stable URL-safe key. Openings are dropped — they carry no media
+    and would show up in Media as entries that cannot be opened.
+    """
+    captures: list[dict[str, Any]] = []
+    for item in _newest_first(items):
+        media = _media(item)
+        if media is None:
+            continue
+        captures.append(
+            {
+                "stamp": "".join(c for c in _event_date(item) if c.isdigit()),
+                "event_type": item.get("eventType"),
+                "happened_at": _event_date(item) or None,
+                "media_type": media.get("type"),
+                "url": _url(media, "url"),
+                "still_url": _still_url(media),
+            }
+        )
+    return captures
 
 
 def parse_videophone_state(payload: dict[str, Any]) -> dict[str, Any]:

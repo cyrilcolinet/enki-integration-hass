@@ -420,3 +420,65 @@ sys.modules["homeassistant.components.homeassistant"].triggers = sys.modules[
     "homeassistant.components.homeassistant.triggers"
 ]
 sys.modules["homeassistant.components.homeassistant.triggers"].state = _state_trigger
+
+
+# --- media source (media_source.py): browse the doorbell's captures (#267) ---
+class _BrowseMediaSource:
+    """Keeps what the integration passed, so tests can read the tree back."""
+
+    def __init__(self, **kwargs) -> None:
+        self.__dict__.update(kwargs)
+
+
+class _MediaSource:
+    name: str | None = None
+
+    def __init__(self, domain: str) -> None:
+        self.domain = domain
+        if not self.name:
+            self.name = domain
+
+
+class _MediaSourceItem:
+    """Field order follows HA's dataclass, so tests pass `identifier=`."""
+
+    def __init__(self, hass=None, domain=None, identifier="", target_media_player=None) -> None:
+        self.hass = hass
+        self.domain = domain
+        self.identifier = identifier
+        self.target_media_player = target_media_player
+
+
+class _PlayMedia:
+    def __init__(self, url: str, mime_type: str) -> None:
+        self.url = url
+        self.mime_type = mime_type
+
+
+class _Unresolvable(_HomeAssistantError):
+    """Minimal Unresolvable stand-in — must stay raisable."""
+
+
+class _MediaClass:
+    DIRECTORY = "directory"
+    IMAGE = "image"
+    VIDEO = "video"
+
+
+_media_source = MagicMock()
+_media_source.BrowseMediaSource = _BrowseMediaSource
+_media_source.MediaSource = _MediaSource
+_media_source.MediaSourceItem = _MediaSourceItem
+_media_source.PlayMedia = _PlayMedia
+_media_source.Unresolvable = _Unresolvable
+sys.modules["homeassistant.components.media_source"] = _media_source
+
+
+class _BrowseError(_HomeAssistantError):
+    """Minimal BrowseError stand-in — must stay raisable."""
+
+
+_media_player = MagicMock()
+_media_player.BrowseError = _BrowseError
+_media_player.MediaClass = _MediaClass
+sys.modules["homeassistant.components.media_player"] = _media_player

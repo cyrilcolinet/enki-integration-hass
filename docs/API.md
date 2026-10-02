@@ -393,7 +393,9 @@ An event looks like this — the openings carry no media:
 `eventType` is `ACCEPTED_CALL`, `REJECTED_CALL`, `MISSED_CALL`, `CAPTURED_MEDIA`, `GATE_OPENED` or
 `STRIKE_OPENED`. `media.type` is `image`, or `video` when the doorbell is set to record a clip —
 a clip then carries a `thumbnail`, which is the only still to show. The media URLs are readable without authentication, so the camera entity fetches
-them directly. The referentiel advertises `check_videophone_media_events`, but the app calls
+them directly, and the media source hands them to the player as-is. One call returns the whole
+history, so browsing re-reads it on demand instead of the coordinator carrying it; `eventDate` is
+unique to the millisecond and is the only thing an entry can be identified by ([#267](https://github.com/cyrilcolinet/enki-integration-hass/issues/267)). The referentiel advertises `check_videophone_media_events`, but the app calls
 `check-videophone-events`: the capability name and the route do not match ([#233](https://github.com/cyrilcolinet/enki-integration-hass/issues/233)).
 
 Unlike the meari camera, the live view here is plain WebRTC over REST (`check-turn-info` plus the
