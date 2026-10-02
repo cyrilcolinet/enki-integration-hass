@@ -12,6 +12,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from enki.api.client import EnkiAPI
+from enki.api.transport import EnkiHttpClient
 from enki.domain.profile import build_discovery_record
 
 
@@ -30,7 +31,7 @@ def _record(device_type: str = "boiler"):
 
 def _api_with_one_home() -> EnkiAPI:
     api = EnkiAPI("user", "pass")
-    http = AsyncMock()
+    http = AsyncMock(spec_set=EnkiHttpClient)
     http.get_homes = AsyncMock(return_value=["home-1"])
     api._get_http = AsyncMock(return_value=http)  # noqa: SLF001
     return api

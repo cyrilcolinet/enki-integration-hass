@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from enki.api.client import EnkiAPI
+from enki.api.transport import EnkiHttpClient
 
 
 @pytest.mark.asyncio
@@ -19,7 +20,7 @@ async def test_dashboard_item_without_device_id_is_skipped() -> None:
 @pytest.mark.asyncio
 async def test_discover_home_isolates_a_failing_item() -> None:
     api = EnkiAPI("user", "pass")
-    http = MagicMock()
+    http = MagicMock(spec_set=EnkiHttpClient)
     http.get_dashboard = AsyncMock(
         return_value={"sections": [{"items": [{"bad": True}, {"good": True}]}]}
     )

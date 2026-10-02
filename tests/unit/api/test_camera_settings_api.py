@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from aioresponses import aioresponses
 from enki.api.client import EnkiAPI
+from enki.api.transport import EnkiHttpClient
 from enki.const import ENKI_BASE_URL, ENKI_OIDC_URL
 
 _MEARI = f"{ENKI_BASE_URL}/api-enki-lexman-camera-meari-prod/v1/camera"
@@ -74,7 +75,7 @@ async def test_a_setting_write_accepts_200_and_invalidates_the_cache() -> None:
 @pytest.mark.asyncio
 async def test_status_failure_keeps_the_last_known_settings() -> None:
     api = EnkiAPI("user@example.com", "secret")
-    http = MagicMock()
+    http = MagicMock(spec_set=EnkiHttpClient)
     from enki.exceptions import EnkiConnectionError
 
     http.get_camera_status = AsyncMock(side_effect=EnkiConnectionError("asleep", status=500))

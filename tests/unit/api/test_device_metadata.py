@@ -11,6 +11,7 @@ from enki.api.device_metadata import (
     merge_ota_version,
     refresh_device_metadata,
 )
+from enki.api.transport import EnkiHttpClient
 from enki.domain.models import EnkiDevice
 
 
@@ -82,7 +83,7 @@ def test_merge_connectivity() -> None:
 
 @pytest.mark.asyncio
 async def test_refresh_device_metadata_fan_calls_ota_and_esdk() -> None:
-    http = MagicMock()
+    http = MagicMock(spec_set=EnkiHttpClient)
     http.get_ota_version = AsyncMock(
         return_value={"currentVersion": "1.0.0", "latestVersion": "1.0.0"},
     )
@@ -101,7 +102,7 @@ async def test_refresh_device_metadata_fan_calls_ota_and_esdk() -> None:
 
 @pytest.mark.asyncio
 async def test_refresh_device_metadata_swallows_unexpected_errors() -> None:
-    http = MagicMock()
+    http = MagicMock(spec_set=EnkiHttpClient)
     http.get_ota_version = AsyncMock(side_effect=RuntimeError("boom"))
     http.get_ota_check = AsyncMock(return_value={"status": "FIRMWARE_ALREADY_UP_TO_DATE"})
     http.get_esdk_connectivity = AsyncMock(return_value={"connected": True})
@@ -116,7 +117,7 @@ async def test_refresh_device_metadata_swallows_unexpected_errors() -> None:
 
 @pytest.mark.asyncio
 async def test_refresh_device_metadata_skips_without_capabilities() -> None:
-    http = MagicMock()
+    http = MagicMock(spec_set=EnkiHttpClient)
     http.get_ota_version = AsyncMock()
     http.get_ota_check = AsyncMock()
     http.get_esdk_connectivity = AsyncMock()

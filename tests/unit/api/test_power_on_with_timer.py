@@ -6,12 +6,13 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from enki.api.client import EnkiAPI
+from enki.api.transport import EnkiHttpClient
 
 
 @pytest.mark.asyncio
 async def test_power_on_with_timer_posts_without_body() -> None:
     api = EnkiAPI("user@example.com", "secret")
-    http = MagicMock()
+    http = MagicMock(spec_set=EnkiHttpClient)
     http.power_on_with_timer = AsyncMock()
     api._get_http = AsyncMock(return_value=http)  # noqa: SLF001
 
