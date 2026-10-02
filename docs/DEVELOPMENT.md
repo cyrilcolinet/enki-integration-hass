@@ -52,7 +52,7 @@ Scripts in `scripts/` run **on your dev machine**, not inside the HA container. 
 | Script | Usage |
 |--------|--------|
 | `scripts/fetch_gateway_keys.py` | Verify login and read `mobile-config` `/settings` (not gateway keys) |
-| `scripts/extract_gateway_keys.py` | Extract gateway keys from an APK (jadx + DI module); `--apply` updates `gateway_keys_data.py` |
+| `scripts/extract_gateway_keys.py` | Extract gateway keys from an APK (jadx + DI module); `--apply` updates `gateway_keys_data.py`, `--write-evidence` records the proof CI enforces |
 | `scripts/extract_api_routes.py` | Regenerate the capability→route catalogue (`api/capability_routes_data.py`) from an APK |
 | `scripts/capability_coverage.py` | Report capabilities the app exposes but the integration doesn't handle yet |
 | `scripts/discover_devices.py` | Export anonymized device profiles from the account |
@@ -61,11 +61,28 @@ Scripts in `scripts/` run **on your dev machine**, not inside the HA container. 
 source .venv/bin/activate
 python3 scripts/fetch_gateway_keys.py
 python3 scripts/extract_gateway_keys.py path/to/enki.apk
-python3 scripts/extract_gateway_keys.py path/to/enki.apk --apply --update-known
+python3 scripts/extract_gateway_keys.py path/to/enki.apk --apply --update-known --write-evidence
 python3 scripts/discover_devices.py your@email.com 'password'
 ```
 
-Gateway keys are embedded in the APK (one per micro-service). Run `extract_gateway_keys.py --apply` after each Enki app update.
+Gateway keys are embedded in the APK (one per micro-service). Run `extract_gateway_keys.py --apply --write-evidence` after each Enki app update, and commit `scripts/gateway_key_evidence.json` with the keys.
+
+#### Why the keys are proved, not guessed
+
+Mapping keys by their position in the APK shipped a neighbouring service's key five times (#45, #256, #268, #270). The symptom is indistinguishable from the gateway closing an API product — `403 You cannot consume this service` — so three services were documented as dead for months while we simply held the wrong key.
+
+The app never leaves the link to chance, so the extractor follows it instead:
+
+```
+ui6.java   new fdr(new bp1((nn5) i75.h(this, ".../api-enki-consumption-prod/v1/", nn5.class)))
+fdr.java   bp1Var.O("63NAg…", …)                      the literal, handed to a holder
+bp1.java   Object O(String str, …) { nn5 nn5Var = (nn5) this.c; nn5Var.d(str, …) }
+nn5.java   @qva("consumption/{nodeId}/check-instant-consumption")
+```
+
+A key it cannot tie to the interface bound to that micro-service is **refused**, not written — `--check` fails and `--apply` skips it, naming the service. The resolved chain (interface, its routes, the key) lands in `scripts/gateway_key_evidence.json`; `scripts/validate_gateway_keys.py` runs in CI and fails when a wired key no longer matches it, which is the one check that catches a silent swap without an APK.
+
+Working from a dump you already have, without the APK on disk: `--from-jadx --jadx-dir .apk-work/<dir>`.
 
 ### Capturing a gateway key with mitmproxy (fallback)
 
@@ -155,7 +172,7 @@ Releases are driven by [release-please](https://github.com/googleapis/release-pl
 
 No extra repository secrets required — uses `GITHUB_TOKEN`.
 
-APK validation in CI release is **disabled for now**. Locally, after an Enki app update: `python3 scripts/extract_gateway_keys.py path/to/enki.apk --check` then `--apply --update-known` if needed.
+CI cannot decompile an APK, so it enforces `scripts/gateway_key_evidence.json` instead (`validate_gateway_keys.py`). Locally, after an Enki app update: `python3 scripts/extract_gateway_keys.py path/to/enki.apk --check`, then `--apply --update-known --write-evidence` if needed.
 
 ## Technical documentation
 

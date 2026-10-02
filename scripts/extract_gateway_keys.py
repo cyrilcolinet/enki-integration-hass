@@ -15,6 +15,7 @@ classes (fo9, j0g, une, n1m, …).
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import subprocess
 import sys
@@ -27,9 +28,17 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 KEYS_PY = REPO_ROOT / "custom_components" / "enki" / "gateway_keys_data.py"
 CONST_PY = KEYS_PY  # backward-compatible alias for tests/scripts
 DEFAULT_JADX_DIR = REPO_ROOT / ".apk-work" / "jadx"
+EVIDENCE_JSON = REPO_ROOT / "scripts" / "gateway_key_evidence.json"
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 from enki_bootstrap import bootstrap, load_module  # noqa: E402
+from gateway_call_sites import (  # noqa: E402
+    JadxSources,
+    declared_routes,
+    interfaces_by_key,
+    interfaces_by_slug,
+    keys_for_slug,
+)
 
 bootstrap("enki.api.gateway_registry")
 registry = load_module("enki.api.gateway_registry")
@@ -102,6 +111,22 @@ INCOMPLETE_MARKERS = (
     "UnsupportedOperationException",
     "decompiled incorrectly",
 )
+
+
+@dataclass(frozen=True, slots=True)
+class Resolved:
+    """A key read out of the APK, and how much that reading is worth.
+
+    `verified` means the key was followed from its literal to the retrofit
+    interface the DI module binds to this micro-service (#275). Anything else is
+    the old proximity heuristic, which is how a neighbour's key used to ship.
+    """
+
+    key: str | None
+    detail: str
+    verified: bool = False
+    interface: str = ""
+    routes: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -361,26 +386,68 @@ def find_di_sources(sources_dir: Path) -> list[Path]:
     return sorted(path for path in sources_dir.glob("*.java") if marker in path.read_bytes())
 
 
-def extract_all_keys(apk_path: Path, jadx_dir: Path) -> dict[str, tuple[str | None, str]]:
-    sources_dir = ensure_jadx(apk_path, jadx_dir)
-    di_files = find_di_sources(sources_dir)
-    bindings = parse_bindings(di_files)
+def resolve_by_call_site(sources_dir: Path) -> dict[str, Resolved]:
+    """Keys followed from their literal to the interface bound to the service (#275)."""
+    sources = JadxSources(sources_dir)
+    by_key = interfaces_by_key(sources, sources.names_holding_a_key())
+    bound = interfaces_by_slug(
+        path.read_text(encoding="utf-8", errors="replace") for path in find_di_sources(sources_dir)
+    )
 
-    resolved: dict[str, tuple[str | None, str]] = {}
-    for binding in bindings:
-        const_key = SERVICE_MAP.get(binding.slug)
+    resolved: dict[str, Resolved] = {}
+    for slug, interfaces in bound.items():
+        const_key = SERVICE_MAP.get(slug)
         if not const_key:
             continue
+        found = keys_for_slug(sources, by_key, interfaces)
+        if len(found) != 1:
+            # No call site, or several keys reach this service: say so rather than
+            # pick one. Picking one is the bug this function exists to kill.
+            detail = "ambiguous call sites" if found else "no call site"
+            resolved[const_key] = Resolved(None, f"{slug}: {detail}")
+            continue
+        key = next(iter(found))
+        # A slug can bind several interfaces (the Lexman camera binds two). The key
+        # signs each one it reaches, so naming the first is accurate, not a choice.
+        interface = next(
+            (name for name in sorted(interfaces) if key in keys_for_slug(sources, by_key, {name})),
+            "",
+        )
+        resolved[const_key] = Resolved(
+            key,
+            f"{slug} via call site -> {interface}",
+            verified=True,
+            interface=interface,
+            routes=tuple(sorted(declared_routes(sources.get(interface, "")))),
+        )
+    return resolved
+
+
+def extract_all_keys(apk_path: Path | None, jadx_dir: Path) -> dict[str, Resolved]:
+    sources_dir = (
+        ensure_jadx(apk_path, jadx_dir) if apk_path else jadx_dir / "sources" / "defpackage"
+    )
+    resolved = resolve_by_call_site(sources_dir)
+
+    # The proximity heuristic still fills in what no call site could prove, but it
+    # is never allowed to overwrite a verified key, and stays marked unverified.
+    for binding in parse_bindings(find_di_sources(sources_dir)):
+        const_key = SERVICE_MAP.get(binding.slug)
+        if not const_key or resolved.get(const_key, Resolved(None, "")).verified:
+            continue
+        if apk_path is None:
+            continue
         key, method = resolve_key(binding, apk_path, jadx_dir)
-        resolved[const_key] = (key, f"{binding.slug} via {method}")
+        if key:
+            resolved[const_key] = Resolved(key, f"{binding.slug} via {method} (unverified)")
 
     for svc in ENKI_MICRO_SERVICES:
-        resolved.setdefault(svc.const_key, (None, "not in DI module"))
+        resolved.setdefault(svc.const_key, Resolved(None, "not in DI module"))
     return resolved
 
 
 def apply_to_const(
-    extracted: dict[str, tuple[str | None, str]],
+    extracted: dict[str, Resolved],
     *,
     update_known: bool = False,
 ) -> list[str]:
@@ -395,8 +462,15 @@ def apply_to_const(
         symbol, current = match.group(1), match.group(2)
         if not symbol.endswith("_API_KEY"):
             continue
-        new_key, _ = extracted.get(symbol, (None, ""))
+        found = extracted.get(symbol, Resolved(None, ""))
+        new_key = found.key
         if not new_key:
+            continue
+        service = SERVICE_BY_CONST_KEY.get(symbol)
+        if service is not None and service.wired and not found.verified:
+            # Writing an unverified key into a wired service is exactly how #45,
+            # #256, #268 and #270 happened. Refuse and let the operator look.
+            changes.append(f"{symbol}: SKIPPED, unverified ({found.detail})")
             continue
         if current == new_key:
             continue
@@ -415,7 +489,7 @@ def apply_to_const(
 
 
 def check_against_repo(
-    extracted: dict[str, tuple[str | None, str]],
+    extracted: dict[str, Resolved],
     *,
     allow_unresolved: bool = False,
 ) -> list[str]:
@@ -424,7 +498,8 @@ def check_against_repo(
     errors: list[str] = []
 
     for svc in ENKI_MICRO_SERVICES:
-        apk_key, detail = extracted.get(svc.const_key, (None, "missing from APK extract"))
+        found = extracted.get(svc.const_key, Resolved(None, "missing from APK extract"))
+        apk_key, detail = found.key, found.detail
         repo_key = const_keys.get(svc.const_key, "")
 
         if svc.wired:
@@ -432,6 +507,8 @@ def check_against_repo(
                 errors.append(f"{svc.const_key} is empty in repo (wired: {svc.slug})")
             elif not apk_key and not allow_unresolved:
                 errors.append(f"{svc.const_key} unresolved in APK (wired: {svc.slug})")
+            elif apk_key and not found.verified and not allow_unresolved:
+                errors.append(f"{svc.const_key} not tied to a call site ({detail})")
             elif apk_key and repo_key != apk_key:
                 errors.append(
                     f"{svc.const_key} mismatch — repo={repo_key} apk={apk_key} ({detail})"
@@ -444,9 +521,56 @@ def check_against_repo(
     return errors
 
 
+def apk_version(jadx_dir: Path) -> str:
+    """versionName from the decompiled manifest, so the evidence says what it came from."""
+    for manifest in (jadx_dir / "resources").glob("*/AndroidManifest.xml"):
+        match = re.search(r'versionName="([^"]+)"', manifest.read_text(errors="replace"))
+        if match:
+            return match.group(1)
+    return "unknown"
+
+
+def write_evidence(extracted: dict[str, Resolved], jadx_dir: Path) -> int:
+    """Record what each wired key was proven against, for CI to enforce (#275).
+
+    CI has no APK, so it cannot follow a call site. It can hold the extractor to
+    what it found last time: a key that changes without this file changing with it
+    is the silent swap that cost four releases.
+    """
+    services = {}
+    for svc in ENKI_MICRO_SERVICES:
+        found = extracted.get(svc.const_key)
+        if not svc.wired or found is None or not found.verified or not found.key:
+            continue
+        services[svc.const_key] = {
+            "slug": svc.slug,
+            "interface": found.interface,
+            "routes": list(found.routes),
+            "key": found.key,
+        }
+    EVIDENCE_JSON.write_text(
+        json.dumps(
+            {
+                "apk_version": apk_version(jadx_dir),
+                "generated_by": "scripts/extract_gateway_keys.py --write-evidence",
+                "services": dict(sorted(services.items())),
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return len(services)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("apk", type=Path, help="Path to Enki APK file")
+    parser.add_argument(
+        "apk",
+        type=Path,
+        nargs="?",
+        help="Path to Enki APK file (omit with --from-jadx)",
+    )
     parser.add_argument(
         "--jadx-dir",
         type=Path,
@@ -464,6 +588,16 @@ def main() -> int:
         help="With --apply, also replace keys that differ from the APK",
     )
     parser.add_argument(
+        "--from-jadx",
+        action="store_true",
+        help="Work from an existing --jadx-dir dump instead of decompiling an APK",
+    )
+    parser.add_argument(
+        "--write-evidence",
+        action="store_true",
+        help=f"Record verified keys, interfaces and routes in {EVIDENCE_JSON.name}",
+    )
+    parser.add_argument(
         "--check",
         action="store_true",
         help="Exit 1 when APK keys differ from gateway_keys_data.py (no writes)",
@@ -475,28 +609,35 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    if not args.apk.is_file():
-        print(f"APK not found: {args.apk}", file=sys.stderr)
+    if args.from_jadx:
+        if not (args.jadx_dir / "sources" / "defpackage").is_dir():
+            print(f"No jadx dump under {args.jadx_dir}", file=sys.stderr)
+            return 1
+    elif args.apk is None or not args.apk.is_file():
+        print(f"APK not found: {args.apk} (or pass --from-jadx)", file=sys.stderr)
         return 1
 
     try:
-        extracted = extract_all_keys(args.apk, args.jadx_dir)
+        extracted = extract_all_keys(None if args.from_jadx else args.apk, args.jadx_dir)
     except RuntimeError as exc:
         print(exc, file=sys.stderr)
         return 1
 
     const_keys = read_const_keys()
-    resolved_count = sum(1 for key, _ in extracted.values() if key)
+    resolved_count = sum(1 for found in extracted.values() if found.key)
+    verified_count = sum(1 for found in extracted.values() if found.verified)
 
-    print(f"APK: {args.apk}")
+    print(f"APK: {args.apk or f'{args.jadx_dir} (existing dump)'}")
     print(f"Registry services: {len(ENKI_MICRO_SERVICES)}")
-    print(f"Resolved from APK: {resolved_count}/{len(ENKI_MICRO_SERVICES)}\n")
+    print(f"Resolved from APK: {resolved_count}/{len(ENKI_MICRO_SERVICES)}")
+    print(f"Tied to a call site: {verified_count}\n")
 
     print("=== Wired services ===")
     for svc in ENKI_MICRO_SERVICES:
         if not svc.wired:
             continue
-        key, detail = extracted[svc.const_key]
+        found = extracted[svc.const_key]
+        key = found.key
         current = const_keys.get(svc.const_key, "")
         if not key:
             status = "MISSING"
@@ -506,23 +647,28 @@ def main() -> int:
             status = "NEW"
         else:
             status = "CHANGED"
-        print(f"  [{status}] {svc.const_key}: {key or '(unresolved)'}")
+        proof = found.interface if found.verified else "UNVERIFIED"
+        print(f"  [{status}] {svc.const_key}: {key or '(unresolved)'}  [{proof}]")
         if key and current and current != key:
             print(f"         const.py has: {current}")
 
     print("\n=== Newly resolved (empty in const.py) ===")
     for symbol in sorted(extracted):
         current = const_keys.get(symbol, "")
-        key, detail = extracted[symbol]
-        if current or not key:
+        found = extracted[symbol]
+        if current or not found.key:
             continue
-        print(f'  {symbol} = "{key}"  # {detail}')
+        print(f'  {symbol} = "{found.key}"  # {found.detail}')
 
     print("\n=== All services ===")
     for svc in ENKI_MICRO_SERVICES:
-        key, detail = extracted[svc.const_key]
+        found = extracted[svc.const_key]
         wired = "wired" if svc.wired else "future"
-        print(f"  [{wired}] {svc.const_key}: {key or '(unresolved)'}")
+        print(f"  [{wired}] {svc.const_key}: {found.key or '(unresolved)'}")
+
+    if args.write_evidence:
+        count = write_evidence(extracted, args.jadx_dir)
+        print(f"\n=== Wrote evidence for {count} wired service(s) to {EVIDENCE_JSON.name} ===")
 
     if args.apply:
         changes = apply_to_const(extracted, update_known=args.update_known)

@@ -1,0 +1,360 @@
+{
+  "apk_version": "2.26.3",
+  "generated_by": "scripts/extract_gateway_keys.py --write-evidence",
+  "services": {
+    "ENKI_ACCESS_MOTORIZATION_API_KEY": {
+      "slug": "api-enki-rolling-prod",
+      "interface": "w3n",
+      "routes": [
+        "shutter/{nodeId}/change-roller-shutter-mode",
+        "shutter/{nodeId}/change-shutter-calibration-mode",
+        "shutter/{nodeId}/change-shutter-position",
+        "shutter/{nodeId}/check-roller-shutter-state",
+        "shutter/{nodeId}/check-shutter-opening",
+        "shutter/{nodeId}/check-shutter-position",
+        "shutter/{nodeId}/stop-change-shutter-position",
+        "shutter/{nodeId}/switch-roller-shutter"
+      ],
+      "key": "QegWuQR3zSKLlJZ2OITv94vjtSaaPkDp"
+    },
+    "ENKI_AIRFLOW_API_KEY": {
+      "slug": "api-enki-airflow-prod",
+      "interface": "rr",
+      "routes": [
+        "airflow/{nodeId}/change-airflow-mode",
+        "airflow/{nodeId}/change-fan-rotation-direction",
+        "airflow/{nodeId}/change-fan-speed",
+        "airflow/{nodeId}/check-airflow-mode",
+        "airflow/{nodeId}/check-fan-rotation-direction",
+        "airflow/{nodeId}/check-fan-speed"
+      ],
+      "key": "hder4GeBrdbzQlV2R22dm2a9pbfTTHPj"
+    },
+    "ENKI_BATTERY_HEALTH_API_KEY": {
+      "slug": "api-enki-battery-health-prod",
+      "interface": "n01",
+      "routes": [
+        "sensors/{nodeId}/check-battery-health"
+      ],
+      "key": "4o6CgR2B5fsq8eJw3VUk1GDs02Y6zKO3"
+    },
+    "ENKI_BFF_API_KEY": {
+      "slug": "api-enki-mobile-bff-prod",
+      "interface": "b21",
+      "routes": [
+        "dashboard/homes/{homeId}",
+        "groups/{groupId}/N2",
+        "partner/expired",
+        "remote/{nodeId}/endpoints",
+        "remote/{nodeId}/modes",
+        "remote/{nodeId}/scenario",
+        "scenario/dashboard",
+        "scenario/security",
+        "views/default"
+      ],
+      "key": "Bco7qBHRHOQiSVcEHdgS0rijpebMBwkB"
+    },
+    "ENKI_COMMAND_OVERRIDE_API_KEY": {
+      "slug": "api-enki-command-override-prod",
+      "interface": "agi",
+      "routes": [
+        "override-commands/{overrideId}"
+      ],
+      "key": "1E4MjXFFSuKKULDytsNnGC3bKX4RV3Wc"
+    },
+    "ENKI_CONSUMPTION_API_KEY": {
+      "slug": "api-enki-consumption-prod",
+      "interface": "nn5",
+      "routes": [
+        "consumption/nodes/{nodeId}",
+        "consumption/{nodeId}/check-instant-consumption",
+        "energy/{nodeId}/check-energy-mode",
+        "energy/{nodeId}/switch-energy-mode",
+        "energy/{nodeId}/switch-instant-power-report"
+      ],
+      "key": "63NAgKMjnVEkRwVpoRS78vQUBR0uNwkF"
+    },
+    "ENKI_CONTACT_SENSOR_API_KEY": {
+      "slug": "api-enki-contact-sensor-prod",
+      "interface": "bp5",
+      "routes": [
+        "sensors/{nodeId}/activate-contact-detection",
+        "sensors/{nodeId}/activate-vibration-detection",
+        "sensors/{nodeId}/change-vibration-sensibility-level",
+        "sensors/{nodeId}/check-contact-detection-activation",
+        "sensors/{nodeId}/check-contact-sensor-state",
+        "sensors/{nodeId}/check-vibration-detection",
+        "sensors/{nodeId}/check-vibration-detection-activation",
+        "sensors/{nodeId}/check-vibration-sensibility-level"
+      ],
+      "key": "YlTcpTzG8Fm2z52MN89laCGnCx6ldbWx"
+    },
+    "ENKI_ESDK_API_KEY": {
+      "slug": "api-enki-esdk-prod",
+      "interface": "rt9",
+      "routes": [
+        "nodes/{nodeId}",
+        "provisioning/esdk-v2",
+        "states/{nodeId}"
+      ],
+      "key": "j8bxMrSR7K5MuxIubAq5D6R5wqEF96CJ"
+    },
+    "ENKI_HEATING_API_KEY": {
+      "slug": "api-enki-heating-prod",
+      "interface": "sjd",
+      "routes": [
+        "modes/{modeId}",
+        "modes/{modeId}/start",
+        "modes/{modeId}/stop",
+        "schedules/{scheduleId}",
+        "schedules/{scheduleId}/disable",
+        "schedules/{scheduleId}/enable",
+        "schedules/{scheduleId}/timeslots",
+        "wizard/disable"
+      ],
+      "key": "ci2ml5gZ0AghnE9Pdc6fqGloz7GQnlRA"
+    },
+    "ENKI_HOME_API_KEY": {
+      "slug": "api-enki-home-prod",
+      "interface": "dud",
+      "routes": [
+        "homes/oldest-home",
+        "homes/{homeId}",
+        "homes/{homeId}/additional-info"
+      ],
+      "key": "FULsxyI3x1f7MtLVOsP6V1DeAPmBQJCB"
+    },
+    "ENKI_HOME_SECURITY_API_KEY": {
+      "slug": "api-enki-home-security-prod",
+      "interface": "mhm",
+      "routes": [
+        "modes/{modeId}/homes/{homeId}",
+        "security/{securityId}/homes/{homeId}/currentMode",
+        "security/{securityId}/homes/{homeId}/delay",
+        "security/{securityId}/homes/{homeId}/notifications"
+      ],
+      "key": "Ix4f2dYPTJ6ztKnrYmcFSe52HhSH6Xzu"
+    },
+    "ENKI_LEXMAN_CAMERA_API_KEY": {
+      "slug": "api-enki-lexman-camera-prod",
+      "interface": "wef",
+      "routes": [
+        "nodes/{nodeId}",
+        "nodes/{nodeId}/firmware/{currentFwVersion}"
+      ],
+      "key": "t0s9EFyVcggLp8FxImoaaxZWBCbQGztz"
+    },
+    "ENKI_LEXMAN_CAMERA_MEARI_API_KEY": {
+      "slug": "api-enki-lexman-camera-meari-prod",
+      "interface": "udf",
+      "routes": [
+        "camera/{nodeId}/change-detection-zone",
+        "camera/{nodeId}/change-flip-screen-mode",
+        "camera/{nodeId}/change-humanoid-detection-sensitivity-level",
+        "camera/{nodeId}/change-indicator-light-mode",
+        "camera/{nodeId}/change-light-mode",
+        "camera/{nodeId}/change-motion-detection-mode",
+        "camera/{nodeId}/change-motion-detection-sensitivity-level",
+        "camera/{nodeId}/change-night-vision-mode",
+        "camera/{nodeId}/change-recording-duration",
+        "camera/{nodeId}/check-camera-connect-wss",
+        "camera/{nodeId}/check-camera-events",
+        "camera/{nodeId}/check-camera-status",
+        "camera/{nodeId}/check-detection-zone",
+        "camera/{nodeId}/check-firmware-update-status",
+        "camera/{nodeId}/delete-camera-events",
+        "camera/{nodeId}/format-sd-card",
+        "camera/{nodeId}/update-firmware-version",
+        "camera/{nodeId}/wake-up",
+        "nodes/{nodeId}",
+        "{nodeId}/finish-provisioning",
+        "{nodeId}/finish-reonboarding",
+        "{nodeId}/start-reonboarding"
+      ],
+      "key": "1B61R4biYqnq60c5UFWQA5fxnDwLFEG6"
+    },
+    "ENKI_LEXMAN_ENVERTECH_API_KEY": {
+      "slug": "api-enki-lexman-envertech-prod",
+      "interface": "rgf",
+      "routes": [
+        "nodes/{nodeId}"
+      ],
+      "key": "HMGJVJ3f1K4pfr5h95ycgOixz6MKtPXF"
+    },
+    "ENKI_LIGHTS_API_KEY": {
+      "slug": "api-enki-lighting-prod",
+      "interface": "xlf",
+      "routes": [
+        "lighting/{nodeId}/change-ballast-configuration",
+        "lighting/{nodeId}/change-dimming-mode",
+        "lighting/{nodeId}/change-light-state",
+        "lighting/{nodeId}/check-ballast-configuration",
+        "lighting/{nodeId}/check-dimming-mode",
+        "lighting/{nodeId}/check-light-state"
+      ],
+      "key": "3OVsNulRsUXfr7Hze54OHx8l6qDu2UcE"
+    },
+    "ENKI_LUMINOSITY_SENSOR_API_KEY": {
+      "slug": "api-enki-luminosity-sensor-prod",
+      "interface": "uk1",
+      "routes": [
+        "sensors/{nodeId}/check-brightness-level",
+        "sensors/{nodeId}/check-illuminance-level"
+      ],
+      "key": "IofVn8vtD1xGGLPvbW9hn1oHfbcWW5Ks"
+    },
+    "ENKI_NODE_API_KEY": {
+      "slug": "api-enki-node-agg-prod",
+      "interface": "xqh",
+      "routes": [
+        "nodes/{nodeId}"
+      ],
+      "key": "UBb0Kv6xXpG6bOvD8VZ9A63uxqQ4G1A3"
+    },
+    "ENKI_OTA_API_KEY": {
+      "slug": "api-enki-ota-prod",
+      "interface": "e9i",
+      "routes": [
+        "ota/check/{nodeId}",
+        "ota/start/{nodeId}",
+        "ota/status/{nodeId}",
+        "ota/version/{nodeId}"
+      ],
+      "key": "dzmdakDcgRt1XPT0boMhdT5z9r2ZS2HM"
+    },
+    "ENKI_POWER_API_KEY": {
+      "slug": "api-enki-power-prod",
+      "interface": "zjj",
+      "routes": [
+        "power/{nodeId}/change-power-intensity",
+        "power/{nodeId}/check-channel1-electrical-power",
+        "power/{nodeId}/check-channel2-electrical-power",
+        "power/{nodeId}/check-dimmer-mode",
+        "power/{nodeId}/check-electrical-power",
+        "power/{nodeId}/check-electrical-power-restart-behaviour",
+        "power/{nodeId}/check-power-intensity",
+        "power/{nodeId}/power-on-with-timer",
+        "power/{nodeId}/switch-channel1-electrical-power",
+        "power/{nodeId}/switch-channel2-electrical-power",
+        "power/{nodeId}/switch-dimmer-mode",
+        "power/{nodeId}/switch-electrical-power",
+        "power/{nodeId}/switch-electrical-power-restart-behaviour"
+      ],
+      "key": "DZ9MSuTT7sQxJWxxkBokAGvIt57qVl9N"
+    },
+    "ENKI_PRESENCE_DETECTOR_API_KEY": {
+      "slug": "api-enki-presence-detector-prod",
+      "interface": "tnj",
+      "routes": [
+        "sensors/{nodeId}/change-occupancy-mode",
+        "sensors/{nodeId}/check-motion-detection",
+        "sensors/{nodeId}/check-occupancy",
+        "sensors/{nodeId}/check-occupancy-mode",
+        "sensors/{nodeId}/check-presence-detection"
+      ],
+      "key": "b5A3sQcYHpRta3SqGXwH9T9GNaNHpj96"
+    },
+    "ENKI_REFERENTIEL_API_KEY": {
+      "slug": "api-enki-referentiel-agg-prod",
+      "interface": "njk",
+      "routes": [
+        "devices/{deviceId}"
+      ],
+      "key": "3uk9rlaIUgBsz1tEPV7GQMhhGfRwPFJY"
+    },
+    "ENKI_SCENARIO_API_KEY": {
+      "slug": "api-enki-scenario-prod",
+      "interface": "xvl",
+      "routes": [
+        "scenarios/referentials/device/{deviceId}",
+        "scenarios/{scenarioId}",
+        "scenarios/{scenarioId}/activate",
+        "scenarios/{scenarioId}/enable",
+        "scenarios/{scenarioId}/stop"
+      ],
+      "key": "PCnbndkIqlfXwXGhFkqSWWMn4HcWza9J"
+    },
+    "ENKI_SIREN_API_KEY": {
+      "slug": "api-enki-siren-prod",
+      "interface": "f9n",
+      "routes": [
+        "alerts/{nodeId}/check-alert",
+        "groups/{nodeId}/change-group-security",
+        "groups/{nodeId}/check-group-security",
+        "security/{nodeId}/change-security",
+        "security/{nodeId}/check-security",
+        "siren/{nodeId}/change-siren-status",
+        "siren/{nodeId}/check-siren-global-state",
+        "siren/{nodeId}/check-siren-state",
+        "siren/{nodeId}/switch-siren-status"
+      ],
+      "key": "DKHq99GEVf2F3r32QGXefPX0B5cuJ9PV"
+    },
+    "ENKI_TEMPERATURE_HUMIDITY_API_KEY": {
+      "slug": "api-enki-temperature-humidity-sensor-prod",
+      "interface": "ono",
+      "routes": [
+        "sensors/bff/nodes/{nodeId}/specific-granularity",
+        "sensors/{nodeId}/check-current-humidity",
+        "sensors/{nodeId}/check-current-temperature"
+      ],
+      "key": "5Oqfse9MTtAWdfxwhlSPrOVO4gwqfgku"
+    },
+    "ENKI_THERMOSTAT_API_KEY": {
+      "slug": "api-enki-thermostat-prod",
+      "interface": "uvo",
+      "routes": [
+        "heating/{nodeId}/change-boiler-trigger-permissions",
+        "heating/{nodeId}/change-child-lock",
+        "heating/{nodeId}/change-max-cycles",
+        "heating/{nodeId}/change-min-operating-time",
+        "heating/{nodeId}/change-offset-temperature",
+        "heating/{nodeId}/change-preheating-status",
+        "heating/{nodeId}/change-thermostat-hysteresis",
+        "heating/{nodeId}/change-window-open-detection-mode",
+        "heating/{nodeId}/check-boiler-trigger-permissions",
+        "heating/{nodeId}/check-child-lock",
+        "heating/{nodeId}/check-external-load-shedding",
+        "heating/{nodeId}/check-leader-mode",
+        "heating/{nodeId}/check-max-cycles",
+        "heating/{nodeId}/check-min-operating-time",
+        "heating/{nodeId}/check-offset-temperature",
+        "heating/{nodeId}/check-pilot-wire-state",
+        "heating/{nodeId}/check-preheating",
+        "heating/{nodeId}/check-preheating-status",
+        "heating/{nodeId}/check-thermostat-hysteresis",
+        "heating/{nodeId}/check-thermostat-running-state",
+        "heating/{nodeId}/check-thermostat-target-temperature",
+        "heating/{nodeId}/check-window-open-detection",
+        "heating/{nodeId}/check-window-open-detection-mode",
+        "heating/{nodeId}/switch-pilot-wire-mode"
+      ],
+      "key": "2t3Qtt6jSI98PQc89kIlvDo7maleKL8l"
+    },
+    "ENKI_VIDEOPHONE_API_KEY": {
+      "slug": "api-enki-videophone-prod",
+      "interface": "phf",
+      "routes": [
+        "nodes/{nodeId}",
+        "videophone/{nodeId}/change-portal-state",
+        "videophone/{nodeId}/change-sdp-candidates-info",
+        "videophone/{nodeId}/change-videophone-call",
+        "videophone/{nodeId}/change-videophone-config",
+        "videophone/{nodeId}/check-sdp-candidates-info",
+        "videophone/{nodeId}/check-turn-info",
+        "videophone/{nodeId}/check-videophone-events",
+        "videophone/{nodeId}/check-videophone-state",
+        "videophone/{nodeId}/record"
+      ],
+      "key": "ffm1enzaqMPG9rVCz2J0kX0sIqAGMB6m"
+    },
+    "ENKI_WATER_SENSOR_API_KEY": {
+      "slug": "api-enki-water-leak-detector-prod",
+      "interface": "gsq",
+      "routes": [
+        "detectors/{nodeId}/check-water-sensor-state"
+      ],
+      "key": "TZckkGN2S5wHuImS8BSdJ9dfuTfDxgHi"
+    }
+  }
+}
