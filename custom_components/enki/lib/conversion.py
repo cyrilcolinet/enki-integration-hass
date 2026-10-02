@@ -167,5 +167,9 @@ def merge_light_state_payload(
 
 
 def is_command_success_status(status: int) -> bool:
-    """Enki command endpoints return 202 Accepted or 204 No Content."""
-    return status in {202, 204}
+    """Enki command endpoints answer 202, 204, or 201 when they create something.
+
+    A water-heater setpoint creates a derogation and answers 201 with it (#269);
+    200 stays out, it is what a plain read answers.
+    """
+    return status in {201, 202, 204}
