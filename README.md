@@ -58,7 +58,6 @@ Home Assistant also gets ready-made automations — notify on camera motion, ale
 
 - An **Enki account** — the one you use in the app
 - Your devices **already installed in the Enki app**: this integration reads your Enki home, it does not replace pairing
-- A few Enki services have been closed by Leroy Merlin's cloud for everyone, so instant consumption and a few other readings stay empty ([details](docs/API.md#authentication))
 
 Devices paired on the hub that are not Enki brands — Sonoff, Tuya, Aqara and the like — are not imported. [Zigbee2MQTT](https://www.zigbee2mqtt.io/) or ZHA handle those.
 

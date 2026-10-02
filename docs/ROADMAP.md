@@ -13,13 +13,13 @@ Short version: [README](../README.md) · detailed view below.
 |--------|----------|-------------------|
 | ✅ Supported | Inspire fans (Siroco+, Cadix, Radix, …) | `fan`, LED kit `light`, speed, direction, modes (per referentiel); Cadix exposes main + ambient ring as separate lights with optimistic fan/light coupling (**v1.11**) |
 | ✅ Supported | Enki lights (Eglo, Lexman, EssentielB, …) | ON/OFF, brightness, tunable white, RGB (HS) if `change_hue` + `change_saturation` |
-| ✅ Supported | Outlets / switches (Edisio, Equation, …) | `switch` ON/OFF via `switch-electrical-power`; instant consumption refused by the Enki cloud since August 2026 |
+| ✅ Supported | Outlets / switches (Edisio, Equation, …) | `switch` ON/OFF via `switch-electrical-power` plus instant consumption (W) |
 | ✅ Supported | DIO outlets (433 MHz RF) | `switch` with assumed state — one-way RF, nothing reports back ([#203](https://github.com/cyrilcolinet/enki-integration-hass/issues/203)) |
 | ✅ Supported | Evology 2-channel in-wall module | one `switch` per channel (`check_channel1/2_electrical_power`) |
 | ✅ Supported | Water-heater on/off relay (Lexman/Nodon 83424574) | `switch` re-typed as boiler ([#87](https://github.com/cyrilcolinet/enki-integration-hass/issues/87)) |
 | ✅ Supported | Envertech-Lexman solar panels | production (W) via BFF dashboard |
 | ✅ Supported | Motion / contact / vibration sensors (Lexman, …) | `binary_sensor` (+ activation `switch`, vibration sensitivity `number`) |
-| ✅ Supported | Evology multisensor | motion/presence `binary_sensor`, brightness `sensor` (`check_brightness_level` — refused by the Enki cloud since September 2026) |
+| ✅ Supported | Evology multisensor | motion/presence `binary_sensor`, brightness `sensor` (`check_brightness_level`) |
 | ✅ Supported | Enki thermometers (Sedea, …) | temperature, humidity, battery `sensor` |
 | ✅ Supported | Lexman sirens | `switch` ON/OFF |
 | ✅ Supported | Equation pilot wire | `select` (comfort / eco / frost / off); stable since **v1.6.8** (`thermostat-prod`) |

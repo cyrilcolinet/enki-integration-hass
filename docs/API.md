@@ -19,9 +19,9 @@ Every microservice call sends:
 
 Gateway keys are bundled in `custom_components/enki/gateway_keys_data.py` (re-exported by `const.py`). They are **embedded in the Enki mobile APK** (one key per micro-service), not fetched from a central API. Refresh them after an app update with `scripts/extract_gateway_keys.py` (see [DEVELOPMENT.md](DEVELOPMENT.md)). A `401` means the credentials no longer work: Home Assistant opens its **reauthentication** flow. A `403` on the device poll usually means an outdated gateway key, and raises a **repair issue** with guidance.
 
-A `403 {"message":"You cannot consume this service"}` is different: the gateway is refusing the key for a whole micro-service, for every account, and no key refresh fixes it — Adeo has to re-open the API product. The transport records the first one (so it still reaches diagnostics and read-error telemetry), then stops reading that service until Home Assistant restarts, instead of retrying on every polling cycle. `api-enki-consumption-prod` and `api-enki-ota-prod` have been in that state since August 2026 — the keys we ship are byte-for-byte the ones the current app uses.
+A `403 {"message":"You cannot consume this service"}` is different: the gateway is refusing the key for a whole micro-service rather than the account. The transport records the first one (so it still reaches diagnostics and read-error telemetry), then stops reading that service until Home Assistant restarts, instead of retrying on every polling cycle.
 
-A 403 on a single service is worth checking against the app before blaming the gateway: `api-enki-luminosity-sensor-prod` looked closed for weeks, and it was our own key — the extractor had picked a neighbouring one, while the app sends its own for both illuminance routes ([#256](https://github.com/cyrilcolinet/enki-integration-hass/issues/256)).
+**Always check the key against the app before blaming the gateway.** Every such 403 traced so far turned out to be our own key: the extractor had picked a neighbouring micro-service's key for `api-enki-luminosity-sensor-prod` ([#256](https://github.com/cyrilcolinet/enki-integration-hass/issues/256)), `api-enki-consumption-prod` ([#270](https://github.com/cyrilcolinet/enki-integration-hass/issues/270)), `api-enki-ota-prod` ([#268](https://github.com/cyrilcolinet/enki-integration-hass/issues/268)) and `api-enki-esdk-prod`. Grep the APK for the key the app passes to that service's retrofit interface — no service has been proven closed on Adeo's side.
 
 ## Discovery flow
 
@@ -225,7 +225,7 @@ Base: `https://enki.api.devportal.adeo.cloud/api-enki-consumption-prod/v1/consum
 |--------|------|-------|
 | GET | `/{nodeId}/check-instant-consumption?homeId={homeId}` | `lastReportedValue` (W), `unit` |
 
-Used for Edisio / Equation devices with `check_electrical_consumption` in referentiel. Gateway key: `ENKI_CONSUMPTION_API_KEY`. **Refused to every account since August 2026** (`403 You cannot consume this service`) — see [Authentication](#authentication).
+Used for Edisio / Equation devices with `check_electrical_consumption` in referentiel. Gateway key: `ENKI_CONSUMPTION_API_KEY` — the shipped key was a neighbouring service's until [#270](https://github.com/cyrilcolinet/enki-integration-hass/issues/270).
 
 ## Lexman cameras (api-enki-lexman-camera-meari-prod)
 

@@ -22,6 +22,17 @@ def test_luminosity_key_is_the_one_the_app_sends() -> None:
     assert keys_module.ENKI_LUMINOSITY_SENSOR_API_KEY != keys_module.ENKI_CONSENT_API_KEY
 
 
+def test_consumption_ota_and_esdk_keys_are_the_ones_the_app_sends() -> None:
+    """Regression: neighbouring keys, read for months as services closed by Adeo (#268, #270)."""
+    import enki.gateway_keys_data as keys_module
+
+    assert transport_key("consumption") == "63NAgKMjnVEkRwVpoRS78vQUBR0uNwkF"
+    assert transport_key("ota") == "dzmdakDcgRt1XPT0boMhdT5z9r2ZS2HM"
+    assert transport_key("esdk") == "j8bxMrSR7K5MuxIubAq5D6R5wqEF96CJ"
+    # The old OTA key is the shutter service's own.
+    assert keys_module.ENKI_OTA_API_KEY != keys_module.ENKI_ACCESS_MOTORIZATION_API_KEY
+
+
 def test_unknown_transport_has_no_key() -> None:
     assert transport_key("no-such-service") is None
 
