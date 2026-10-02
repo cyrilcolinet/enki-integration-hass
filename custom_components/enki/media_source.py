@@ -25,6 +25,7 @@ from homeassistant.components.media_source import (
 
 from .const import DOMAIN
 from .domain.videophone import parse_videophone_captures
+from .exceptions import EnkiConnectionError
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -107,9 +108,12 @@ class EnkiMediaSource(MediaSource):
 
     async def _async_captures(self, entry_id: str, node_id: str) -> list[dict[str, Any]]:
         entry, device = self._device(entry_id, node_id)
-        payload = await entry.runtime_data.api.get_videophone_events(device.home_id, node_id)
-        items = payload.get("items") if isinstance(payload, dict) else None
-        return parse_videophone_captures(items if isinstance(items, list) else [])
+        try:
+            items = await entry.runtime_data.api.async_videophone_events(device.home_id, node_id)
+        except EnkiConnectionError as err:
+            # Without this the frontend shows a bare "Unknown error".
+            raise BrowseError(f"Cannot reach the doorbell: {err}") from err
+        return parse_videophone_captures(items)
 
     def _browse_root(self) -> BrowseMediaSource:
         return BrowseMediaSource(

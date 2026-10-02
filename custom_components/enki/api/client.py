@@ -216,6 +216,17 @@ class EnkiAPI:
     def scenarios(self) -> tuple[EnkiScenario, ...]:
         return self._scenarios
 
+    async def async_videophone_events(self, home_id: str, node_id: str) -> list[dict[str, Any]]:
+        """The doorbell's event list, newest first, for the media source (#267).
+
+        The poll reduces this to the latest call; browsing Media needs all of it,
+        so the read lives here rather than on the coordinator's cached state.
+        """
+        http = await self._get_http()
+        payload = await http.get_videophone_events(home_id, node_id)
+        items = payload.get("items") if isinstance(payload, dict) else None
+        return items if isinstance(items, list) else []
+
     async def async_refresh_scenarios(self) -> None:
         """Load scenario list for every home on the account (best-effort, atomic)."""
         http = await self._get_http()
