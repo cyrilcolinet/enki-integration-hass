@@ -49,8 +49,8 @@ Fan and light kit are **independent**: turning one on does not turn the other on
 
 | Model / type | Status |
 |---------------|--------|
-| Edisio outlets | ✅ ON/OFF; instant consumption (W) refused by the Enki cloud since August 2026 |
-| Equation ON/OFF relay | ✅ ON/OFF stable v1.6.8+ (instant consumption refused by the Enki cloud) |
+| Edisio outlets | ✅ ON/OFF, instant consumption (W) |
+| Equation ON/OFF relay | ✅ ON/OFF stable v1.6.8+, instant consumption (W) |
 | Evology 2-channel in-wall module | ✅ one `switch` per channel (`check_channel1_electrical_power`, `check_channel2_electrical_power`) |
 | DIO outlets (433 MHz RF) | ✅ ON/OFF, ⚠️ **assumed state** — the RF is one-way, so nothing reports back and Home Assistant shows on/off buttons instead of a toggle |
 
@@ -204,8 +204,6 @@ Extra referentiel controls, exposed when the thermostat advertises them. Routes 
 
 **API routing:** `api-enki-thermostat-prod` for setpoint / pilot wire / window detection / config knobs; `api-enki-presence-detector-prod` for occupancy. Keys in `gateway_keys_data.py` — update: [DEVELOPMENT.md](DEVELOPMENT.md) · API detail: [API.md](API.md#heating-and-water-sensors-manifest--150).
 
-**Note:** `consumption-prod` refuses every account since August 2026, so consumption sensors stay unknown — controls still work.
-
 ## Roller shutters (Evology, Nodon, Lexman RTS, …)
 
 **HA entity:** `cover` “Shutter”
@@ -261,7 +259,7 @@ Since **1.6.11**, metadata from the Enki app device screen is exposed when the r
 | Update available | `ota/check/{nodeId}` when `ota_inventory` | `binary_sensor` (update) |
 | ESDK fan online | `esdk/states/{nodeId}` for ceiling fans | `binary_sensor` (connectivity) |
 
-Reads are best-effort (404 skipped) and driven by referentiel capabilities, not hard-coded per model. The `ota` and `esdk` services are refused by the Enki cloud to every account since August 2026, so these three stay unknown.
+Reads are best-effort (404 skipped) and driven by referentiel capabilities, not hard-coded per model.
 
 ## In progress / not supported
 

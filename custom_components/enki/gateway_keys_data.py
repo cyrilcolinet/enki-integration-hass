@@ -6,8 +6,9 @@ Do not edit manually — refresh with:
 Source APK: Enki 2.25.1 (most keys). POWER and AIRFLOW verified against live
 api-enki-power-prod / api-enki-airflow-prod traffic (APK 2.25.1 extractor
 misassigned those two slugs — see #45). THERMOSTAT from zlo.java repository.
-LUMINOSITY_SENSOR likewise: the extractor picked a neighbouring key, while the
-app sends its own for both illuminance routes — see #256.
+LUMINOSITY_SENSOR, CONSUMPTION, OTA and ESDK likewise: the extractor had picked
+neighbouring keys, and the 403s they caused were read as services closed by Adeo
+— see #256, #268 and #270. Each was traced to the call site in the app.
 """
 
 # Wired micro-services (used by the integration today).
@@ -35,7 +36,7 @@ ENKI_BOILER_SYSTEM_API_KEY = ""
 ENKI_COACH_ENERGY_API_KEY = ""
 ENKI_COMMAND_OVERRIDE_API_KEY = "1E4MjXFFSuKKULDytsNnGC3bKX4RV3Wc"
 ENKI_CONSENT_API_KEY = "fFgGBdPnmCPgu5ouGylYtu7iLLtm5Q6x"
-ENKI_CONSUMPTION_API_KEY = "BE0IG8yArB30vKf2sRK3b7B4CCzPKKp2"
+ENKI_CONSUMPTION_API_KEY = "63NAgKMjnVEkRwVpoRS78vQUBR0uNwkF"
 ENKI_COUNTRY_API_KEY = "XEcosERU3GeCfXCwKOLMKFI80DMnG861"
 ENKI_DIAGRAL_API_KEY = "BE0IG8yArB30vKf2sRK3b7B4CCzPKKp2"
 ENKI_DIO_API_KEY = "YlTcpTzG8Fm2z52MN89laCGnCx6ldbWx"
@@ -45,7 +46,7 @@ ENKI_ENERGY_SUBSCRIPTION_API_KEY = ""
 ENKI_ENOCEAN_API_KEY = "ZMPwufU2eBifcyAHaEAfEL2FvUkdGSZi"
 ENKI_EQUATION_AIRCO_API_KEY = ""
 ENKI_EQUATION_WATER_HEATER_API_KEY = "ci2ml5gZ0AghnE9Pdc6fqGloz7GQnlRA"
-ENKI_ESDK_API_KEY = "RSXHvuEl2Dz9hgbJ2BeuPqO9OcIv4f27"
+ENKI_ESDK_API_KEY = "j8bxMrSR7K5MuxIubAq5D6R5wqEF96CJ"
 ENKI_GROUP_API_KEY = "ci2ml5gZ0AghnE9Pdc6fqGloz7GQnlRA"
 ENKI_GW_CONNECT_API_KEY = "1B61R4biYqnq60c5UFWQA5fxnDwLFEg6"
 ENKI_GW_ESSENTIELB_API_KEY = ""
@@ -64,7 +65,7 @@ ENKI_MOBILE_CONFIG_API_KEY = "TDp5cEkZOlakm1Z3sG1WfMkxHYl7Gu1Y"
 ENKI_MOBILE_HEATING_BFF_API_KEY = ""
 ENKI_MOBILE_PAIRING_WORKFLOW_API_KEY = "QegWuQR3zSKLlJZ2OITv94vjtSaaPkDp"
 ENKI_NETATMO_API_KEY = "0waXGEuJoXr0KTOKc1yDMEDuXODnFc9r"
-ENKI_OTA_API_KEY = "QegWuQR3zSKLlJZ2OITv94vjtSaaPkDp"
+ENKI_OTA_API_KEY = "dzmdakDcgRt1XPT0boMhdT5z9r2ZS2HM"
 ENKI_PAYMENT_API_KEY = ""
 ENKI_PHILIPS_API_KEY = "rJT7W4mANrf7bh5pFiVk963i8dFVEUBy"
 ENKI_PRODUCT_HIGHLIGHT_API_KEY = "QegWuQR3zSKLlJZ2OITv94vjtSaaPkDp"
