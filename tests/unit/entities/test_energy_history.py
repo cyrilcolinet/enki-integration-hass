@@ -111,3 +111,21 @@ def test_the_sensor_is_unknown_when_nothing_was_measured() -> None:
     sensor = _sensor(_heater())
 
     assert sensor.native_value is None
+
+
+def test_the_instant_sensor_surfaces_when_the_device_last_reported() -> None:
+    """Enki relays the last value the device sent, which can sit minutes behind (#279)."""
+    from enki.sensor import EnkiElectricalConsumptionSensor
+
+    device = _heater(
+        electrical_consumption=0.0,
+        electrical_consumption_unit="W",
+        electrical_consumption_at="2026-10-02T10:32:13.114Z",
+    )
+    coordinator = MagicMock()
+    coordinator.last_update_success = True
+    coordinator.get_device_by_node = lambda node_id: device
+    sensor = EnkiElectricalConsumptionSensor(coordinator, device)
+
+    assert sensor.native_value == 0.0
+    assert sensor.extra_state_attributes["last_reported_at"] == "2026-10-02T10:32:13.114Z"

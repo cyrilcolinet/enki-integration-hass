@@ -109,6 +109,7 @@ class EnkiDeviceState:
         return _as_float(self._data.get("electrical_consumption"))
 
     electrical_consumption_unit = _str_field("electrical_consumption_unit")
+    electrical_consumption_at = _str_field("electrical_consumption_at")
 
     @property
     def energy_period_total(self) -> float | None:
