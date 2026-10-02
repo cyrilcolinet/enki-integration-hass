@@ -233,6 +233,13 @@ Base: `https://enki.api.devportal.adeo.cloud/api-enki-consumption-prod/v1/consum
 | GET | `/{nodeId}/check-instant-consumption?homeId={homeId}` | `lastReportedValue` (W), `unit`, `lastReportedDate` |
 | GET | `/nodes/{nodeId}?startDate=&timePeriod=` | Energy over one period, in buckets (`homeId` **header**) |
 
+The instant reading is whatever the device last volunteered: the service relays it with its
+`lastReportedDate`, which the integration exposes as a `last_reported_at` attribute, and it can sit minutes
+behind. The app sends `POST energy/{nodeId}/switch-instant-power-report` before reading — but that route takes a
+body, `{"value": <int>}` (`InstantPowerReportRequestApiModel`), and in this service `switch-…` writes a setting:
+its sibling `switch-energy-mode` pairs with `check-energy-mode`. So it is a configuration write, not a refresh
+poke, and the integration does not call it ([#279](https://github.com/cyrilcolinet/enki-integration-hass/issues/279)).
+
 Used for Edisio / Equation devices with `check_electrical_consumption` in referentiel. Gateway key: `ENKI_CONSUMPTION_API_KEY` — the shipped key was a neighbouring service's until [#270](https://github.com/cyrilcolinet/enki-integration-hass/issues/270).
 
 ### Energy history

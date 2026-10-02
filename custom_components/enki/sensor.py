@@ -306,6 +306,16 @@ class EnkiElectricalConsumptionSensor(EnkiEntity, SensorEntity):
     def native_value(self) -> float | None:
         return self._device.reported.electrical_consumption
 
+    @property
+    def extra_state_attributes(self) -> dict[str, str | None]:
+        """When the device last volunteered this reading (#279).
+
+        Enki relays the last value the device sent rather than asking for a fresh
+        one, so a plug that reports rarely can sit minutes behind. Surfacing the
+        timestamp is what makes that visible instead of silent.
+        """
+        return {"last_reported_at": self._device.reported.electrical_consumption_at}
+
 
 class EnkiEnergySensor(EnkiEntity, SensorEntity):
     """Energy consumed so far this month (api-enki-consumption-prod, #270).

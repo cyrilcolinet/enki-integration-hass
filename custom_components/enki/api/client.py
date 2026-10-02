@@ -541,6 +541,11 @@ class EnkiAPI:
                     unit = consumption.get("unit")
                     if isinstance(unit, str):
                         state["electrical_consumption_unit"] = unit
+                    # The device volunteers this reading; the service only relays
+                    # the last one it got, which can be far behind (#279).
+                    reported_at = consumption.get("lastReportedDate")
+                    if isinstance(reported_at, str):
+                        state["electrical_consumption_at"] = reported_at
             except EnkiConnectionError as err:
                 LOGGER.debug("Electrical consumption skipped for node %s: %s", node_id, err)
                 self._note_read_error(
