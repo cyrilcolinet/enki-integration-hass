@@ -164,6 +164,7 @@ Reads, writes and the live view are confirmed on a real camera ([#216](https://g
 ## Video doorbell (Lexman visiophone) — beta
 
 **HA entities:** `event` (doorbell), `camera` (last call snapshot), `binary_sensor` (connection, diagnostic)
+**Media:** past calls and captures, under **Media › Enki › \<your doorbell\>**
 
 The doorbell has its own service, `api-enki-videophone-prod`, and its own event list:
 
@@ -176,6 +177,8 @@ The doorbell has its own service, `api-enki-videophone-prod`, and its own event 
 The doorbell's own settings decide whether a capture is a picture or a short clip. A clip comes with a thumbnail, which is what the `camera` shows; the clip's own URL stays available as an event attribute.
 
 The `event` entity fires when a newer entry appears, with the snapshot URL as an attribute — good for a notification with the caller's picture, or any automation. **It is not instant:** there is no push channel, so a ring shows up within a polling cycle, and the Enki app itself rings after the indoor handset.
+
+**Browsing past calls.** The doorbell also shows up in **Media**, listing every call and capture it still holds, newest first — each one opens its picture or plays its clip. The list is fetched when you open it, not kept in an entity attribute, so the recorder stays out of it. How far back it goes is the API's decision, not ours — the one unit we have seen held about two weeks — and an entry that has dropped out stops opening. Openings are left out of Media — they carry no media at all, and would only be entries that cannot be opened ([#267](https://github.com/cyrilcolinet/enki-integration-hass/issues/267)).
 
 Gate and door opening (`change-portal-state`) and the doorbell's settings are left out until someone has one wired: the reporter's unit drives nothing yet, and it reports `connectors: none` ([#233](https://github.com/cyrilcolinet/enki-integration-hass/issues/233)).
 
