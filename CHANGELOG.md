@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.28.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.27.1...v1.28.0) (2026-10-02)
+
+
+### Features
+
+* **videophone:** browse past calls in Media ([455811e](https://github.com/cyrilcolinet/enki-integration-hass/commit/455811e475d107ae723f0058b9f0989a264f9c64))
+
+
+### Bug Fixes
+
+* **api:** accept 201 Created on command writes ([8ef0387](https://github.com/cyrilcolinet/enki-integration-hass/commit/8ef0387a9bd8b8854dd252886f4f2d6b4b1d06a8))
+* **api:** correct consumption, OTA and esdk keys ([4f5fda9](https://github.com/cyrilcolinet/enki-integration-hass/commit/4f5fda92780863bfb90f6115ff8d902a09fa4adb))
+* **scripts:** tie gateway keys to their call site ([807431b](https://github.com/cyrilcolinet/enki-integration-hass/commit/807431b95d860853d883704783ada640c31bad48))
+
 ## [1.27.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.27.0...v1.27.1) (2026-09-29)
 
 
