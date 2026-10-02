@@ -574,6 +574,26 @@ class EnkiHttpClient:
             not_found_ok=True,
         )
 
+    async def get_energy_history(
+        self,
+        home_id: str,
+        node_id: str,
+        start_date: str,
+        time_period: str,
+    ) -> dict[str, Any]:
+        """One period of consumption history (api-enki-consumption-prod, #270).
+
+        `start_date` picks a period rather than a range: the service answers with
+        the period enclosing that instant, as buckets.
+        """
+        return await self._read_optional(
+            "consumption",
+            f"/nodes/{node_id}",
+            params={"startDate": start_date, "timePeriod": time_period},
+            home_id=home_id,
+            not_found_ok=True,
+        )
+
     async def list_scenarios(self, home_id: str) -> list[dict[str, Any]]:
         """List Enki scenarios for one home (homeId query param, APK rnl.h)."""
         if not self._service_api_key("scenario"):

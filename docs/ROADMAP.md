@@ -13,7 +13,7 @@ Short version: [README](../README.md) · detailed view below.
 |--------|----------|-------------------|
 | ✅ Supported | Inspire fans (Siroco+, Cadix, Radix, …) | `fan`, LED kit `light`, speed, direction, modes (per referentiel); Cadix exposes main + ambient ring as separate lights with optimistic fan/light coupling (**v1.11**) |
 | ✅ Supported | Enki lights (Eglo, Lexman, EssentielB, …) | ON/OFF, brightness, tunable white, RGB (HS) if `change_hue` + `change_saturation` |
-| ✅ Supported | Outlets / switches (Edisio, Equation, …) | `switch` ON/OFF via `switch-electrical-power` plus instant consumption (W) |
+| ✅ Supported | Outlets / switches (Edisio, Equation, …) | `switch` ON/OFF via `switch-electrical-power`, instant consumption (W) and energy this month (kWh) |
 | ✅ Supported | DIO outlets (433 MHz RF) | `switch` with assumed state — one-way RF, nothing reports back ([#203](https://github.com/cyrilcolinet/enki-integration-hass/issues/203)) |
 | ✅ Supported | Evology 2-channel in-wall module | one `switch` per channel (`check_channel1/2_electrical_power`) |
 | ✅ Supported | Water-heater on/off relay (Lexman/Nodon 83424574) | `switch` re-typed as boiler ([#87](https://github.com/cyrilcolinet/enki-integration-hass/issues/87)) |

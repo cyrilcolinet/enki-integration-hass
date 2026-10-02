@@ -224,15 +224,38 @@ Base: `https://enki.api.devportal.adeo.cloud/api-enki-scenario-prod/v1/scenarios
 
 Gateway key: `ENKI_SCENARIO_API_KEY` in `gateway_keys_data.py`.
 
-## Instant consumption (api-enki-consumption-prod)
+## Consumption (api-enki-consumption-prod)
 
 Base: `https://enki.api.devportal.adeo.cloud/api-enki-consumption-prod/v1/consumption`
 
 | Method | Path | Notes |
 |--------|------|-------|
-| GET | `/{nodeId}/check-instant-consumption?homeId={homeId}` | `lastReportedValue` (W), `unit` |
+| GET | `/{nodeId}/check-instant-consumption?homeId={homeId}` | `lastReportedValue` (W), `unit`, `lastReportedDate` |
+| GET | `/nodes/{nodeId}?startDate=&timePeriod=` | Energy over one period, in buckets (`homeId` **header**) |
 
 Used for Edisio / Equation devices with `check_electrical_consumption` in referentiel. Gateway key: `ENKI_CONSUMPTION_API_KEY` — the shipped key was a neighbouring service's until [#270](https://github.com/cyrilcolinet/enki-integration-hass/issues/270).
+
+### Energy history
+
+`startDate` is an instant (ISO-8601 with `Z`) that **picks a period, not a range**: the response snaps to the
+period enclosing it. `timePeriod` decides the buckets — `DAILY` gives 24 hours, `WEEKLY` 7 days, `MONTHLY` the
+days of that month, `YEARLY` 12 months. Note that `homeId` travels as a header here, while
+`check-instant-consumption` takes it as a query parameter.
+
+```json
+{"firstMeasurementDate": "…", "lastMeasurementDate": "…",
+ "periodConsumption": {"value": 25.255, "unit": "kWh", "date": "…"},
+ "periodChart": {"series": [{"data": [null, 0.0, 1.805, …],
+                             "startDateFormatted": "01/09/2026",
+                             "endDateFormatted": "30/09/2026", "unit": "kWh"}],
+                 "type": "BAR", "yScale": {"minimum": 0.0, "maximum": 3.7}}}
+```
+
+`null` is "no reading", **not** zero: future buckets and anything before `firstMeasurementDate` are null, while a
+real zero is `0.0`. `periodConsumption.value` is the sum of the buckets, not an independent figure. Finished
+periods are stable — re-reading September returns the same total — so a backfill would be safe. The integration
+reads the current month once an hour and exposes the sum as a `total_increasing` energy sensor; it does not
+import history into long-term statistics ([#270](https://github.com/cyrilcolinet/enki-integration-hass/issues/270)).
 
 ## Lexman cameras (api-enki-lexman-camera-meari-prod)
 

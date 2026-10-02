@@ -48,6 +48,7 @@ Use your Enki devices in Home Assistant, with the same email and password as the
 - **Video doorbell** — know when someone rings, with the caller's picture, and browse past calls in **Media**
 - **Alarm** — arm and disarm, with the modes set up in the app
 - **Sensors** — motion, opening, temperature, humidity, water leak, battery, solar production
+- **Energy** — what a plug or a water heater has used this month, ready for the Energy dashboard
 - **Scenes** — run the scenes you created in the Enki app
 
 The full list, device by device, is in [supported devices](docs/SUPPORTED_DEVICES.md).
