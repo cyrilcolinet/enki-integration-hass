@@ -7,6 +7,8 @@ from enki.lib.conversion import is_command_success_status
 
 def test_is_command_success_status() -> None:
     assert is_command_success_status(202) is True
+    # A setpoint that creates a derogation answers 201 (#269).
+    assert is_command_success_status(201) is True
     assert is_command_success_status(204) is True
     assert is_command_success_status(200) is False
     assert is_command_success_status(500) is False

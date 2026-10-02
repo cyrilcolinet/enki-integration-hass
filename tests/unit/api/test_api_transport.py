@@ -85,6 +85,17 @@ async def test_get_json_error_attaches_anonymized_report() -> None:
 
 
 @pytest.mark.asyncio
+async def test_a_created_derogation_is_not_an_error() -> None:
+    """A water-heater setpoint answers 201 with the derogation it created (#269)."""
+    path = "/api-enki-thermostat-prod/v1/thermostat/n1/change-thermostat-target-temperature"
+    async with aiohttp.ClientSession() as session:
+        with aioresponses() as mocked:
+            mocked.post(f"{ENKI_BASE_URL}{path}", status=201, body='{"id": "derogation-1"}')
+            client = EnkiHttpClient(_FakeAuth(), session)
+            await client.post_command("thermostat", path, home_id="h1", json={"value": 55})
+
+
+@pytest.mark.asyncio
 async def test_post_command_debug_logs_accepted_route() -> None:
     from unittest.mock import patch
 

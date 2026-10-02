@@ -161,6 +161,13 @@ field (`hs` vs `ct`) indicates which mode is active.
 
 Gateway keys (`ENKI_HEATING_API_KEY`, `ENKI_WATER_SENSOR_API_KEY`, …) are in `gateway_keys_data.py`. Refresh with `scripts/extract_gateway_keys.py` after an app update — see [DEVELOPMENT.md](DEVELOPMENT.md). If a key is cleared, reads are skipped silently and writes raise a clear error.
 
+## Command responses
+
+A write is accepted on **202**, **204** or **201**: the water-heater setpoint creates a
+derogation and answers 201 with the created object ([#269](https://github.com/cyrilcolinet/enki-integration-hass/issues/269)). **200** stays out — it is what a read
+answers — except on the few routes that reply with the updated state, which pass their own
+list (alarm mode, meari `change-*`).
+
 ## Operational notifications
 
 Home Assistant raises **repair issues** (Settings → Repairs, French or English) when:
