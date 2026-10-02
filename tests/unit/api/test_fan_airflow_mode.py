@@ -6,13 +6,14 @@ from unittest.mock import AsyncMock
 
 import pytest
 from enki.api import EnkiAPI
+from enki.api.transport import EnkiHttpClient
 from enki.const import AIRFLOW_MODE_BREEZE
 
 
 @pytest.mark.asyncio
 async def test_set_airflow_mode_uses_change_airflow_mode() -> None:
     api = EnkiAPI("user", "pass")
-    http = AsyncMock()
+    http = AsyncMock(spec_set=EnkiHttpClient)
     http.airflow_post = AsyncMock()
     api._get_http = AsyncMock(return_value=http)  # type: ignore[method-assign]
 
