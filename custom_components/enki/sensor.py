@@ -63,6 +63,7 @@ def _build_sensor_entities(
         entities.append(EnkiIlluminanceSensor(coordinator, device))
     if profile.supports_electrical_consumption:
         entities.append(EnkiElectricalConsumptionSensor(coordinator, device))
+        entities.append(EnkiEnergySensor(coordinator, device))
     if profile.is_camera:
         entities.append(EnkiCameraLastMotionSensor(coordinator, device))
         if profile.supports_camera_sound_events:
@@ -304,6 +305,37 @@ class EnkiElectricalConsumptionSensor(EnkiEntity, SensorEntity):
     @property
     def native_value(self) -> float | None:
         return self._device.reported.electrical_consumption
+
+
+class EnkiEnergySensor(EnkiEntity, SensorEntity):
+    """Energy consumed so far this month (api-enki-consumption-prod, #270).
+
+    The service bills by period, not as a running meter, so this resets when the
+    month turns — on the API's UTC boundary, which is an hour or two off local
+    midnight. `TOTAL_INCREASING` is what makes that harmless: Home Assistant
+    reads the drop as a meter reset and keeps the long-term total it has built.
+    """
+
+    _attr_translation_key = "energy"
+    _attr_device_class = SensorDeviceClass.ENERGY
+    _attr_state_class = SensorStateClass.TOTAL_INCREASING
+    _attr_native_unit_of_measurement = UnitOfEnergy.KILO_WATT_HOUR
+
+    def __init__(self, coordinator: EnkiCoordinator, device: EnkiDevice) -> None:
+        super().__init__(coordinator, device)
+        self._attr_unique_id = f"{DOMAIN}-{device.node_id}-energy"
+
+    @property
+    def native_value(self) -> float | None:
+        return self._device.reported.energy_period_total
+
+    @property
+    def extra_state_attributes(self) -> dict[str, str | None]:
+        reported = self._device.reported
+        return {
+            "first_measurement_at": reported.energy_first_measurement_at,
+            "last_measurement_at": reported.energy_last_measurement_at,
+        }
 
 
 class EnkiCameraPercentSensor(EnkiEntity, SensorEntity):

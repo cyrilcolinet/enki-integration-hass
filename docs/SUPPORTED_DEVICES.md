@@ -49,8 +49,8 @@ Fan and light kit are **independent**: turning one on does not turn the other on
 
 | Model / type | Status |
 |---------------|--------|
-| Edisio outlets | ✅ ON/OFF, instant consumption (W) |
-| Equation ON/OFF relay | ✅ ON/OFF stable v1.6.8+, instant consumption (W) |
+| Edisio outlets | ✅ ON/OFF, instant consumption (W), energy this month (kWh) |
+| Equation ON/OFF relay | ✅ ON/OFF stable v1.6.8+, instant consumption (W), energy this month (kWh) |
 | Evology 2-channel in-wall module | ✅ one `switch` per channel (`check_channel1_electrical_power`, `check_channel2_electrical_power`) |
 | DIO outlets (433 MHz RF) | ✅ ON/OFF, ⚠️ **assumed state** — the RF is one-way, so nothing reports back and Home Assistant shows on/off buttons instead of a toggle |
 

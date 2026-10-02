@@ -111,6 +111,15 @@ class EnkiDeviceState:
     electrical_consumption_unit = _str_field("electrical_consumption_unit")
 
     @property
+    def energy_period_total(self) -> float | None:
+        """Energy consumed so far this month, from the chart buckets (#270)."""
+        return _as_float(self._data.get("energy_period_total"))
+
+    energy_period_unit = _str_field("energy_period_unit")
+    energy_first_measurement_at = _str_field("energy_first_measurement_at")
+    energy_last_measurement_at = _str_field("energy_last_measurement_at")
+
+    @property
     def brightness(self) -> float | None:
         value = self._data.get("brightness")
         if isinstance(value, (int, float)):

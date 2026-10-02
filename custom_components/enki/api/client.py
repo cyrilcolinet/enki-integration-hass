@@ -6,6 +6,7 @@ import asyncio
 import logging
 import time
 from dataclasses import replace
+from datetime import UTC, datetime
 from typing import Any
 
 import aiohttp
@@ -14,6 +15,7 @@ from ..const import DEVICE_TYPE_LIGHTS, LOGGER
 from ..domain.camera_events import parse_camera_events
 from ..domain.camera_settings import parse_camera_status
 from ..domain.capabilities import EnkiCapabilityProfile
+from ..domain.energy_history import MONTHLY, parse_energy_history
 from ..domain.models import EnkiDevice, EnkiDiscoveryRecord, EnkiScenario
 from ..domain.profile import (
     build_discovery_record,
@@ -48,6 +50,9 @@ from .transport import OK_WITH_BODY, EnkiHttpClient
 
 _DISCOVERY_CONCURRENCY = 8
 _CAMERA_SETTINGS_TTL_SECONDS = 300.0
+# The consumption history moves by the day, so re-reading it every poll would
+# only spend requests. An hour keeps the month's running total fresh enough.
+_ENERGY_HISTORY_TTL_SECONDS = 3600.0
 
 
 def _referentiel_model(node_info: dict[str, Any], device_info: dict[str, Any]) -> str | None:
@@ -80,6 +85,8 @@ class EnkiAPI:
         self._security: tuple[EnkiSecuritySystem, ...] = ()
         # node_id -> (monotonic time, parsed settings) for meari cameras.
         self._camera_settings_cache: dict[str, tuple[float, dict[str, Any]]] = {}
+        # node_id -> (monotonic time, parsed month-to-date energy) (#270).
+        self._energy_history_cache: dict[str, tuple[float, dict[str, Any]]] = {}
         self._node_fingerprints: dict[str, str] = {}
         self._profile_read_errors: dict[str, dict[str, str]] = {}
         self._profile_read_reports: dict[str, dict[str, dict[str, Any]]] = {}
@@ -543,6 +550,9 @@ class EnkiAPI:
                     err=err,
                 )
 
+        if profile.supports_electrical_consumption:
+            state.update(await self._async_energy_history(http, home_id, node_id))
+
         if profile.supports_fan_speed:
             try:
                 data = await http.airflow_get(home_id, node_id, "check-fan-speed")
@@ -670,6 +680,42 @@ class EnkiAPI:
     def _parse_events(payload: dict[str, Any]) -> dict[str, Any]:
         items = payload.get("items") if isinstance(payload, dict) else None
         return parse_videophone_events(items if isinstance(items, list) else [])
+
+    async def _async_energy_history(
+        self,
+        http: EnkiHttpClient,
+        home_id: str,
+        node_id: str,
+    ) -> dict[str, Any]:
+        """Energy consumed so far this month, read at most once an hour (#270).
+
+        The service answers the period enclosing `startDate`, so asking for now
+        returns the current month in daily buckets. A failed read keeps the last
+        value rather than dropping to None: an unavailable energy total looks to
+        Home Assistant like a meter that reset.
+        """
+        cached = self._energy_history_cache.get(node_id)
+        now = time.monotonic()
+        if cached is not None and now - cached[0] < _ENERGY_HISTORY_TTL_SECONDS:
+            return cached[1]
+
+        start_date = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+        try:
+            payload = await http.get_energy_history(home_id, node_id, start_date, MONTHLY)
+        except EnkiConnectionError as err:
+            LOGGER.debug("Energy history skipped for node %s: %s", node_id, err)
+            self._note_read_error(
+                node_id, service="consumption", capability="consumption/nodes", err=err
+            )
+            # Re-stamp on failure too, or a service that refuses us once is asked
+            # again on every poll instead of once an hour.
+            kept = cached[1] if cached is not None else {}
+            self._energy_history_cache[node_id] = (now, kept)
+            return kept
+
+        state = parse_energy_history(payload)
+        self._energy_history_cache[node_id] = (now, state)
+        return state
 
     async def _read_camera_settings(
         self,

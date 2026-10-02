@@ -120,6 +120,9 @@
       "electrical_consumption": {
         "name": "Consommation"
       },
+      "energy": {
+        "name": "Énergie consommée"
+      },
       "camera_last_motion": {
         "name": "Dernier mouvement"
       },
