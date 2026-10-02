@@ -5,6 +5,7 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from enki.api.client import EnkiAPI
 from enki.domain.models import EnkiDevice
 from enki.domain.videophone import parse_videophone_captures
 from enki.media_source import EnkiMediaSource
@@ -56,11 +57,14 @@ def _doorbell() -> EnkiDevice:
 
 def _source(events: list[dict] | None = None) -> tuple[EnkiMediaSource, AsyncMock]:
     device = _doorbell()
-    get_events = AsyncMock(return_value={"items": events if events is not None else REAL_EVENTS})
+    get_events = AsyncMock(return_value=events if events is not None else REAL_EVENTS)
     entry = MagicMock()
     entry.entry_id = "entry-1"
     entry.runtime_data.data = [device]
-    entry.runtime_data.api.get_videophone_events = get_events
+    # spec_set: a mock that invents the method is how the shipped browse
+    # ended up calling one that lives on the transport instead (#267).
+    entry.runtime_data.api = MagicMock(spec_set=EnkiAPI)
+    entry.runtime_data.api.async_videophone_events = get_events
     hass = MagicMock()
     hass.config_entries.async_loaded_entries = lambda domain: [entry]
     return EnkiMediaSource(hass), get_events
@@ -143,3 +147,15 @@ async def test_an_unknown_doorbell_fails_the_browse_not_the_resolve() -> None:
 
     with pytest.raises(Unresolvable):
         await source.async_resolve_media(MediaSourceItem(identifier="entry-1/node-gone/1"))
+
+
+@pytest.mark.asyncio
+async def test_a_cloud_failure_is_a_browse_error_not_a_crash() -> None:
+    """Anything else surfaces in the frontend as a bare "Unknown error"."""
+    from enki.exceptions import EnkiConnectionError
+
+    source, get_events = _source()
+    get_events.side_effect = EnkiConnectionError("gateway timeout")
+
+    with pytest.raises(BrowseError):
+        await source.async_browse_media(MediaSourceItem(identifier="entry-1/node-vp"))
