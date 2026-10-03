@@ -552,8 +552,8 @@ class EnkiAPI:
                     unit = consumption.get("unit")
                     if isinstance(unit, str):
                         state["electrical_consumption_unit"] = unit
-                    # The device volunteers this reading; the service only relays
-                    # the last one it got, which can be far behind (#279).
+                    # Enki's own timestamp: it moves when the value changes, not
+                    # when we read it, so an old date is a quiet device (#279).
                     reported_at = consumption.get("lastReportedDate")
                     if isinstance(reported_at, str):
                         state["electrical_consumption_at"] = reported_at
