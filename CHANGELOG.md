@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.29.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.28.0...v1.29.0) (2026-10-03)
+
+
+### Features
+
+* **energy:** expose energy used this month ([158c15c](https://github.com/cyrilcolinet/enki-integration-hass/commit/158c15caca5f2d03e5a7977497fea56225ae37b9))
+
+
+### Bug Fixes
+
+* **sensor:** surface when power was last reported ([69fc748](https://github.com/cyrilcolinet/enki-integration-hass/commit/69fc748ed8d9fbaa6226a2541c70e336699f062b))
+* **videophone:** make Media browsing reach the API ([0003142](https://github.com/cyrilcolinet/enki-integration-hass/commit/0003142d5be3f11766e1c7493c61d5fcba2accad))
+
 ## [1.28.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.27.1...v1.28.0) (2026-10-02)
 
 
