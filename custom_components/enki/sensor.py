@@ -308,11 +308,13 @@ class EnkiElectricalConsumptionSensor(EnkiEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self) -> dict[str, str | None]:
-        """When the device last volunteered this reading (#279).
+        """Enki's own timestamp for this reading (`lastReportedDate`).
 
-        Enki relays the last value the device sent rather than asking for a fresh
-        one, so a plug that reports rarely can sit minutes behind. Surfacing the
-        timestamp is what makes that visible instead of silent.
+        It is not when we last asked: on the units measured so far it only moves
+        when the value itself changes, so an hour-old date on an idle device
+        means nothing has changed in an hour, not that the reading is stale
+        (#279). The name follows Enki's field rather than that reading, since
+        nothing says every device behaves the same way.
         """
         return {"last_reported_at": self._device.reported.electrical_consumption_at}
 
