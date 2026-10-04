@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from enki.lib.request_report import build_request_report
+from enki.lib.request_report import anonymize, build_request_report
 
 
 def _headers() -> dict[str, str]:
@@ -70,3 +70,20 @@ def test_report_keeps_non_json_body_truncated_and_id_masked() -> None:
         "Bad gateway for 66dd9883202f215627708142",
     )
     assert report["response_body"] == "Bad gateway for {id}"
+
+
+def test_turn_credentials_never_survive_anonymization() -> None:
+    """Probe output and diagnostics get pasted into public issues (#259)."""
+    payload = {
+        "iceServers": [
+            {"urls": "turn:turn.example.com:3478", "username": "17600:enki", "credential": "aB3x=="}
+        ],
+        "password": "hunter2",
+        "ttl": 86400,
+    }
+
+    cleaned = anonymize(payload)
+
+    assert cleaned["iceServers"][0]["credential"] == "***"
+    assert cleaned["password"] == "***"
+    assert cleaned["ttl"] == 86400

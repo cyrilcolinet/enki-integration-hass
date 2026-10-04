@@ -54,6 +54,7 @@ Scripts in `scripts/` run **on your dev machine**, not inside the HA container. 
 | `scripts/fetch_gateway_keys.py` | Verify login and read `mobile-config` `/settings` (not gateway keys) |
 | `scripts/extract_gateway_keys.py` | Extract gateway keys from an APK (jadx + DI module); `--apply` updates `gateway_keys_data.py`, `--write-evidence` records the proof CI enforces |
 | `scripts/extract_api_routes.py` | Regenerate the capability→route catalogue (`api/capability_routes_data.py`) from an APK; `--check` reports wired routes the app no longer calls |
+| `scripts/probe_videophone_live.py` | Watch a doorbell's WebRTC reads while the Enki app has the live view open (read-only) |
 | `scripts/capability_coverage.py` | Report capabilities the app exposes but the integration doesn't handle yet |
 | `scripts/discover_devices.py` | Export anonymized device profiles from the account |
 
