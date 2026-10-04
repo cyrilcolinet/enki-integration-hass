@@ -224,6 +224,30 @@ Base: `https://enki.api.devportal.adeo.cloud/api-enki-scenario-prod/v1/scenarios
 
 Gateway key: `ENKI_SCENARIO_API_KEY` in `gateway_keys_data.py`.
 
+## Equation air conditioner (api-enki-equation-airco-prod)
+
+Base: `https://enki.api.devportal.adeo.cloud/api-enki-equation-airco-prod/v1/equation-airco`
+Gateway key: `ENKI_EQUATION_AIRCO_API_KEY`. Headers: `Authorization`, `X-Gateway-APIKey`, `homeId`.
+
+| Method | Path | Notes |
+|--------|------|-------|
+| GET | `{nodeId}/check-airconditioner-state` | `lastReportedValue` is an **object**, not a scalar |
+| GET | `{nodeId}/check-airconditioner-error` | not read yet |
+| POST | `{nodeId}/change-airconditioner-state` | not called — see below |
+
+```json
+{"lastReportedValue": {
+  "targetTemperature": 21.0, "currentTemperature": 26.0, "operatingMode": "…", "power": "ON",
+  "fanSpeed": "…", "swingOrientation": "…", "selfCleanMode": "OFF", "frostProtectionMode": "OFF",
+  "healthMode": "OFF", "quietMode": "OFF", "sleepMode": "OFF"}}
+```
+
+The write body mirrors those fields exactly, so the device describes a `climate` entity rather than the ON/OFF
+switch currently exposed. **What the APK does not say is which values `operatingMode`, `fanSpeed` and
+`swingOrientation` accept** — the referentiel publishes none of them. The read is wired and flattened into the
+diagnostics export so a reporter's own unit can answer that; nothing is written until it has
+([#286](https://github.com/cyrilcolinet/enki-integration-hass/issues/286)).
+
 ## Equation water heater (api-enki-equation-water-heater-prod)
 
 Base: `https://enki.api.devportal.adeo.cloud/api-enki-equation-water-heater-prod/v1/equation-water-heater`

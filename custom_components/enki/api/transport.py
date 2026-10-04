@@ -574,6 +574,15 @@ class EnkiHttpClient:
             not_found_ok=True,
         )
 
+    async def get_airconditioner_state(self, home_id: str, node_id: str) -> dict[str, Any]:
+        """Full state of an Equation air conditioner (#286)."""
+        return await self._read_optional(
+            "equation_airco",
+            f"/{node_id}/check-airconditioner-state",
+            home_id=home_id,
+            not_found_ok=True,
+        )
+
     async def get_energy_history(
         self,
         home_id: str,

@@ -169,10 +169,10 @@ ENKI_MICRO_SERVICES: tuple[EnkiMicroService, ...] = (
     EnkiMicroService(
         "api-enki-equation-airco-prod",
         "ENKI_EQUATION_AIRCO_API_KEY",
-        "",
+        "equation_airco",
         "/api-enki-equation-airco-prod/v1/equation-airco",
-        wired=False,
-        notes="",
+        wired=True,
+        notes="Equation air conditioner state, read-only for now (#286)",
     ),
     EnkiMicroService(
         "api-enki-equation-water-heater-prod",

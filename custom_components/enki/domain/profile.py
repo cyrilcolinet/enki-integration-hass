@@ -16,6 +16,7 @@ from ..lib.telemetry_labels import (
     resolve_model_label,
     telemetry_github_labels,
 )
+from .airco import AIRCO_STATE_KEYS
 from .capabilities import device_is_supported
 from .models import EnkiDevice, EnkiDiscoveryRecord
 
@@ -53,6 +54,9 @@ _POLL_STATE_EXPORT_KEYS = frozenset(
         "electrical_power",
         "electrical_consumption",
         "electrical_consumption_unit",
+        # The air conditioner's own state, so a reporter's diagnostics can say
+        # which modes and fan speeds it accepts before anything is built (#286).
+        *AIRCO_STATE_KEYS,
         "brightness",
         "colorTemperature",
         "hue",
