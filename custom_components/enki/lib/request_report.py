@@ -17,8 +17,11 @@ from typing import Any
 _REDACTED = "***"
 _SECRET_HEADERS = frozenset({"authorization", "x-gateway-apikey", "homeid"})
 _ID_SEGMENT = re.compile(r"[0-9a-f]{16,}", re.IGNORECASE)
+# `credential` and `password` cover the TURN credentials a WebRTC session hands
+# out: this output ends up pasted into public issues and diagnostics (#259).
 _SENSITIVE_KEY = re.compile(
-    r"(id|url|uri|token|serial|mac|host|uuid|key|secret|email|phone|address|ssid|name)",
+    r"(id|url|uri|token|serial|mac|host|uuid|key|secret|email|phone|address|ssid|name"
+    r"|credential|password|passwd|pwd)",
     re.IGNORECASE,
 )
 _URL = re.compile(r"^[a-z][a-z0-9+.-]*://", re.IGNORECASE)
