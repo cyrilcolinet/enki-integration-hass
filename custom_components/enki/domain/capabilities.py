@@ -161,6 +161,11 @@ class EnkiCapabilityProfile:
         return bool(self.channel_power_indices)
 
     @property
+    def supports_airconditioner_state(self) -> bool:
+        """Equation air conditioner — mode, fan and setpoint behind one read (#286)."""
+        return _supports(self.capabilities, self.possible_values, "check_airconditioner_state")
+
+    @property
     def supports_water_heater_mode(self) -> bool:
         """Equation water heater mode — read-only: the app's write route is gone (#285)."""
         return _supports(self.capabilities, self.possible_values, "check_water_heater_mode")

@@ -89,6 +89,16 @@
       ],
       "key": "YlTcpTzG8Fm2z52MN89laCGnCx6ldbWx"
     },
+    "ENKI_EQUATION_AIRCO_API_KEY": {
+      "slug": "api-enki-equation-airco-prod",
+      "interface": "ar9",
+      "routes": [
+        "equation-airco/{nodeId}/change-airconditioner-state",
+        "equation-airco/{nodeId}/check-airconditioner-error",
+        "equation-airco/{nodeId}/check-airconditioner-state"
+      ],
+      "key": "Nntj37xS5lih1qqFy8SbyHWKG5NEhSCm"
+    },
     "ENKI_EQUATION_WATER_HEATER_API_KEY": {
       "slug": "api-enki-equation-water-heater-prod",
       "interface": "fr9",

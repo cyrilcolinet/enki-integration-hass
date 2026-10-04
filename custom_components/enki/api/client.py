@@ -12,6 +12,7 @@ from typing import Any
 import aiohttp
 
 from ..const import DEVICE_TYPE_LIGHTS, LOGGER
+from ..domain.airco import parse_airconditioner_state
 from ..domain.camera_events import parse_camera_events
 from ..domain.camera_settings import parse_camera_status
 from ..domain.capabilities import EnkiCapabilityProfile
@@ -569,6 +570,9 @@ class EnkiAPI:
         if profile.supports_electrical_consumption:
             state.update(await self._async_energy_history(http, home_id, node_id))
 
+        if profile.supports_airconditioner_state:
+            state.update(await self._read_airco_state(http, home_id, node_id))
+
         if profile.supports_fan_speed:
             try:
                 data = await http.airflow_get(home_id, node_id, "check-fan-speed")
@@ -672,6 +676,26 @@ class EnkiAPI:
             return {}
         items = data.get("items", []) if isinstance(data, dict) else []
         return parse_camera_events(items if isinstance(items, list) else [])
+
+    async def _read_airco_state(
+        self,
+        http: EnkiHttpClient,
+        home_id: str,
+        node_id: str,
+    ) -> dict[str, Any]:
+        """What an Equation air conditioner reports about itself (#286)."""
+        try:
+            payload = await http.get_airconditioner_state(home_id, node_id)
+        except EnkiConnectionError as err:
+            LOGGER.debug("Air conditioner state skipped for node %s: %s", node_id, err)
+            self._note_read_error(
+                node_id,
+                service="equation_airco",
+                capability="check-airconditioner-state",
+                err=err,
+            )
+            return {}
+        return parse_airconditioner_state(payload)
 
     async def _read_videophone_state(
         self,
