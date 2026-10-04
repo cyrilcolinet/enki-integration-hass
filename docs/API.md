@@ -258,7 +258,9 @@ Gateway key: `ENKI_EQUATION_WATER_HEATER_API_KEY`. Headers: `Authorization`, `X-
 | GET | `{nodeId}/check-water-heater-mode` | `lastReportedValue` is the mode |
 | GET | `{nodeId}/check-water-heater-error` | not read yet |
 
-The mode is one of `AUTO`, `BOOST`, `BOOST_PLUS`, `ECO`, `MANUAL`, `SELF_CLEAN`.
+The mode is one of the values the heater declares for `check_water_heater_mode` in the referentiel —
+`AUTO`, `MANUAL`, `BOOST`, `BOOST_PLUS`, `PROG`, `CLEAN` on an AD-HEWH3-1. Self-clean is `CLEAN` on the wire, not
+`SELF_CLEAN`, and there is no `ECO`.
 
 **There is no write route.** An earlier app version served
 `POST {nodeId}/change-water-heater-mode` with `{"mode": "SELF_CLEAN"}`, and it is gone in 2.26.3 — the service

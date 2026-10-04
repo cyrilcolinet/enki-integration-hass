@@ -27,9 +27,7 @@ from .coordinator import EnkiCoordinator
 from .domain.models import EnkiDevice
 from .entity import EnkiEntity
 from .lib.battery import battery_health_to_percent
-
-# What an Equation water heater reports as its mode, from the Enki app (#285).
-WATER_HEATER_MODES = ("AUTO", "BOOST", "BOOST_PLUS", "ECO", "MANUAL", "SELF_CLEAN")
+from .lib.heating import water_heater_mode_options
 
 
 async def async_setup_entry(
@@ -335,11 +333,11 @@ class EnkiWaterHeaterModeSensor(EnkiEntity, SensorEntity):
 
     _attr_translation_key = "water_heater_mode"
     _attr_device_class = SensorDeviceClass.ENUM
-    _attr_options = [mode.lower() for mode in WATER_HEATER_MODES]
 
     def __init__(self, coordinator: EnkiCoordinator, device: EnkiDevice) -> None:
         super().__init__(coordinator, device)
         self._attr_unique_id = f"{DOMAIN}-{device.node_id}-water-heater-mode"
+        self._attr_options = water_heater_mode_options(device.profile.possible_values)
 
     @property
     def native_value(self) -> str | None:
