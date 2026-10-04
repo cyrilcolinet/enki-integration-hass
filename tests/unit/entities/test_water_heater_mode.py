@@ -6,7 +6,8 @@ from unittest.mock import MagicMock
 
 from enki.api.capability_routing import CAPABILITY_READS
 from enki.domain.models import EnkiDevice
-from enki.sensor import WATER_HEATER_MODES, EnkiWaterHeaterModeSensor
+from enki.lib.heating import WATER_HEATER_MODES, water_heater_mode_options
+from enki.sensor import EnkiWaterHeaterModeSensor
 
 HEATER_CAPABILITIES = [
     "check_water_heater_mode",
@@ -14,8 +15,19 @@ HEATER_CAPABILITIES = [
     "change_thermostat_target_temperature",
 ]
 
+# What an AD-HEWH3-1 (firmware 2.14.0) publishes in its referentiel, from diagnostics.
+HEATER_MODES = ["AUTO", "MANUAL", "BOOST", "BOOST_PLUS", "PROG", "CLEAN"]
+HEATER_POSSIBLE_VALUES = {
+    "check_water_heater_mode": {"values": HEATER_MODES},
+    "change_water_heater_mode": {"values": HEATER_MODES},
+}
 
-def _heater(capabilities: list[str] | None = None, **reported) -> EnkiDevice:
+
+def _heater(
+    capabilities: list[str] | None = None,
+    possible_values: dict | None = None,
+    **reported,
+) -> EnkiDevice:
     return EnkiDevice(
         home_id="home-1",
         device_id="dev-1",
@@ -25,6 +37,14 @@ def _heater(capabilities: list[str] | None = None, **reported) -> EnkiDevice:
         is_enabled=True,
         state="ACTIVE",
         capabilities=HEATER_CAPABILITIES if capabilities is None else capabilities,
+        # `_supports` also reads possible_values, so a relay-only device gets none.
+        possible_values=(
+            possible_values
+            if possible_values is not None
+            else HEATER_POSSIBLE_VALUES
+            if capabilities is None
+            else {}
+        ),
         last_reported_value=reported,
     )
 
@@ -37,11 +57,28 @@ def _sensor(device: EnkiDevice) -> EnkiWaterHeaterModeSensor:
 
 
 def test_the_mode_the_device_reports_becomes_the_state() -> None:
-    sensor = _sensor(_heater(water_heater_mode="SELF_CLEAN"))
+    sensor = _sensor(_heater(water_heater_mode="CLEAN"))
 
-    assert sensor.native_value == "self_clean"
+    assert sensor.native_value == "clean"
     # `options` is a SensorEntity property, stubbed away here — assert what we set.
-    assert sensor._attr_options == ["auto", "boost", "boost_plus", "eco", "manual", "self_clean"]
+    assert sensor._attr_options == ["auto", "manual", "boost", "boost_plus", "prog", "clean"]
+
+
+def test_the_options_are_what_the_heater_declares() -> None:
+    """Self-clean goes over the wire as CLEAN; a hardcoded SELF_CLEAN read unknown."""
+    declared = {"check_water_heater_mode": {"values": ["MANUAL", "CLEAN"]}}
+
+    sensor = _sensor(_heater(possible_values=declared, water_heater_mode="CLEAN"))
+
+    assert sensor._attr_options == ["manual", "clean"]
+    assert sensor.native_value == "clean"
+
+
+def test_a_heater_that_declares_nothing_falls_back_to_the_known_modes() -> None:
+    assert water_heater_mode_options({}) == [mode.lower() for mode in WATER_HEATER_MODES]
+    assert water_heater_mode_options({"check_water_heater_mode": {"values": []}}) == [
+        mode.lower() for mode in WATER_HEATER_MODES
+    ]
 
 
 def test_a_mode_outside_the_options_is_dropped() -> None:
@@ -73,5 +110,5 @@ def test_the_read_is_wired_to_its_own_service() -> None:
     assert read.skip(_heater().profile) is False
 
 
-def test_the_modes_match_what_the_app_offers() -> None:
-    assert WATER_HEATER_MODES == ("AUTO", "BOOST", "BOOST_PLUS", "ECO", "MANUAL", "SELF_CLEAN")
+def test_the_fallback_matches_what_the_heater_declares() -> None:
+    assert list(WATER_HEATER_MODES) == HEATER_POSSIBLE_VALUES["check_water_heater_mode"]["values"]

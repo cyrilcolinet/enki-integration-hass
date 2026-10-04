@@ -1,8 +1,12 @@
-"""Helpers for Enki heating / thermostat / pilot-wire capabilities."""
+"""Helpers for Enki heating / thermostat / pilot-wire / water heater capabilities."""
 
 from __future__ import annotations
 
 from typing import Any
+
+# What an AD-HEWH3-1's referentiel declares for check_water_heater_mode (#285). Only a
+# fallback: a heater that publishes its own list is taken at its word.
+WATER_HEATER_MODES = ("AUTO", "MANUAL", "BOOST", "BOOST_PLUS", "PROG", "CLEAN")
 
 
 def pilot_wire_api_value(option: str) -> str:
@@ -80,3 +84,19 @@ def thermostat_running_to_hvac_action(running_state: str | None) -> str | None:
     if normalized == "COOL":
         return "cooling"
     return None
+
+
+def water_heater_mode_options(possible_values: dict[str, Any]) -> list[str]:
+    """The modes a heater declares, as lowercase options; the AD-HEWH3-1's six otherwise.
+
+    The heater's own list is the wire format, and it is not what the app's labels
+    suggest: self-clean is `CLEAN`, and there is a `PROG` but no `ECO`.
+    """
+    meta = possible_values.get("check_water_heater_mode")
+    if isinstance(meta, dict):
+        values = meta.get("values")
+        if isinstance(values, list):
+            options = [value.lower() for value in values if isinstance(value, str)]
+            if options:
+                return options
+    return [mode.lower() for mode in WATER_HEATER_MODES]
