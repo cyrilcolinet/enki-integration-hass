@@ -75,6 +75,12 @@ CAPABILITY_READS: tuple[CapabilityRead, ...] = (
     CapabilityRead("thermostat", "check_offset_temperature", "offset_temperature"),
     CapabilityRead("thermostat", "check_child_lock", "child_lock"),
     CapabilityRead("thermostat", "check_preheating_status", "preheating_status"),
+    CapabilityRead(
+        "equation_water_heater",
+        "check_water_heater_mode",
+        "water_heater_mode",
+        skip=lambda profile: not profile.supports_water_heater_mode,
+    ),
     CapabilityRead("presence_detector", "check_occupancy", "occupancy"),
     CapabilityRead("presence_detector", "check_occupancy_mode", "occupancy_mode"),
     CapabilityRead(

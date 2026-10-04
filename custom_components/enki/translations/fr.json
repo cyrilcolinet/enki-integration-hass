@@ -123,6 +123,9 @@
       "energy": {
         "name": "Énergie consommée"
       },
+      "water_heater_mode": {
+        "name": "Mode"
+      },
       "camera_last_motion": {
         "name": "Dernier mouvement"
       },
