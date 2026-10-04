@@ -53,7 +53,7 @@ Scripts in `scripts/` run **on your dev machine**, not inside the HA container. 
 |--------|--------|
 | `scripts/fetch_gateway_keys.py` | Verify login and read `mobile-config` `/settings` (not gateway keys) |
 | `scripts/extract_gateway_keys.py` | Extract gateway keys from an APK (jadx + DI module); `--apply` updates `gateway_keys_data.py`, `--write-evidence` records the proof CI enforces |
-| `scripts/extract_api_routes.py` | Regenerate the capability→route catalogue (`api/capability_routes_data.py`) from an APK |
+| `scripts/extract_api_routes.py` | Regenerate the capability→route catalogue (`api/capability_routes_data.py`) from an APK; `--check` reports wired routes the app no longer calls |
 | `scripts/capability_coverage.py` | Report capabilities the app exposes but the integration doesn't handle yet |
 | `scripts/discover_devices.py` | Export anonymized device profiles from the account |
 
@@ -83,6 +83,10 @@ nn5.java   @qva("consumption/{nodeId}/check-instant-consumption")
 A key it cannot tie to the interface bound to that micro-service is **refused**, not written — `--check` fails and `--apply` skips it, naming the service. The resolved chain (interface, its routes, the key) lands in `scripts/gateway_key_evidence.json`; `scripts/validate_gateway_keys.py` runs in CI and fails when a wired key no longer matches it, which is the one check that catches a silent swap without an APK.
 
 Working from a dump you already have, without the APK on disk: `--from-jadx --jadx-dir .apk-work/<dir>`.
+
+The route catalogue has the same trap as the keys had, from the other side. Its retrofit verb annotations are obfuscated and **renamed every build** — `@msa` was GET in August, `@qva` is GET in 2.26.3 — so the old hardcoded map silently matched nothing on a newer APK and the catalogue stayed frozen, still advertising `change-water-heater-mode` months after Adeo removed it ([#285](https://github.com/cyrilcolinet/enki-integration-hass/issues/285)). The verbs are now read out of retrofit's own dispatch in the dump, which names each annotation next to the verb it carries, so the extractor follows the app instead of a snapshot of it.
+
+Two things follow. Regenerate the catalogue after every app update, with `--from-jadx` if you already have a dump. And read an entry as "the app called this once", not as "this endpoint exists" — `--check` lists the wired routes the current app no longer calls, which is the signal worth acting on.
 
 ### Capturing a gateway key with mitmproxy (fallback)
 

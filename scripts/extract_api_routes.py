@@ -6,9 +6,15 @@ Usage:
     python scripts/extract_api_routes.py path/to/enki.apk --json scripts/apk/api_routes.json
     python scripts/extract_api_routes.py path/to/enki.apk --check
 
-Parses DI bindings (ag6.java / zf6.java) for api-enki-*-prod base URLs, then scans
-Retrofit interfaces (@msa/@jbi/…) for relative paths. Compares wired integration
-routes from capability_routing.py and gateway_registry.py.
+Parses DI bindings for api-enki-*-prod base URLs, then scans every Retrofit
+interface bound to a service for its paths. Compares wired integration routes
+from capability_routing.py and gateway_registry.py.
+
+The retrofit verb annotations are obfuscated and renamed per build (@msa was GET
+in August, @qva is GET in 2.26.3), so hardcoding them silently yields an empty
+catalogue on the next app release — which is how the shipped one went stale and
+kept advertising a route Adeo had removed (#285). They are read out of the APK
+instead: retrofit's own dispatch names them next to the verb it gives them.
 """
 
 from __future__ import annotations
@@ -27,21 +33,17 @@ sys.path.insert(0, str(REPO_ROOT / "scripts"))
 from enki_bootstrap import bootstrap, load_module  # noqa: E402
 from extract_gateway_keys import (  # noqa: E402
     BINDING_PATTERN,
+    apk_version,
     ensure_jadx,
     find_di_sources,
-    parse_bindings,
 )
+from gateway_call_sites import interfaces_by_slug  # noqa: E402
 
-HTTP_METHODS = {
-    "msa": "GET",
-    "jbi": "POST",
-    "mf6": "DELETE",
-    "ibi": "PUT",
-    "kbi": "PATCH",
-}
-ROUTE_PATTERN = re.compile(
-    r"@(" + "|".join(HTTP_METHODS) + r')\("([^"]+)"\)',
-)
+# retrofit: `} else if (annotation2 instanceof qva) { rukVar.b("GET", …`
+VERB_DISPATCH = re.compile(r"instanceof\s+(\w+)\)\s*\{\s*\w+\.\w+\(\s*\"([A-Z]+)\"")
+# A path literal, whatever the annotation is called in this build.
+ANY_ROUTE = re.compile(r'@(\w+)\("([^"]+)"\)')
+HTTP_VERBS = frozenset({"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -62,15 +64,39 @@ class IntegrationRoute:
     full_path: str
 
 
-def parse_iface_routes(sources_dir: Path, slug: str, iface: str, base_url: str) -> list[ApiRoute]:
+def http_verbs(sources_dir: Path) -> dict[str, str]:
+    """Annotation name to HTTP verb, read from retrofit's own dispatch in this build."""
+    verbs: dict[str, str] = {}
+    for path in sources_dir.glob("*.java"):
+        text = path.read_text(encoding="utf-8", errors="replace")
+        if "instanceof" not in text:
+            continue
+        for annotation, verb in VERB_DISPATCH.findall(text):
+            if verb in HTTP_VERBS:
+                verbs[annotation] = verb
+        if len(verbs) >= len(HTTP_VERBS):
+            break
+    if not verbs:
+        raise RuntimeError(
+            "Could not read retrofit's verb annotations from the dump — the catalogue "
+            "would come out empty. Check that this is a full jadx decompile."
+        )
+    return verbs
+
+
+def parse_iface_routes(
+    sources_dir: Path, slug: str, iface: str, base_url: str, verbs: dict[str, str]
+) -> list[ApiRoute]:
     iface_path = sources_dir / f"{iface}.java"
     if not iface_path.is_file():
         return []
     prefix = base_url.rstrip("/").split("enki.api.devportal.adeo.cloud", 1)[-1]
     routes: list[ApiRoute] = []
     text = iface_path.read_text(encoding="utf-8", errors="replace")
-    for match in ROUTE_PATTERN.finditer(text):
-        verb = HTTP_METHODS[match.group(1)]
+    for match in ANY_ROUTE.finditer(text):
+        verb = verbs.get(match.group(1))
+        if verb is None:
+            continue
         rel = match.group(2)
         routes.append(
             ApiRoute(
@@ -84,10 +110,17 @@ def parse_iface_routes(sources_dir: Path, slug: str, iface: str, base_url: str) 
     return routes
 
 
-def extract_routes(apk_path: Path, jadx_dir: Path) -> list[ApiRoute]:
-    sources_dir = ensure_jadx(apk_path, jadx_dir)
+def extract_routes(apk_path: Path | None, jadx_dir: Path) -> list[ApiRoute]:
+    sources_dir = (
+        ensure_jadx(apk_path, jadx_dir) if apk_path else jadx_dir / "sources" / "defpackage"
+    )
     di_files = find_di_sources(sources_dir)
-    bindings = parse_bindings(di_files)
+    verbs = http_verbs(sources_dir)
+    # A service can bind several interfaces (the Lexman camera binds two), and
+    # keeping only the first drops the rest of its routes from the catalogue.
+    bound = interfaces_by_slug(
+        path.read_text(encoding="utf-8", errors="replace") for path in di_files
+    )
 
     slug_base: dict[str, str] = {}
     for source in di_files:
@@ -97,21 +130,22 @@ def extract_routes(apk_path: Path, jadx_dir: Path) -> list[ApiRoute]:
             slug_base.setdefault(match.group(1), match.group(0))
 
     routes: list[ApiRoute] = []
-    for binding in bindings:
+    for slug, interfaces in sorted(bound.items()):
         base_match = re.search(
-            rf"https://enki\.api\.devportal\.adeo\.cloud/{re.escape(binding.slug)}/v1/",
+            rf"https://enki\.api\.devportal\.adeo\.cloud/{re.escape(slug)}/v1/",
             "\n".join(
                 line
                 for source in di_files
                 if source.is_file()
                 for line in source.read_text(encoding="utf-8", errors="replace").splitlines()
-                if binding.slug in line
+                if slug in line
             ),
         )
         if not base_match:
             continue
         base_url = base_match.group(0)
-        routes.extend(parse_iface_routes(sources_dir, binding.slug, binding.iface, base_url))
+        for iface in sorted(interfaces):
+            routes.extend(parse_iface_routes(sources_dir, slug, iface, base_url, verbs))
     return routes
 
 
@@ -161,16 +195,22 @@ def capability_route_map(apk_routes: list[ApiRoute]) -> dict[str, dict[str, str]
     return {cap: dict(sorted(routes.items())) for cap, routes in sorted(mapping.items())}
 
 
-def write_capability_map(apk_routes: list[ApiRoute], path: Path) -> None:
+def write_capability_map(apk_routes: list[ApiRoute], path: Path, version: str) -> None:
     """Render the capability→route catalog as an importable Python module."""
     mapping = capability_route_map(apk_routes)
     lines = [
         '"""Capability → Enki micro-service route catalog, extracted from the Android APK.',
         "",
-        "Generated by scripts/extract_api_routes.py. A best-effort name match: the",
-        "referentiel capability maps to routes whose last path segment is the same",
-        "kebab-case name. Some capabilities have no direct route (derived server-side)",
-        "or use a differently-named endpoint, so absence here is a hint, not proof.",
+        f"Generated by scripts/extract_api_routes.py from Enki {version}. A best-effort",
+        "name match: the referentiel capability maps to routes whose last path segment is",
+        "the same kebab-case name. Some capabilities have no direct route (derived",
+        "server-side) or use a differently-named endpoint, so absence here is a hint, not",
+        "proof.",
+        "",
+        "It is a snapshot of one app version, and Adeo does remove routes: the August",
+        "catalogue still advertised change-water-heater-mode months after it was gone,",
+        "and a reporter built on it (#285). Regenerate after an app update, and read a",
+        "route here as 'the app called this once', not as 'this endpoint exists'.",
         "",
         "Regenerate with:",
         "    python scripts/extract_api_routes.py <apk> \\",
@@ -207,12 +247,19 @@ def diff_routes(apk_routes: list[ApiRoute], wired: list[IntegrationRoute]) -> li
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("apk", type=Path, help="Path to Enki APK file")
+    parser.add_argument(
+        "apk", type=Path, nargs="?", help="Path to Enki APK file (omit with --from-jadx)"
+    )
     parser.add_argument(
         "--jadx-dir",
         type=Path,
         default=DEFAULT_JADX_DIR,
         help=f"jadx output cache (default: {DEFAULT_JADX_DIR})",
+    )
+    parser.add_argument(
+        "--from-jadx",
+        action="store_true",
+        help="Work from an existing --jadx-dir dump instead of decompiling an APK",
     )
     parser.add_argument("--json", type=Path, help="Write full APK route catalog as JSON")
     parser.add_argument(
@@ -227,11 +274,19 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    if not args.apk.is_file():
-        print(f"APK not found: {args.apk}", file=sys.stderr)
+    if args.from_jadx:
+        if not (args.jadx_dir / "sources" / "defpackage").is_dir():
+            print(f"No jadx dump under {args.jadx_dir}", file=sys.stderr)
+            return 1
+    elif args.apk is None or not args.apk.is_file():
+        print(f"APK not found: {args.apk} (or pass --from-jadx)", file=sys.stderr)
         return 1
 
-    apk_routes = extract_routes(args.apk, args.jadx_dir)
+    try:
+        apk_routes = extract_routes(None if args.from_jadx else args.apk, args.jadx_dir)
+    except RuntimeError as exc:
+        print(exc, file=sys.stderr)
+        return 1
     wired = integration_routes()
 
     if args.json:
@@ -247,7 +302,7 @@ def main() -> int:
 
     if args.capability_map:
         args.capability_map.parent.mkdir(parents=True, exist_ok=True)
-        write_capability_map(apk_routes, args.capability_map)
+        write_capability_map(apk_routes, args.capability_map, apk_version(args.jadx_dir))
 
     thermostat = [route for route in apk_routes if route.slug == "api-enki-thermostat-prod"]
     presence = [route for route in apk_routes if route.slug == "api-enki-presence-detector-prod"]
