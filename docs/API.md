@@ -224,6 +224,25 @@ Base: `https://enki.api.devportal.adeo.cloud/api-enki-scenario-prod/v1/scenarios
 
 Gateway key: `ENKI_SCENARIO_API_KEY` in `gateway_keys_data.py`.
 
+## Equation water heater (api-enki-equation-water-heater-prod)
+
+Base: `https://enki.api.devportal.adeo.cloud/api-enki-equation-water-heater-prod/v1/equation-water-heater`
+Gateway key: `ENKI_EQUATION_WATER_HEATER_API_KEY`. Headers: `Authorization`, `X-Gateway-APIKey`, `homeId`.
+
+| Method | Path | Notes |
+|--------|------|-------|
+| GET | `{nodeId}/check-water-heater-mode` | `lastReportedValue` is the mode |
+| GET | `{nodeId}/check-water-heater-error` | not read yet |
+
+The mode is one of `AUTO`, `BOOST`, `BOOST_PLUS`, `ECO`, `MANUAL`, `SELF_CLEAN`.
+
+**There is no write route.** An earlier app version served
+`POST {nodeId}/change-water-heater-mode` with `{"mode": "SELF_CLEAN"}`, and it is gone in 2.26.3 — the service
+declares these two reads and nothing else. The app still changes the mode, so the write moved somewhere that a
+traffic capture will have to find. Until then the integration exposes the mode as a sensor and not a `select`,
+because a control that silently does nothing is worse than a reading
+([#285](https://github.com/cyrilcolinet/enki-integration-hass/issues/285)).
+
 ## Consumption (api-enki-consumption-prod)
 
 Base: `https://enki.api.devportal.adeo.cloud/api-enki-consumption-prod/v1/consumption`

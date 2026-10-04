@@ -110,6 +110,7 @@ class EnkiDeviceState:
 
     electrical_consumption_unit = _str_field("electrical_consumption_unit")
     electrical_consumption_at = _str_field("electrical_consumption_at")
+    water_heater_mode = _str_field("water_heater_mode")
 
     @property
     def energy_period_total(self) -> float | None:

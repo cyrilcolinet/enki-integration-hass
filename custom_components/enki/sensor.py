@@ -28,6 +28,9 @@ from .domain.models import EnkiDevice
 from .entity import EnkiEntity
 from .lib.battery import battery_health_to_percent
 
+# What an Equation water heater reports as its mode, from the Enki app (#285).
+WATER_HEATER_MODES = ("AUTO", "BOOST", "BOOST_PLUS", "ECO", "MANUAL", "SELF_CLEAN")
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -64,6 +67,8 @@ def _build_sensor_entities(
     if profile.supports_electrical_consumption:
         entities.append(EnkiElectricalConsumptionSensor(coordinator, device))
         entities.append(EnkiEnergySensor(coordinator, device))
+    if profile.supports_water_heater_mode:
+        entities.append(EnkiWaterHeaterModeSensor(coordinator, device))
     if profile.is_camera:
         entities.append(EnkiCameraLastMotionSensor(coordinator, device))
         if profile.supports_camera_sound_events:
@@ -317,6 +322,34 @@ class EnkiElectricalConsumptionSensor(EnkiEntity, SensorEntity):
         nothing says every device behaves the same way.
         """
         return {"last_reported_at": self._device.reported.electrical_consumption_at}
+
+
+class EnkiWaterHeaterModeSensor(EnkiEntity, SensorEntity):
+    """Operating mode of an Equation water heater (#285).
+
+    A sensor and not a `select`, because the mode cannot be written: the app's
+    `change-water-heater-mode` route existed in an earlier version and Adeo has
+    since removed it, leaving only this read. Offering a control that silently
+    does nothing would be worse than showing the mode.
+    """
+
+    _attr_translation_key = "water_heater_mode"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = [mode.lower() for mode in WATER_HEATER_MODES]
+
+    def __init__(self, coordinator: EnkiCoordinator, device: EnkiDevice) -> None:
+        super().__init__(coordinator, device)
+        self._attr_unique_id = f"{DOMAIN}-{device.node_id}-water-heater-mode"
+
+    @property
+    def native_value(self) -> str | None:
+        mode = self._device.reported.water_heater_mode
+        if mode is None:
+            return None
+        # An unknown mode must not be returned: HA logs an error for every state
+        # outside `options`, on every poll.
+        lowered = mode.lower()
+        return lowered if lowered in self._attr_options else None
 
 
 class EnkiEnergySensor(EnkiEntity, SensorEntity):

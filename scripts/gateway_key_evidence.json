@@ -89,6 +89,15 @@
       ],
       "key": "YlTcpTzG8Fm2z52MN89laCGnCx6ldbWx"
     },
+    "ENKI_EQUATION_WATER_HEATER_API_KEY": {
+      "slug": "api-enki-equation-water-heater-prod",
+      "interface": "fr9",
+      "routes": [
+        "equation-water-heater/{nodeId}/check-water-heater-error",
+        "equation-water-heater/{nodeId}/check-water-heater-mode"
+      ],
+      "key": "fWrF3BRqlg6LoDoRlyTsOtoAkdMuWqpA"
+    },
     "ENKI_ESDK_API_KEY": {
       "slug": "api-enki-esdk-prod",
       "interface": "rt9",

@@ -177,10 +177,10 @@ ENKI_MICRO_SERVICES: tuple[EnkiMicroService, ...] = (
     EnkiMicroService(
         "api-enki-equation-water-heater-prod",
         "ENKI_EQUATION_WATER_HEATER_API_KEY",
-        "",
+        "equation_water_heater",
         "/api-enki-equation-water-heater-prod/v1/equation-water-heater",
-        wired=False,
-        notes="",
+        wired=True,
+        notes="Equation water heater mode, read-only (#285)",
     ),
     EnkiMicroService(
         "api-enki-esdk-prod",

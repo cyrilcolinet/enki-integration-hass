@@ -62,6 +62,16 @@ Multi-circuit nodes may create **one entity per circuit** (BFF endpoint). Timers
 
 Same power API as outlets (`ENKI_POWER_API_KEY`). Field-confirmed ([#87](https://github.com/cyrilcolinet/enki-integration-hass/issues/87)).
 
+## Equation connected water heater (AD-HEWH3-1 and kin)
+
+**HA entities:** `climate` (setpoint), `sensor` (instant power, energy this month, **mode**)
+
+The mode the app shows — `AUTO`, `BOOST`, `BOOST_PLUS`, `ECO`, `MANUAL`, `SELF_CLEAN` — is now readable, from the heater's own service `api-enki-equation-water-heater-prod`.
+
+**It is a reading, not a control.** The app used to have a write route for it, and Adeo removed it: the service exposes only reads today. So `Self Clean` cannot be started from an automation yet, and a `select` that silently did nothing would be worse than a sensor that tells the truth ([#285](https://github.com/cyrilcolinet/enki-integration-hass/issues/285)).
+
+Setting a temperature creates a derogation server-side, which answers `201` ([#269](https://github.com/cyrilcolinet/enki-integration-hass/issues/269)). Whether that also flips the mode to `MANUAL` is visible now that the mode is exposed.
+
 ## Enki scenarios (v1.6.0+)
 
 **HA entities:** `button` (one button per cloud scenario)
