@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.30.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.29.0...v1.30.0) (2026-10-04)
+
+
+### Features
+
+* **airco:** read what an Equation air conditioner reports ([afe8f77](https://github.com/cyrilcolinet/enki-integration-hass/commit/afe8f77213c8c79cf50b9ed47e50594683c9206e))
+* **scripts:** watch the doorbell's WebRTC negotiation ([358cae2](https://github.com/cyrilcolinet/enki-integration-hass/commit/358cae20133be533426726138618365d1fcf9364))
+* **water-heater:** expose the Equation operating mode ([3002ee0](https://github.com/cyrilcolinet/enki-integration-hass/commit/3002ee0574648d0fc1c7f866a5ceb6bbe791a5ce))
+
+
+### Bug Fixes
+
+* **scripts:** read route verbs from the APK, not a guess ([7d071c9](https://github.com/cyrilcolinet/enki-integration-hass/commit/7d071c973fdcf5b73c658cf1a83a8e0cc5b7b849))
+
 ## [1.29.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.28.0...v1.29.0) (2026-10-03)
 
 
