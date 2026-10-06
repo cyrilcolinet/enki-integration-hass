@@ -18,7 +18,7 @@ AIRCO_STATE = {
         "operatingMode": "COOLING",
         "power": "ON",
         "fanSpeed": "AUTO",
-        "swingOrientation": "VERTICAL",
+        "swingOrientation": {"horizontal": "NIV_2", "vertical": "AUTO"},
         "selfCleanMode": "OFF",
         "frostProtectionMode": "OFF",
         "healthMode": "OFF",
@@ -48,7 +48,8 @@ def test_the_nested_state_is_flattened() -> None:
     assert state["airco_operating_mode"] == "COOLING"
     assert state["airco_target_temperature"] == 21.0
     assert state["airco_fan_speed"] == "AUTO"
-    assert state["airco_swing_orientation"] == "VERTICAL"
+    assert state["airco_swing_horizontal"] == "NIV_2"
+    assert state["airco_swing_vertical"] == "AUTO"
     assert set(state) == set(AIRCO_STATE_KEYS)
 
 

@@ -17,7 +17,13 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
 from .coordinator import EnkiCoordinator
-from .domain.airco import FAN_SPEEDS, OPERATING_MODES, STATE_KEY_BY_FIELD
+from .domain.airco import (
+    FAN_SPEEDS,
+    OPERATING_MODES,
+    STATE_KEY_BY_FIELD,
+    SWING_HORIZONTAL,
+    SWING_VERTICAL,
+)
 from .domain.models import EnkiDevice
 from .entity import EnkiEntity
 from .lib.heating import (
@@ -138,9 +144,15 @@ class EnkiAirConditionerClimate(EnkiEntity, ClimateEntity):
     _attr_has_entity_name = True
     _attr_hvac_modes = [HVACMode.OFF, *(_HVAC_BY_MODE[mode] for mode in OPERATING_MODES)]
     _attr_fan_modes = [speed.lower() for speed in FAN_SPEEDS]
+    # The louvres are two independent settings, and they do not have the same
+    # number of steps: horizontal goes to 5, vertical to 4 (#286).
+    _attr_swing_modes = [step.lower() for step in SWING_VERTICAL]
+    _attr_swing_horizontal_modes = [step.lower() for step in SWING_HORIZONTAL]
     _attr_supported_features = (
         ClimateEntityFeature.TARGET_TEMPERATURE
         | ClimateEntityFeature.FAN_MODE
+        | ClimateEntityFeature.SWING_MODE
+        | ClimateEntityFeature.SWING_HORIZONTAL_MODE
         | ClimateEntityFeature.TURN_ON
         | ClimateEntityFeature.TURN_OFF
     )
@@ -172,11 +184,31 @@ class EnkiAirConditionerClimate(EnkiEntity, ClimateEntity):
 
     @property
     def fan_mode(self) -> str | None:
-        speed = self._device.reported.airco_fan_speed
-        if speed is None:
+        return self._option(self._device.reported.airco_fan_speed, self._attr_fan_modes)
+
+    @property
+    def swing_mode(self) -> str | None:
+        return self._option(self._state.get("airco_swing_vertical"), self._attr_swing_modes)
+
+    @property
+    def swing_horizontal_mode(self) -> str | None:
+        return self._option(
+            self._state.get("airco_swing_horizontal"), self._attr_swing_horizontal_modes
+        )
+
+    @staticmethod
+    def _option(value: Any, allowed: list[str]) -> str | None:
+        """Home Assistant logs an error for every value outside the declared list."""
+        if not isinstance(value, str):
             return None
-        lowered = speed.lower()
-        return lowered if lowered in self._attr_fan_modes else None
+        lowered = value.lower()
+        return lowered if lowered in allowed else None
+
+    async def async_set_swing_mode(self, swing_mode: str) -> None:
+        await self._async_write(airco_swing_vertical=swing_mode.upper())
+
+    async def async_set_swing_horizontal_mode(self, swing_horizontal_mode: str) -> None:
+        await self._async_write(airco_swing_horizontal=swing_horizontal_mode.upper())
 
     async def _async_write(self, **changes: Any) -> None:
         await self.coordinator.api.async_set_airconditioner_state(
@@ -187,7 +219,9 @@ class EnkiAirConditionerClimate(EnkiEntity, ClimateEntity):
         )
         with self.coordinator.batch_updates():
             for field, value in changes.items():
-                self.coordinator.update_cached_value(self.node_id, STATE_KEY_BY_FIELD[field], value)
+                # Swing changes are passed by state key already, the rest by API field.
+                key = STATE_KEY_BY_FIELD.get(field, field)
+                self.coordinator.update_cached_value(self.node_id, key, value)
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
         temperature = kwargs.get(ATTR_TEMPERATURE)

@@ -127,3 +127,40 @@ def test_an_unreported_swing_is_not_invented() -> None:
     payload = build_airconditioner_payload(parse_airconditioner_state({"lastReportedValue": {}}))
 
     assert payload["swingOrientation"] is None
+
+
+def test_a_write_keeps_the_louvres_where_the_user_left_them() -> None:
+    """Sending a null orientation would straighten louvres on every temperature change."""
+    state = {**REPORTED, "airco_swing_vertical": "NIV_2", "airco_swing_horizontal": "AUTO"}
+
+    payload = build_airconditioner_payload(state, targetTemperature=22.0)
+
+    assert payload["swingOrientation"] == {"horizontal": "AUTO", "vertical": "NIV_2"}
+
+
+def test_a_unit_that_reports_no_louvres_sends_none() -> None:
+    assert build_airconditioner_payload(REPORTED)["swingOrientation"] is None
+
+
+@pytest.mark.asyncio
+async def test_setting_a_swing_step_sends_only_that_louvre() -> None:
+    device = _aircon(airco_swing_vertical="AUTO", airco_swing_horizontal="NIV_3")
+    entity, coordinator = _entity(device)
+
+    await entity.async_set_swing_mode("niv_2")
+
+    _, kwargs = coordinator.api.async_set_airconditioner_state.call_args
+    assert kwargs == {"airco_swing_vertical": "NIV_2"}
+    coordinator.update_cached_value.assert_called_once_with(
+        "node-ac", "airco_swing_vertical", "NIV_2"
+    )
+
+
+def test_the_two_louvres_have_their_own_steps() -> None:
+    """Horizontal goes to 5, vertical to 4: one shared list would offer a dead step."""
+    entity, _ = _entity(_aircon(airco_swing_vertical="NIV_4", airco_swing_horizontal="NIV_5"))
+
+    assert entity.swing_mode == "niv_4"
+    assert entity.swing_horizontal_mode == "niv_5"
+    assert entity._attr_swing_modes == ["auto", "niv_1", "niv_2", "niv_3", "niv_4"]
+    assert "niv_5" in entity._attr_swing_horizontal_modes

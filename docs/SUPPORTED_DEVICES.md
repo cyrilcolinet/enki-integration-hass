@@ -73,8 +73,11 @@ dry, fan only and auto are all available, with four fan speeds.
 one setting that changed, so the integration does the same: it takes what the last poll read, applies the change
 and sends it all back. Setting only a temperature would otherwise clear the mode and the fan speed.
 
+The louvres are two independent settings, horizontal and vertical, and they do not have the same number of
+steps: horizontal offers auto plus five positions, vertical auto plus four. Both are exposed as swing modes.
+
 The comfort flags the unit also carries (night, quiet, health, self-clean, frost protection) are preserved
-across writes but have no entity yet, and swing orientation is not read
+across writes but have no entity yet
 ([#286](https://github.com/cyrilcolinet/enki-integration-hass/issues/286)).
 
 ## Equation connected water heater (AD-HEWH3-1 and kin)

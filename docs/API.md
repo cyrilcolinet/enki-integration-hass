@@ -254,7 +254,7 @@ a unit reporting `COOL` / `AUTO`:
 | `operatingMode` | `AUTO`, `COOL`, `DRY`, `FAN`, `HEAT` |
 | `fanSpeed` | `AUTO`, `LOW`, `MEDIUM`, `HIGH` |
 | `power` | `ON`, `OFF` |
-| `swingOrientation` | an object of two orientations, `HORIZONTAL` and `VERTICAL`, not read yet |
+| `swingOrientation` | an object: `horizontal` takes `AUTO`, `NIV_1`…`NIV_5`, `vertical` `AUTO`, `NIV_1`…`NIV_4` |
 
 The four comfort flags (`sleepMode`, `quietMode`, `healthMode`, `selfCleanMode`) and `frostProtectionMode` are
 booleans. They are carried through writes but not exposed as entities yet
