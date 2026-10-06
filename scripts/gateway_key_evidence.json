@@ -133,6 +133,17 @@
       ],
       "key": "ci2ml5gZ0AghnE9Pdc6fqGloz7GQnlRA"
     },
+    "ENKI_HEATING_CONTROLLER_API_KEY": {
+      "slug": "api-enki-heating-controller-prod",
+      "interface": "u6d",
+      "routes": [
+        "nodes/{nodeId}/policies",
+        "nodes/{nodeId}/policies/current",
+        "nodes/{nodeId}/update-heating-state",
+        "override-commands/infos"
+      ],
+      "key": "S7oIs0Jxp53KSgZS9rhiJWWj38FJo9hq"
+    },
     "ENKI_HOME_API_KEY": {
       "slug": "api-enki-home-prod",
       "interface": "dud",
