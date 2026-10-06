@@ -147,10 +147,10 @@ class EnkiFanLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
         return int(raw.strip("TK")) if raw else None
 
     async def async_turn_on(self, **kwargs: Any) -> None:
-        # Coalesce the optimistic cache writes below into a single HA refresh,
-        # so a multi-entity node doesn't re-render on every field (Cadix flicker).
-        with self.coordinator.batch_updates():
-            await self._perform_turn_on(**kwargs)
+        # Not batched around the await: suspending notifications across the command
+        # hides the optimistic write until the cloud answers, which is the lag this
+        # was meant to remove (#296). Each write group batches itself instead.
+        await self._perform_turn_on(**kwargs)
         # Reconcile firmware side effects (e.g. Cadix ring/main coupling) from truth.
         self.coordinator.request_reconcile()
 
@@ -205,8 +205,7 @@ class EnkiFanLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
             )
 
     async def async_turn_off(self, **kwargs: Any) -> None:
-        with self.coordinator.batch_updates():
-            await self._perform_turn_off(**kwargs)
+        await self._perform_turn_off(**kwargs)
         self.coordinator.request_reconcile()
 
     async def _perform_turn_off(self, **kwargs: Any) -> None:
