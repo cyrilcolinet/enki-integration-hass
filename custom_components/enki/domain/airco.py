@@ -29,7 +29,6 @@ _STATE_FIELDS = {
     "operatingMode": "airco_operating_mode",
     "power": "airco_power",
     "fanSpeed": "airco_fan_speed",
-    "swingOrientation": "airco_swing_orientation",
     "selfCleanMode": "airco_self_clean_mode",
     "frostProtectionMode": "airco_frost_protection_mode",
     "healthMode": "airco_health_mode",
@@ -37,7 +36,16 @@ _STATE_FIELDS = {
     "sleepMode": "airco_sleep_mode",
 }
 
-AIRCO_STATE_KEYS = frozenset(_STATE_FIELDS.values())
+# `swingOrientation` is an object of two independent louvre settings, and they do
+# not have the same number of steps: horizontal goes to 5, vertical to 4 (#286).
+SWING_HORIZONTAL = ("AUTO", "NIV_1", "NIV_2", "NIV_3", "NIV_4", "NIV_5")
+SWING_VERTICAL = ("AUTO", "NIV_1", "NIV_2", "NIV_3", "NIV_4")
+_SWING_FIELDS = {
+    "horizontal": "airco_swing_horizontal",
+    "vertical": "airco_swing_vertical",
+}
+
+AIRCO_STATE_KEYS = frozenset({*_STATE_FIELDS.values(), *_SWING_FIELDS.values()})
 # API field to state key, for a write that has to patch the cache back.
 STATE_KEY_BY_FIELD = dict(_STATE_FIELDS)
 
@@ -46,8 +54,6 @@ STATE_KEY_BY_FIELD = dict(_STATE_FIELDS)
 # reporting COOL / AUTO (#286).
 OPERATING_MODES = ("AUTO", "COOL", "DRY", "FAN", "HEAT")
 FAN_SPEEDS = ("AUTO", "LOW", "MEDIUM", "HIGH")
-# Fields the write carries that are not plain state: the app sends them too.
-_WRITE_ONLY_DEFAULTS = {"swingOrientation": None}
 
 
 def build_airconditioner_payload(
@@ -60,10 +66,16 @@ def build_airconditioner_payload(
     one field that moved, so writing a temperature alone would blank the mode,
     the fan speed and the four comfort toggles. `changes` keys are API names.
     """
-    payload: dict[str, Any] = dict(_WRITE_ONLY_DEFAULTS)
-    for field, key in _STATE_FIELDS.items():
-        if key in state:
-            payload[field] = state[key]
+    payload: dict[str, Any] = {
+        field: state[key] for field, key in _STATE_FIELDS.items() if key in state
+    }
+    # Sending a null orientation would straighten louvres the user had set, so it
+    # is rebuilt from what was read and only dropped when nothing was reported.
+    swing = {field: state[key] for field, key in _SWING_FIELDS.items() if key in state}
+    for field, key in _SWING_FIELDS.items():
+        if key in changes:
+            swing[field] = changes.pop(key)
+    payload["swingOrientation"] = swing or None
     payload.update(changes)
     return payload
 
@@ -75,8 +87,18 @@ def parse_airconditioner_state(payload: dict[str, Any]) -> dict[str, Any]:
     reported = payload.get("lastReportedValue")
     if not isinstance(reported, dict):
         return {}
-    return {
+    state = {
         key: reported[field]
         for field, key in _STATE_FIELDS.items()
         if isinstance(reported.get(field), (str, int, float, bool))
     }
+    swing = reported.get("swingOrientation")
+    if isinstance(swing, dict):
+        state.update(
+            {
+                key: swing[field]
+                for field, key in _SWING_FIELDS.items()
+                if isinstance(swing.get(field), str)
+            }
+        )
+    return state
