@@ -124,7 +124,15 @@
         "name": "Energy"
       },
       "water_heater_mode": {
-        "name": "Mode"
+        "name": "Mode",
+        "state": {
+          "auto": "Auto",
+          "manual": "Manual",
+          "boost": "Boost",
+          "boost_plus": "Boost+",
+          "prog": "Programme",
+          "clean": "Self-clean"
+        }
       },
       "camera_last_motion": {
         "name": "Last motion"
@@ -323,6 +331,17 @@
           "two_minutes": "2 min",
           "three_minutes": "3 min",
           "auto": "Auto"
+        }
+      },
+      "water_heater_mode": {
+        "name": "Mode",
+        "state": {
+          "auto": "Auto",
+          "manual": "Manual",
+          "boost": "Boost",
+          "boost_plus": "Boost+",
+          "prog": "Programme",
+          "clean": "Self-clean"
         }
       }
     },

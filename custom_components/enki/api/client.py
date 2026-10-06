@@ -1133,6 +1133,16 @@ class EnkiAPI:
             mode,
         )
 
+    async def async_set_water_heater_mode(
+        self,
+        home_id: str,
+        node_id: str,
+        mode: str,
+    ) -> None:
+        """Set an Equation water heater's mode (MANUAL, BOOST, CLEAN, …) (#285)."""
+        http = await self._get_http()
+        await http.post_policy(home_id, node_id, "change_water_heater_mode", mode)
+
     async def async_set_thermostat_target_temperature(
         self,
         home_id: str,

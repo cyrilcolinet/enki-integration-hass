@@ -17,6 +17,7 @@ Short version: [README](../README.md) · detailed view below.
 | ✅ Supported | DIO outlets (433 MHz RF) | `switch` with assumed state — one-way RF, nothing reports back ([#203](https://github.com/cyrilcolinet/enki-integration-hass/issues/203)) |
 | ✅ Supported | Evology 2-channel in-wall module | one `switch` per channel (`check_channel1/2_electrical_power`) |
 | ✅ Supported | Water-heater on/off relay (Lexman/Nodon 83424574) | `switch` re-typed as boiler ([#87](https://github.com/cyrilcolinet/enki-integration-hass/issues/87)) |
+| ✅ Supported | Equation water heater (AD-HEWH3-1) | `climate` setpoint, mode `select` via heating-controller policies ([#285](https://github.com/cyrilcolinet/enki-integration-hass/issues/285)), power and energy `sensor` |
 | ✅ Supported | Envertech-Lexman solar panels | production (W) via BFF dashboard |
 | ✅ Supported | Motion / contact / vibration sensors (Lexman, …) | `binary_sensor` (+ activation `switch`, vibration sensitivity `number`) |
 | ✅ Supported | Evology multisensor | motion/presence `binary_sensor`, brightness `sensor` (`check_brightness_level`) |

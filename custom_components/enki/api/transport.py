@@ -532,6 +532,28 @@ class EnkiHttpClient:
             json=payload,
         )
 
+    async def post_policy(
+        self,
+        home_id: str,
+        node_id: str,
+        capability: str,
+        value: Any,
+    ) -> None:
+        """Set a capability through heating-controller's generic policy (app 2.27.0).
+
+        This is where the water heater's mode went after its own service dropped
+        `change-water-heater-mode`: the same capability id, one route for all of them.
+
+        The app's model also carries a `type`, which it fills only for numeric
+        policies and leaves empty for a capability value like this one.
+        """
+        await self.post_command(
+            "heating_controller",
+            f"{WIRED_PATH_PREFIXES['heating_controller']}/nodes/{node_id}/policies",
+            home_id=home_id,
+            json={"capabilityId": capability, "value": value},
+        )
+
     async def capability_post(
         self,
         service: str,
