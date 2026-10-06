@@ -93,10 +93,8 @@ def water_heater_mode_options(possible_values: dict[str, Any]) -> list[str]:
     suggest: self-clean is `CLEAN`, and there is a `PROG` but no `ECO`.
     """
     meta = possible_values.get("check_water_heater_mode")
-    if isinstance(meta, dict):
-        values = meta.get("values")
-        if isinstance(values, list):
-            options = [value.lower() for value in values if isinstance(value, str)]
-            if options:
-                return options
-    return [mode.lower() for mode in WATER_HEATER_MODES]
+    values = meta.get("values") if isinstance(meta, dict) else None
+    # A non-list would otherwise be iterated, a string character by character.
+    values = values if isinstance(values, list) else []
+    options = [value.lower() for value in values if isinstance(value, str)]
+    return options or [mode.lower() for mode in WATER_HEATER_MODES]
