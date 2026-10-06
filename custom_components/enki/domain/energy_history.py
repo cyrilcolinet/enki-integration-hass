@@ -8,7 +8,13 @@ response snaps to the period enclosing that instant, and comes back as buckets �
 
     {"firstMeasurementDate": …, "lastMeasurementDate": …,
      "periodConsumption": {"value": 25.255, "unit": "kWh", "date": …},
-     "periodChart": {"series": [{"data": [null, 0.0, …], "unit": "kWh"}]}}
+     "periodChart": {"series": [{"data": [{"x": 1, "value": null},
+                                          {"x": 2, "value": 0.0}, …],
+                                 "unit": "kWh"}]}}
+
+Each bucket is an ``{"x", "value"}`` object, not a bare number (seen on an
+Equation water heater, #270); a bare number is still read, in case another
+device answers that way.
 
 ``null`` is "no reading", not zero: future hours and anything before
 ``firstMeasurementDate`` come back null, while a real zero is ``0.0``. The
@@ -29,6 +35,10 @@ from typing import Any
 MONTHLY = "MONTHLY"
 
 
+def _bucket_value(bucket: Any) -> Any:
+    return bucket.get("value") if isinstance(bucket, dict) else bucket
+
+
 def _buckets(payload: dict[str, Any]) -> list[Any]:
     chart = payload.get("periodChart")
     if not isinstance(chart, dict):
@@ -37,10 +47,10 @@ def _buckets(payload: dict[str, Any]) -> list[Any]:
     if not isinstance(series, list):
         return []
     return [
-        value
+        _bucket_value(bucket)
         for entry in series
         if isinstance(entry, dict) and isinstance(entry.get("data"), list)
-        for value in entry["data"]
+        for bucket in entry["data"]
     ]
 
 
