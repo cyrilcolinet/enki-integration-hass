@@ -215,12 +215,11 @@ class EnkiAirConditionerClimate(EnkiEntity, ClimateEntity):
         # The write carries the whole state, so it is built from what was read
         # before the cache is patched.
         state = dict(self._state)
-        with self.coordinator.optimistic(self.node_id):
-            with self.coordinator.batch_updates():
-                for field, value in changes.items():
-                    # Swing changes come keyed by state key already, the rest by API field.
-                    key = STATE_KEY_BY_FIELD.get(field, field)
-                    self.coordinator.update_cached_value(self.node_id, key, value)
+        with self.coordinator.optimistic(self.node_id), self.coordinator.batch_updates():
+            for field, value in changes.items():
+                # Swing changes come keyed by state key already, the rest by API field.
+                key = STATE_KEY_BY_FIELD.get(field, field)
+                self.coordinator.update_cached_value(self.node_id, key, value)
             await self.coordinator.api.async_set_airconditioner_state(
                 self._device.home_id,
                 self._device.node_id,
