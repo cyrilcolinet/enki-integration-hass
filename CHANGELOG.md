@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.31.3](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.31.2...v1.31.3) (2026-10-06)
+
+
+### Bug Fixes
+
+* **energy:** read chart buckets sent as {"x", "value"} objects ([8f1312a](https://github.com/cyrilcolinet/enki-integration-hass/commit/8f1312a4553564903c8349bd51134a8adec55c37))
+* **state:** tell Home Assistant before the command returns ([2c1e7f5](https://github.com/cyrilcolinet/enki-integration-hass/commit/2c1e7f512930107331f953a1dda3e2662fc10f71))
+
 ## [1.31.2](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.31.1...v1.31.2) (2026-10-06)
 
 
