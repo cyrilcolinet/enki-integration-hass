@@ -131,13 +131,14 @@ def test_the_instant_sensor_surfaces_when_the_device_last_reported() -> None:
     assert sensor.extra_state_attributes["last_reported_at"] == "2026-10-02T10:32:13.114Z"
 
 
-# The same month as the service actually sends it (captured from app 2.26.3 on the
+# The same month exactly as the service sent it (captured from app 2.26.3 on the
 # reporter's AD-HEWH3-1): each bucket is an {"x", "value"} object, and dates are
 # dd/mm/yyyy. The 12 readings add up to the 25.25 kWh the YEARLY chart shows for
-# September.
+# September, and to periodConsumption to the last decimal.
 SEPTEMBER_AS_SENT = {
     "firstMeasurementDate": "19/09/2026",
     "lastMeasurementDate": "02/10/2026",
+    "periodConsumption": {"value": 25.254620000000003, "unit": "kWh", "date": "19/09/2026"},
     "periodChart": {
         "series": [
             {
@@ -162,6 +163,7 @@ SEPTEMBER_AS_SENT = {
             }
         ],
         "type": "column",
+        "yScale": {"minimum": 0.0, "maximum": 5.0},
     },
 }
 
@@ -171,6 +173,7 @@ def test_buckets_sent_as_x_value_objects_are_summed() -> None:
     state = parse_energy_history(SEPTEMBER_AS_SENT)
 
     assert state["energy_period_total"] == 25.255
+    assert state["energy_period_total"] == round(SEPTEMBER_AS_SENT["periodConsumption"]["value"], 3)
     assert state["energy_period_buckets"] == 12
     assert state["energy_period_unit"] == "kWh"
 
@@ -181,3 +184,15 @@ def test_a_day_with_no_reading_yet_comes_back_as_null_value() -> None:
     }
 
     assert parse_energy_history(month)["energy_period_total"] == 3.062
+
+
+def test_a_period_with_nothing_yet_has_no_total() -> None:
+    """A DAILY read just after midnight UTC: chart and total both come back null."""
+    empty = {
+        "firstMeasurementDate": "19/09/2026",
+        "lastMeasurementDate": "05/10/2026",
+        "periodChart": None,
+        "periodConsumption": None,
+    }
+
+    assert parse_energy_history(empty)["energy_period_total"] is None

@@ -348,17 +348,24 @@ period enclosing it. `timePeriod` decides the buckets — `DAILY` gives 24 hours
 days of that month, `YEARLY` 12 months. Note that `homeId` travels as a header here, while
 `check-instant-consumption` takes it as a query parameter.
 
+Captured from app 2.26.3 on an AD-HEWH3-1 (`MONTHLY`, September):
+
 ```json
-{"firstMeasurementDate": "…", "lastMeasurementDate": "…",
- "periodConsumption": {"value": 25.255, "unit": "kWh", "date": "…"},
- "periodChart": {"series": [{"data": [null, 0.0, 1.805, …],
+{"firstMeasurementDate": "19/09/2026", "lastMeasurementDate": "02/10/2026",
+ "periodConsumption": {"value": 25.254620000000003, "unit": "kWh", "date": "19/09/2026"},
+ "periodChart": {"series": [{"data": [{"x": 1, "value": null}, …,
+                                      {"x": 19, "value": 0.0}, {"x": 20, "value": 3.38451}, …],
                              "startDateFormatted": "01/09/2026",
                              "endDateFormatted": "30/09/2026", "unit": "kWh"}],
-                 "type": "BAR", "yScale": {"minimum": 0.0, "maximum": 3.7}}}
+                 "type": "column", "yScale": {"minimum": 0.0, "maximum": 5.0}}}
 ```
 
-`null` is "no reading", **not** zero: future buckets and anything before `firstMeasurementDate` are null, while a
-real zero is `0.0`. `periodConsumption.value` is the sum of the buckets, not an independent figure. Finished
+Each bucket is an `{"x", "value"}` object, `x` being the hour, weekday, day or month; dates are `dd/mm/yyyy`,
+not ISO. `null` is "no reading", **not** zero: future buckets and anything before `firstMeasurementDate` are
+null, while a real zero is `0.0`. `periodConsumption.value` is the sum of the buckets, not an independent
+figure — it matched to the last decimal in every period captured — and the integration sums the buckets itself
+rather than relying on it, because a period with nothing yet comes back with `periodChart` and
+`periodConsumption` both `null` (a `DAILY` read just after midnight UTC). Finished
 periods are stable — re-reading September returns the same total — so a backfill would be safe. The integration
 reads the current month once an hour and exposes the sum as a `total_increasing` energy sensor; it does not
 import history into long-term statistics ([#270](https://github.com/cyrilcolinet/enki-integration-hass/issues/270)).
