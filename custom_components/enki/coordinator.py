@@ -211,6 +211,11 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
         repeatedly (observed as UI flicker on multi-entity nodes like the
         Inspire Cadix). Within this block intermediate notifications are
         suppressed and a single refresh is emitted on exit.
+
+        **Never wrap a command's await in this.** Nothing reaches Home Assistant
+        until the block exits, so an optimistic write made before the command
+        stays invisible for the whole round trip, which is the lag it exists to
+        remove (#296). Close the block, then await.
         """
         previous = self._suspend_notify
         self._suspend_notify = True
