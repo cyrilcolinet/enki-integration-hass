@@ -20,6 +20,7 @@ Short version: [README](../README.md) · detailed view below.
 | ✅ Supported | Equation water heater (AD-HEWH3-1) | `climate` setpoint, mode `select` via heating-controller policies ([#285](https://github.com/cyrilcolinet/enki-integration-hass/issues/285)), power and energy `sensor` |
 | ✅ Supported | Envertech-Lexman solar panels | production (W) via BFF dashboard |
 | ✅ Supported | Motion / contact / vibration sensors (Lexman, …) | `binary_sensor` (+ activation `switch`, vibration sensitivity `number`) |
+| ✅ Supported | Equation air conditioners | `climate` with mode, setpoint and fan speed ([#286](https://github.com/cyrilcolinet/enki-integration-hass/issues/286)) |
 | ✅ Supported | Evology multisensor | motion/presence `binary_sensor`, brightness `sensor` (`check_brightness_level`) |
 | ✅ Supported | Enki thermometers (Sedea, …) | temperature, humidity, battery `sensor` |
 | ✅ Supported | Lexman sirens | `switch` ON/OFF |

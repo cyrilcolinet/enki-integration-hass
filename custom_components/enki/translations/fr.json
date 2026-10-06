@@ -346,6 +346,9 @@
       }
     },
     "climate": {
+      "air_conditioner": {
+        "name": "Climatisation"
+      },
       "thermostat": {
         "name": "Thermostat"
       }

@@ -43,6 +43,7 @@ Use your Enki devices in Home Assistant, with the same email and password as the
 - **Lights and outlets** — switch, dim, change colour and white temperature
 - **Blinds and shutters** — open, close, stop, set a position
 - **Heating** — radiators and pilot wire, with target temperature and modes
+- **Air conditioning** — heat, cool, dry or fan, with the temperature and fan speed
 - **Ceiling fans** — speed, direction and the light kit
 - **Cameras** — the latest motion snapshot, and a live view on the solar camera
 - **Video doorbell** — know when someone rings, with the caller's picture, and browse past calls in **Media**

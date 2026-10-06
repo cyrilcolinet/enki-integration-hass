@@ -112,6 +112,19 @@ class EnkiDeviceState:
     electrical_consumption_at = _str_field("electrical_consumption_at")
     water_heater_mode = _str_field("water_heater_mode")
 
+    # Equation air conditioner (#286).
+    airco_operating_mode = _str_field("airco_operating_mode")
+    airco_fan_speed = _str_field("airco_fan_speed")
+    airco_power = _str_field("airco_power")
+
+    @property
+    def airco_target_temperature(self) -> float | None:
+        return _as_float(self._data.get("airco_target_temperature"))
+
+    @property
+    def airco_current_temperature(self) -> float | None:
+        return _as_float(self._data.get("airco_current_temperature"))
+
     @property
     def energy_period_total(self) -> float | None:
         """Energy consumed so far this month, from the chart buckets (#270)."""

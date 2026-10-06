@@ -242,10 +242,22 @@ Gateway key: `ENKI_EQUATION_AIRCO_API_KEY`. Headers: `Authorization`, `X-Gateway
   "healthMode": "OFF", "quietMode": "OFF", "sleepMode": "OFF"}}
 ```
 
-The write body mirrors those fields exactly, so the device describes a `climate` entity rather than the ON/OFF
-switch currently exposed. **What the APK does not say is which values `operatingMode`, `fanSpeed` and
-`swingOrientation` accept** — the referentiel publishes none of them. The read is wired and flattened into the
-diagnostics export so a reporter's own unit can answer that; nothing is written until it has
+The write body mirrors those fields exactly, and **the app rebuilds the whole object on every write** rather
+than sending the field that moved, so a partial write would blank the mode, the fan speed and the comfort
+toggles. The integration reads the state, applies one change and sends it all back.
+
+The referentiel publishes none of the accepted values, so they come from the app's own enums, confirmed against
+a unit reporting `COOL` / `AUTO`:
+
+| Field | Values |
+|---|---|
+| `operatingMode` | `AUTO`, `COOL`, `DRY`, `FAN`, `HEAT` |
+| `fanSpeed` | `AUTO`, `LOW`, `MEDIUM`, `HIGH` |
+| `power` | `ON`, `OFF` |
+| `swingOrientation` | an object of two orientations, `HORIZONTAL` and `VERTICAL`, not read yet |
+
+The four comfort flags (`sleepMode`, `quietMode`, `healthMode`, `selfCleanMode`) and `frostProtectionMode` are
+booleans. They are carried through writes but not exposed as entities yet
 ([#286](https://github.com/cyrilcolinet/enki-integration-hass/issues/286)).
 
 ## Equation water heater (api-enki-equation-water-heater-prod)

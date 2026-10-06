@@ -38,6 +38,34 @@ _STATE_FIELDS = {
 }
 
 AIRCO_STATE_KEYS = frozenset(_STATE_FIELDS.values())
+# API field to state key, for a write that has to patch the cache back.
+STATE_KEY_BY_FIELD = dict(_STATE_FIELDS)
+
+# What the app's own enums allow. The referentiel publishes none of these, so
+# they come from the decompiled app and are confirmed against a real unit
+# reporting COOL / AUTO (#286).
+OPERATING_MODES = ("AUTO", "COOL", "DRY", "FAN", "HEAT")
+FAN_SPEEDS = ("AUTO", "LOW", "MEDIUM", "HIGH")
+# Fields the write carries that are not plain state: the app sends them too.
+_WRITE_ONLY_DEFAULTS = {"swingOrientation": None}
+
+
+def build_airconditioner_payload(
+    state: dict[str, Any],
+    **changes: Any,
+) -> dict[str, Any]:
+    """The whole state back, with `changes` applied (#286).
+
+    The app rebuilds the entire object on every write rather than sending the
+    one field that moved, so writing a temperature alone would blank the mode,
+    the fan speed and the four comfort toggles. `changes` keys are API names.
+    """
+    payload: dict[str, Any] = dict(_WRITE_ONLY_DEFAULTS)
+    for field, key in _STATE_FIELDS.items():
+        if key in state:
+            payload[field] = state[key]
+    payload.update(changes)
+    return payload
 
 
 def parse_airconditioner_state(payload: dict[str, Any]) -> dict[str, Any]:
