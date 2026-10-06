@@ -79,6 +79,9 @@ def test_a_heater_that_declares_nothing_falls_back_to_the_known_modes() -> None:
     assert water_heater_mode_options({"check_water_heater_mode": {"values": []}}) == [
         mode.lower() for mode in WATER_HEATER_MODES
     ]
+    assert water_heater_mode_options({"check_water_heater_mode": {"values": "AUTO"}}) == [
+        mode.lower() for mode in WATER_HEATER_MODES
+    ]
 
 
 def test_a_mode_outside_the_options_is_dropped() -> None:
