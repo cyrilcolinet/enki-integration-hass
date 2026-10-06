@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.31.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.30.0...v1.31.0) (2026-10-06)
+
+
+### Features
+
+* **airco:** control the Equation air conditioner ([e52780e](https://github.com/cyrilcolinet/enki-integration-hass/commit/e52780e32a4c5f15ffc6197a5934f6a7ffc08fa9))
+* **water-heater:** set the Equation mode from Home Assistant ([c4a6767](https://github.com/cyrilcolinet/enki-integration-hass/commit/c4a6767421fc3b9739c23b308edc239b724a0767))
+
+
+### Bug Fixes
+
+* **water-heater:** take the mode values from the heater, not the app's labels ([fe742c7](https://github.com/cyrilcolinet/enki-integration-hass/commit/fe742c73bca6a0ad7fec3ac1b8129cd17d06e416))
+
 ## [1.30.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.29.0...v1.30.0) (2026-10-04)
 
 
