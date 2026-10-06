@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.31.2](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.31.1...v1.31.2) (2026-10-06)
+
+
+### Bug Fixes
+
+* **state:** write optimistic state before sending the command ([883dff1](https://github.com/cyrilcolinet/enki-integration-hass/commit/883dff1f39afeb9e96ea4912ac817951fd5e366b))
+
 ## [1.31.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.31.0...v1.31.1) (2026-10-06)
 
 
