@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.31.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.31.0...v1.31.1) (2026-10-06)
+
+
+### Bug Fixes
+
+* **airco:** keep the louvres where the user left them ([fb0940c](https://github.com/cyrilcolinet/enki-integration-hass/commit/fb0940cc16002bfd9bc4462cf87259acfcb55722))
+
 ## [1.31.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.30.0...v1.31.0) (2026-10-06)
 
 
