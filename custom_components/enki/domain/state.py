@@ -5,7 +5,8 @@ from __future__ import annotations
 from typing import Any
 
 
-def _as_float(value: Any) -> float | None:
+def as_float(value: Any) -> float | None:
+    """A reported number, whether the API sent it as a number or a string."""
     if isinstance(value, (int, float)):
         return float(value)
     if isinstance(value, str):
@@ -106,7 +107,7 @@ class EnkiDeviceState:
 
     @property
     def electrical_consumption(self) -> float | None:
-        return _as_float(self._data.get("electrical_consumption"))
+        return as_float(self._data.get("electrical_consumption"))
 
     electrical_consumption_unit = _str_field("electrical_consumption_unit")
     electrical_consumption_at = _str_field("electrical_consumption_at")
@@ -119,16 +120,16 @@ class EnkiDeviceState:
 
     @property
     def airco_target_temperature(self) -> float | None:
-        return _as_float(self._data.get("airco_target_temperature"))
+        return as_float(self._data.get("airco_target_temperature"))
 
     @property
     def airco_current_temperature(self) -> float | None:
-        return _as_float(self._data.get("airco_current_temperature"))
+        return as_float(self._data.get("airco_current_temperature"))
 
     @property
     def energy_period_total(self) -> float | None:
         """Energy consumed so far this month, from the chart buckets (#270)."""
-        return _as_float(self._data.get("energy_period_total"))
+        return as_float(self._data.get("energy_period_total"))
 
     energy_period_unit = _str_field("energy_period_unit")
     energy_first_measurement_at = _str_field("energy_first_measurement_at")
@@ -145,11 +146,11 @@ class EnkiDeviceState:
 
     @property
     def hue(self) -> float | None:
-        return _as_float(self._data.get("hue"))
+        return as_float(self._data.get("hue"))
 
     @property
     def saturation(self) -> float | None:
-        return _as_float(self._data.get("saturation"))
+        return as_float(self._data.get("saturation"))
 
     color_mode = _str_field("colorMode")
 
@@ -162,7 +163,7 @@ class EnkiDeviceState:
 
     @property
     def energy_production(self) -> float | None:
-        return _as_float(self._data.get("energy_production"))
+        return as_float(self._data.get("energy_production"))
 
     @property
     def shutter_position(self) -> int | None:
@@ -187,15 +188,15 @@ class EnkiDeviceState:
 
     @property
     def current_temperature(self) -> float | None:
-        return _as_float(self._data.get("current_temperature"))
+        return as_float(self._data.get("current_temperature"))
 
     @property
     def current_humidity(self) -> float | None:
-        return _as_float(self._data.get("current_humidity"))
+        return as_float(self._data.get("current_humidity"))
 
     @property
     def illuminance_level(self) -> float | None:
-        return _as_float(self._data.get("illuminance_level"))
+        return as_float(self._data.get("illuminance_level"))
 
     battery_health = _str_field("battery_health")
 
@@ -214,7 +215,7 @@ class EnkiDeviceState:
 
     @property
     def vibration_sensibility_level(self) -> float | None:
-        return _as_float(self._data.get("vibration_sensibility_level"))
+        return as_float(self._data.get("vibration_sensibility_level"))
 
     siren_global_state = _str_field("siren_global_state")
 
@@ -224,7 +225,7 @@ class EnkiDeviceState:
 
     @property
     def thermostat_target_temperature(self) -> float | None:
-        return _as_float(self._data.get("thermostat_target_temperature"))
+        return as_float(self._data.get("thermostat_target_temperature"))
 
     thermostat_running_state = _str_field("thermostat_running_state")
 
@@ -234,7 +235,7 @@ class EnkiDeviceState:
 
     @property
     def offset_temperature(self) -> float | None:
-        return _as_float(self._data.get("offset_temperature"))
+        return as_float(self._data.get("offset_temperature"))
 
     child_lock = _str_field("child_lock")
 

@@ -193,6 +193,8 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
             if device is not None and before_state is not None:
                 device.last_reported_value.clear()
                 device.last_reported_value.update(before_state)
+            # Not `self._overrides[node_id] = before_overrides`: that leaves an
+            # empty mapping behind until the next poll clears it.
             if before_overrides:
                 self._overrides[node_id] = before_overrides
             else:

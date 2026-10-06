@@ -208,3 +208,28 @@ async def test_preheating_turn_off_posts_disabled() -> None:
         "change_preheating_status",
         "DISABLED",
     )
+
+
+def test_the_vibration_level_reads_back_after_an_optimistic_write() -> None:
+    """The level goes over the wire as a string, so native_value must accept one."""
+    from unittest.mock import MagicMock
+
+    from enki.domain.models import EnkiDevice
+    from enki.number import EnkiVibrationSensibilityNumber
+
+    device = EnkiDevice(
+        home_id="home-1",
+        device_id="dev-1",
+        node_id="node-contact",
+        device_name="Capteur",
+        device_type="contact_sensors",
+        is_enabled=True,
+        state="ACTIVE",
+        capabilities=["change_vibration_sensibility_level"],
+        last_reported_value={"vibration_sensibility_level": "3"},
+    )
+    coordinator = MagicMock()
+    coordinator.last_update_success = True
+    coordinator.get_device_by_node = lambda node_id: device
+
+    assert EnkiVibrationSensibilityNumber(coordinator, device).native_value == 3.0
