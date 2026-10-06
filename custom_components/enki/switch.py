@@ -243,21 +243,22 @@ class EnkiOutletSwitch(EnkiEntity, SwitchEntity):
 
     async def _set_power(self, power: str) -> None:
         node_id = self._device.node_id
-        await self.coordinator.api.async_switch_electrical_power(
-            self._device.home_id,
-            node_id,
-            power,
-            endpoint=self._endpoint_id,
-        )
-        if self._endpoint_id is not None:
-            self.coordinator.update_endpoint_power(node_id, self._endpoint_id, power)
-            return
-        # A one-way outlet is never read back, so the command is the only state
-        # there will ever be — holding it for 45 s just turns the entity unknown
-        # in between (#203).
-        hold = math.inf if self._attr_assumed_state else None
-        self.coordinator.update_cached_value(node_id, "electrical_power", power, hold)
-        self.coordinator.update_cached_value(node_id, "power", power, hold)
+        with self.coordinator.optimistic(node_id):
+            if self._endpoint_id is not None:
+                self.coordinator.update_endpoint_power(node_id, self._endpoint_id, power)
+            else:
+                # A one-way outlet is never read back, so the command is the only
+                # state there will ever be — holding it for 45 s just turns the
+                # entity unknown in between (#203).
+                hold = math.inf if self._attr_assumed_state else None
+                self.coordinator.update_cached_value(node_id, "electrical_power", power, hold)
+                self.coordinator.update_cached_value(node_id, "power", power, hold)
+            await self.coordinator.api.async_switch_electrical_power(
+                self._device.home_id,
+                node_id,
+                power,
+                endpoint=self._endpoint_id,
+            )
 
 
 class EnkiChannelSwitch(EnkiEntity, SwitchEntity):
@@ -299,14 +300,15 @@ class EnkiChannelSwitch(EnkiEntity, SwitchEntity):
         await self._set_power("OFF")
 
     async def _set_power(self, value: str) -> None:
-        await self.coordinator.api.async_set_capability_value(
-            self._device.home_id,
-            self._device.node_id,
-            "power",
-            self._switch_capability,
-            value,
-        )
-        self.coordinator.update_cached_value(self.node_id, self._state_key, value)
+        with self.coordinator.optimistic(self.node_id):
+            self.coordinator.update_cached_value(self.node_id, self._state_key, value)
+            await self.coordinator.api.async_set_capability_value(
+                self._device.home_id,
+                self._device.node_id,
+                "power",
+                self._switch_capability,
+                value,
+            )
 
 
 class EnkiBoilerSwitch(EnkiOutletSwitch):
@@ -377,14 +379,15 @@ class EnkiConfigSwitch(EnkiEntity, SwitchEntity):
         await self._set_value(self._off_value)
 
     async def _set_value(self, value: str) -> None:
-        await self.coordinator.api.async_set_capability_value(
-            self._device.home_id,
-            self._device.node_id,
-            self._service,
-            self._switch_capability,
-            value,
-        )
-        self.coordinator.update_cached_value(self.node_id, self._state_key, value)
+        with self.coordinator.optimistic(self.node_id):
+            self.coordinator.update_cached_value(self.node_id, self._state_key, value)
+            await self.coordinator.api.async_set_capability_value(
+                self._device.home_id,
+                self._device.node_id,
+                self._service,
+                self._switch_capability,
+                value,
+            )
 
 
 class EnkiCameraSettingSwitch(EnkiCameraSettingEntity, SwitchEntity):

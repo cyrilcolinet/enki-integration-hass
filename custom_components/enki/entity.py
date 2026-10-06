@@ -83,7 +83,8 @@ class EnkiCameraSettingEntity(EnkiEntity):
         return self._device.last_reported_value.get(self._spec.state_key)
 
     async def _write(self, value: Any) -> None:
-        await self.coordinator.api.async_set_camera_setting(
-            self._device.home_id, self._device.node_id, self._spec.capability, value
-        )
-        self.coordinator.update_cached_value(self.node_id, self._spec.state_key, value)
+        with self.coordinator.optimistic(self.node_id):
+            self.coordinator.update_cached_value(self.node_id, self._spec.state_key, value)
+            await self.coordinator.api.async_set_camera_setting(
+                self._device.home_id, self._device.node_id, self._spec.capability, value
+            )

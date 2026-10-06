@@ -61,18 +61,19 @@ class EnkiVibrationSensibilityNumber(EnkiEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         level = str(int(value))
-        await self.coordinator.api.async_set_capability_value(
-            self._device.home_id,
-            self._device.node_id,
-            "contact_sensor",
-            "change_vibration_sensibility_level",
-            level,
-        )
-        self.coordinator.update_cached_value(
-            self.node_id,
-            "vibration_sensibility_level",
-            level,
-        )
+        with self.coordinator.optimistic(self.node_id):
+            self.coordinator.update_cached_value(
+                self.node_id,
+                "vibration_sensibility_level",
+                level,
+            )
+            await self.coordinator.api.async_set_capability_value(
+                self._device.home_id,
+                self._device.node_id,
+                "contact_sensor",
+                "change_vibration_sensibility_level",
+                level,
+            )
 
 
 class EnkiOffsetTemperatureNumber(EnkiEntity, NumberEntity):
@@ -98,18 +99,19 @@ class EnkiOffsetTemperatureNumber(EnkiEntity, NumberEntity):
         return self._device.reported.offset_temperature
 
     async def async_set_native_value(self, value: float) -> None:
-        await self.coordinator.api.async_set_capability_value(
-            self._device.home_id,
-            self._device.node_id,
-            "thermostat",
-            "change_offset_temperature",
-            value,
-        )
-        self.coordinator.update_cached_value(
-            self.node_id,
-            "offset_temperature",
-            value,
-        )
+        with self.coordinator.optimistic(self.node_id):
+            self.coordinator.update_cached_value(
+                self.node_id,
+                "offset_temperature",
+                value,
+            )
+            await self.coordinator.api.async_set_capability_value(
+                self._device.home_id,
+                self._device.node_id,
+                "thermostat",
+                "change_offset_temperature",
+                value,
+            )
 
 
 class EnkiCameraSensitivityNumber(EnkiCameraSettingEntity, NumberEntity):
