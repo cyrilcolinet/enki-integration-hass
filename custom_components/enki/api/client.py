@@ -12,7 +12,7 @@ from typing import Any
 import aiohttp
 
 from ..const import DEVICE_TYPE_LIGHTS, LOGGER
-from ..domain.airco import parse_airconditioner_state
+from ..domain.airco import build_airconditioner_payload, parse_airconditioner_state
 from ..domain.camera_events import parse_camera_events
 from ..domain.camera_settings import parse_camera_status
 from ..domain.capabilities import EnkiCapabilityProfile
@@ -1142,6 +1142,24 @@ class EnkiAPI:
         """Set an Equation water heater's mode (MANUAL, BOOST, CLEAN, …) (#285)."""
         http = await self._get_http()
         await http.post_policy(home_id, node_id, "change_water_heater_mode", mode)
+
+    async def async_set_airconditioner_state(
+        self,
+        home_id: str,
+        node_id: str,
+        state: dict[str, Any],
+        **changes: Any,
+    ) -> dict[str, Any]:
+        """Change one thing on an air conditioner without dropping the rest (#286).
+
+        The write carries the whole state, so the caller passes what it last read
+        and this applies `changes` on top. Returns the payload sent, so the caller
+        can cache it optimistically.
+        """
+        payload = build_airconditioner_payload(state, **changes)
+        http = await self._get_http()
+        await http.change_airconditioner_state(home_id, node_id, payload)
+        return payload
 
     async def async_set_thermostat_target_temperature(
         self,

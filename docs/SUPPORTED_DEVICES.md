@@ -62,6 +62,21 @@ Multi-circuit nodes may create **one entity per circuit** (BFF endpoint). Timers
 
 Same power API as outlets (`ENKI_POWER_API_KEY`). Field-confirmed ([#87](https://github.com/cyrilcolinet/enki-integration-hass/issues/87)).
 
+## Equation air conditioner (AD-WMACKC-U1 and kin)
+
+**HA entities:** `climate` (mode, setpoint, fan speed), `switch` (power), `sensor` (temperature)
+
+Mode, target temperature and fan speed, from the unit's own service `api-enki-equation-airco-prod`. Heat, cool,
+dry, fan only and auto are all available, with four fan speeds.
+
+**A write carries the whole state.** The Enki app rebuilds the entire object every time rather than sending the
+one setting that changed, so the integration does the same: it takes what the last poll read, applies the change
+and sends it all back. Setting only a temperature would otherwise clear the mode and the fan speed.
+
+The comfort flags the unit also carries (night, quiet, health, self-clean, frost protection) are preserved
+across writes but have no entity yet, and swing orientation is not read
+([#286](https://github.com/cyrilcolinet/enki-integration-hass/issues/286)).
+
 ## Equation connected water heater (AD-HEWH3-1 and kin)
 
 **HA entities:** `climate` (setpoint), `select` (**mode**), `sensor` (instant power, energy this month)

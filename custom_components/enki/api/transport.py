@@ -605,6 +605,21 @@ class EnkiHttpClient:
             not_found_ok=True,
         )
 
+    async def change_airconditioner_state(
+        self,
+        home_id: str,
+        node_id: str,
+        payload: dict[str, Any],
+    ) -> None:
+        """Write an Equation air conditioner's whole state (#286)."""
+        prefix = WIRED_PATH_PREFIXES["equation_airco"]
+        await self.post_command(
+            "equation_airco",
+            f"{prefix}/{node_id}/change-airconditioner-state",
+            home_id=home_id,
+            json=payload,
+        )
+
     async def get_energy_history(
         self,
         home_id: str,
