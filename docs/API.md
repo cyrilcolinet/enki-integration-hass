@@ -262,12 +262,31 @@ The mode is one of the values the heater declares for `check_water_heater_mode` 
 `AUTO`, `MANUAL`, `BOOST`, `BOOST_PLUS`, `PROG`, `CLEAN` on an AD-HEWH3-1. Self-clean is `CLEAN` on the wire, not
 `SELF_CLEAN`, and there is no `ECO`.
 
-**There is no write route.** An earlier app version served
-`POST {nodeId}/change-water-heater-mode` with `{"mode": "SELF_CLEAN"}`, and it is gone in 2.26.3 — the service
-declares these two reads and nothing else. The app still changes the mode, so the write moved somewhere that a
-traffic capture will have to find. Until then the integration exposes the mode as a sensor and not a `select`,
-because a control that silently does nothing is worse than a reading
-([#285](https://github.com/cyrilcolinet/enki-integration-hass/issues/285)).
+**The write is not on this service.** An earlier app version served
+`POST {nodeId}/change-water-heater-mode` with `{"mode": "SELF_CLEAN"}`, and it is gone in 2.26.3. A capture of app
+2.27.0 found where it went: heating-controller's generic policy route, below.
+
+## Heating controller (api-enki-heating-controller-prod)
+
+Base: `https://enki.api.devportal.adeo.cloud/api-enki-heating-controller-prod/v1`
+Gateway key: `ENKI_HEATING_CONTROLLER_API_KEY`. Headers: `Authorization`, `X-Gateway-APIKey`, `homeId`.
+
+| Method | Path | Notes |
+|--------|------|-------|
+| POST | `nodes/{nodeId}/policies` | `{"capabilityId": "change_water_heater_mode", "value": "CLEAN"}` → `204`, empty body |
+| GET | `override-commands/infos?capabilityIds=…&homeId=…&nodeId=…` | the app reads it before opening the mode sheet; not used |
+
+Every mode the app's sheet offers goes through the same route, only `value` changing (captured from app 2.27.0
+on an AD-HEWH3-1, [#285](https://github.com/cyrilcolinet/enki-integration-hass/issues/285)).
+
+What the heater does with it, seen on that unit:
+
+- A mode carries its own setpoint. CLEAN drove the target to 80 °C, above the 75 °C the `climate` entity
+  allows, and a setpoint written during CLEAN was overridden.
+- MANUAL comes back with the setpoint it last held, not the last one written — 55 °C here, after the
+  integration had set 40 °C.
+- Writing a setpoint does not change the mode.
+- `check-water-heater-mode` followed a write 1.5 to 4 minutes later.
 
 ## Consumption (api-enki-consumption-prod)
 

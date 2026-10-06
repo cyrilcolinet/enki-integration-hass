@@ -167,8 +167,15 @@ class EnkiCapabilityProfile:
 
     @property
     def supports_water_heater_mode(self) -> bool:
-        """Equation water heater mode — read-only: the app's write route is gone (#285)."""
+        """Equation water heater mode, read from the heater's own service (#285)."""
         return _supports(self.capabilities, self.possible_values, "check_water_heater_mode")
+
+    @property
+    def supports_water_heater_mode_change(self) -> bool:
+        """Equation water heater mode, written through heating-controller policies (#285)."""
+        return self.supports_water_heater_mode and _supports(
+            self.capabilities, self.possible_values, "change_water_heater_mode"
+        )
 
     @property
     def supports_electrical_consumption(self) -> bool:

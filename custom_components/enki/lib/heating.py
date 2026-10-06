@@ -98,3 +98,19 @@ def water_heater_mode_options(possible_values: dict[str, Any]) -> list[str]:
     values = values if isinstance(values, list) else []
     options = [value.lower() for value in values if isinstance(value, str)]
     return options or [mode.lower() for mode in WATER_HEATER_MODES]
+
+
+def water_heater_mode_api_value(option: str) -> str:
+    """Map an HA select option to the mode the heater takes (uppercase)."""
+    return option.upper()
+
+
+def water_heater_mode_option(value: object, options: list[str]) -> str | None:
+    """The option for a reported mode, or None when it is not one of `options`.
+
+    HA logs an error for every state outside `options`, on every poll.
+    """
+    if not isinstance(value, str):
+        return None
+    lowered = value.lower()
+    return lowered if lowered in options else None

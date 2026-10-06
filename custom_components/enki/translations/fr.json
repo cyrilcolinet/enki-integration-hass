@@ -124,7 +124,15 @@
         "name": "Énergie consommée"
       },
       "water_heater_mode": {
-        "name": "Mode"
+        "name": "Mode",
+        "state": {
+          "auto": "Auto",
+          "manual": "Manuel",
+          "boost": "Boost",
+          "boost_plus": "Boost+",
+          "prog": "Programmation",
+          "clean": "Auto-nettoyage"
+        }
       },
       "camera_last_motion": {
         "name": "Dernier mouvement"
@@ -323,6 +331,17 @@
           "two_minutes": "2 min",
           "three_minutes": "3 min",
           "auto": "Auto"
+        }
+      },
+      "water_heater_mode": {
+        "name": "Mode",
+        "state": {
+          "auto": "Auto",
+          "manual": "Manuel",
+          "boost": "Boost",
+          "boost_plus": "Boost+",
+          "prog": "Programmation",
+          "clean": "Auto-nettoyage"
         }
       }
     },

@@ -27,7 +27,7 @@ from .coordinator import EnkiCoordinator
 from .domain.models import EnkiDevice
 from .entity import EnkiEntity
 from .lib.battery import battery_health_to_percent
-from .lib.heating import water_heater_mode_options
+from .lib.heating import water_heater_mode_option, water_heater_mode_options
 
 
 async def async_setup_entry(
@@ -65,7 +65,7 @@ def _build_sensor_entities(
     if profile.supports_electrical_consumption:
         entities.append(EnkiElectricalConsumptionSensor(coordinator, device))
         entities.append(EnkiEnergySensor(coordinator, device))
-    if profile.supports_water_heater_mode:
+    if profile.supports_water_heater_mode and not profile.supports_water_heater_mode_change:
         entities.append(EnkiWaterHeaterModeSensor(coordinator, device))
     if profile.is_camera:
         entities.append(EnkiCameraLastMotionSensor(coordinator, device))
@@ -323,12 +323,10 @@ class EnkiElectricalConsumptionSensor(EnkiEntity, SensorEntity):
 
 
 class EnkiWaterHeaterModeSensor(EnkiEntity, SensorEntity):
-    """Operating mode of an Equation water heater (#285).
+    """Operating mode of an Equation water heater, as read (#285).
 
-    A sensor and not a `select`, because the mode cannot be written: the app's
-    `change-water-heater-mode` route existed in an earlier version and Adeo has
-    since removed it, leaving only this read. Offering a control that silently
-    does nothing would be worse than showing the mode.
+    The control is the `select`, which writes through heating-controller. This
+    stays for a heater that declares the read but not the write.
     """
 
     _attr_translation_key = "water_heater_mode"
@@ -341,13 +339,7 @@ class EnkiWaterHeaterModeSensor(EnkiEntity, SensorEntity):
 
     @property
     def native_value(self) -> str | None:
-        mode = self._device.reported.water_heater_mode
-        if mode is None:
-            return None
-        # An unknown mode must not be returned: HA logs an error for every state
-        # outside `options`, on every poll.
-        lowered = mode.lower()
-        return lowered if lowered in self._attr_options else None
+        return water_heater_mode_option(self._device.reported.water_heater_mode, self._attr_options)
 
 
 class EnkiEnergySensor(EnkiEntity, SensorEntity):

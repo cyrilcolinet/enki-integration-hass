@@ -225,10 +225,11 @@ ENKI_MICRO_SERVICES: tuple[EnkiMicroService, ...] = (
     EnkiMicroService(
         "api-enki-heating-controller-prod",
         "ENKI_HEATING_CONTROLLER_API_KEY",
-        "",
-        "/api-enki-heating-controller-prod/v1/heating-controller",
-        wired=False,
-        notes="central heating control",
+        "heating_controller",
+        "/api-enki-heating-controller-prod/v1",
+        wired=True,
+        notes="Equation water heater mode, POST nodes/{nodeId}/policies (#285). "
+        "Prefix is the version root: the generic capability helpers do not apply.",
     ),
     EnkiMicroService(
         "api-enki-heating-prod",
