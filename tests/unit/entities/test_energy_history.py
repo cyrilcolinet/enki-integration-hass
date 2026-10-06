@@ -129,3 +129,55 @@ def test_the_instant_sensor_surfaces_when_the_device_last_reported() -> None:
 
     assert sensor.native_value == 0.0
     assert sensor.extra_state_attributes["last_reported_at"] == "2026-10-02T10:32:13.114Z"
+
+
+# The same month as the service actually sends it (captured from app 2.26.3 on the
+# reporter's AD-HEWH3-1): each bucket is an {"x", "value"} object, and dates are
+# dd/mm/yyyy. The 12 readings add up to the 25.25 kWh the YEARLY chart shows for
+# September.
+SEPTEMBER_AS_SENT = {
+    "firstMeasurementDate": "19/09/2026",
+    "lastMeasurementDate": "02/10/2026",
+    "periodChart": {
+        "series": [
+            {
+                "data": [{"x": day, "value": None} for day in range(1, 19)]
+                + [
+                    {"x": 19, "value": 0.0},
+                    {"x": 20, "value": 3.38451},
+                    {"x": 21, "value": 0.41722},
+                    {"x": 22, "value": 2.63024},
+                    {"x": 23, "value": 2.09989},
+                    {"x": 24, "value": 2.3895600000000004},
+                    {"x": 25, "value": 2.243879999999999},
+                    {"x": 26, "value": 1.3907299999999996},
+                    {"x": 27, "value": 3.7487600000000008},
+                    {"x": 28, "value": 2.2479799999999983},
+                    {"x": 29, "value": 3.0025600000000026},
+                    {"x": 30, "value": 1.6992900000000013},
+                ],
+                "startDateFormatted": "01/09/2026",
+                "endDateFormatted": "30/09/2026",
+                "unit": "kWh",
+            }
+        ],
+        "type": "column",
+    },
+}
+
+
+def test_buckets_sent_as_x_value_objects_are_summed() -> None:
+    """The real shape: a list of objects read as no reading at all (#270)."""
+    state = parse_energy_history(SEPTEMBER_AS_SENT)
+
+    assert state["energy_period_total"] == 25.255
+    assert state["energy_period_buckets"] == 12
+    assert state["energy_period_unit"] == "kWh"
+
+
+def test_a_day_with_no_reading_yet_comes_back_as_null_value() -> None:
+    month = {
+        "periodChart": {"series": [{"data": [{"x": 1, "value": 3.06209}, {"x": 2, "value": None}]}]}
+    }
+
+    assert parse_energy_history(month)["energy_period_total"] == 3.062
