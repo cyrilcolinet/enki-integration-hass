@@ -143,8 +143,9 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
             return
         home_id = self._device.home_id
         node_id = self._device.node_id
-        await self.coordinator.api.async_set_fan_rotation(home_id, node_id, direction)
-        self.coordinator.update_cached_value(node_id, "airflow_rotation", direction)
+        with self.coordinator.optimistic(node_id):
+            self.coordinator.update_cached_value(node_id, "airflow_rotation", direction)
+            await self.coordinator.api.async_set_fan_rotation(home_id, node_id, direction)
         self.coordinator.request_reconcile()
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
@@ -155,8 +156,9 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
         home_id = self._device.home_id
         node_id = self._device.node_id
         enki_mode = preset_to_enki_airflow_mode(preset_mode)
-        await self.coordinator.api.async_set_airflow_mode(home_id, node_id, enki_mode)
-        self.coordinator.update_cached_value(node_id, "airflow_mode", enki_mode)
+        with self.coordinator.optimistic(node_id):
+            self.coordinator.update_cached_value(node_id, "airflow_mode", enki_mode)
+            await self.coordinator.api.async_set_airflow_mode(home_id, node_id, enki_mode)
         self.coordinator.request_reconcile()
 
     async def async_turn_on(
@@ -202,8 +204,9 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
         home_id = self._device.home_id
         node_id = self._device.node_id
         was_running = (self._device.reported.fan_speed or 0) > 0
-        await self.coordinator.api.async_set_fan_speed(home_id, node_id, speed)
-        self.coordinator.update_cached_value(node_id, "fan_speed", speed)
+        with self.coordinator.optimistic(node_id):
+            self.coordinator.update_cached_value(node_id, "fan_speed", speed)
+            await self.coordinator.api.async_set_fan_speed(home_id, node_id, speed)
         now_running = speed > 0
         if now_running and not was_running:
             self._apply_cadix_light_coupling(starting=True)
@@ -259,14 +262,15 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
         """ON/OFF fans without speed range — per-endpoint or global power API."""
         node_id = self._device.node_id
         motor_endpoint = self._device.profile.fan_motor_endpoint
-        await self.coordinator.api.async_switch_electrical_power(
-            self._device.home_id,
-            node_id,
-            power,
-            endpoint=motor_endpoint,
-        )
-        self.coordinator.update_cached_value(node_id, "electrical_power", power)
-        self.coordinator.update_cached_value(node_id, "power", power)
+        with self.coordinator.optimistic(node_id):
+            self.coordinator.update_cached_value(node_id, "electrical_power", power)
+            self.coordinator.update_cached_value(node_id, "power", power)
+            await self.coordinator.api.async_switch_electrical_power(
+                self._device.home_id,
+                node_id,
+                power,
+                endpoint=motor_endpoint,
+            )
         self.coordinator.request_reconcile()
 
     def _supports_direction(self) -> bool:

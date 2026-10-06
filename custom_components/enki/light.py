@@ -165,14 +165,15 @@ class EnkiFanLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
 
         fallback_endpoint = self._bare_power_fallback_endpoint(kwargs)
         if fallback_endpoint is not None:
-            await self.coordinator.api.async_switch_electrical_power(
-                self._device.home_id,
-                self._device.node_id,
-                "ON",
-                endpoint=fallback_endpoint,
-            )
-            self._cache_global_light_on(self.coordinator)
-            self._update_light_endpoint_cache("ON", fallback_endpoint)
+            with self.coordinator.optimistic(self._device.node_id):
+                self._cache_global_light_on(self.coordinator)
+                self._update_light_endpoint_cache("ON", fallback_endpoint)
+                await self.coordinator.api.async_switch_electrical_power(
+                    self._device.home_id,
+                    self._device.node_id,
+                    "ON",
+                    endpoint=fallback_endpoint,
+                )
             return
 
         await self._mixed_endpoint_workaround()
@@ -180,24 +181,27 @@ class EnkiFanLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
         if changes.get("power") == "OFF":
             await self._perform_turn_off(**kwargs)
             return
-        await self.coordinator.api.async_change_light_state(
-            self._device.home_id,
-            self._device.node_id,
-            changes,
-        )
-        self._cache_global_light_on(self.coordinator)
-        # change_light_state (brightness/color-temp) is a node-global command:
-        # the Enki lighting API switches every light kit ON, not just this
-        # entity's endpoint. Mark them all ON so HA doesn't keep the sibling
-        # kit stuck at OFF while it is physically lit (Inspire Cadix).
-        self._update_light_endpoint_cache("ON")
-        if "brightness" in changes:
-            self.coordinator.update_cached_value(self.node_id, "brightness", changes["brightness"])
-        if "colorTemperature" in changes:
-            self.coordinator.update_cached_value(
-                self.node_id,
-                "colorTemperature",
-                changes["colorTemperature"],
+        with self.coordinator.optimistic(self._device.node_id):
+            self._cache_global_light_on(self.coordinator)
+            # change_light_state (brightness/color-temp) is a node-global command:
+            # the Enki lighting API switches every light kit ON, not just this
+            # entity's endpoint. Mark them all ON so HA doesn't keep the sibling
+            # kit stuck at OFF while it is physically lit (Inspire Cadix).
+            self._update_light_endpoint_cache("ON")
+            if "brightness" in changes:
+                self.coordinator.update_cached_value(
+                    self.node_id, "brightness", changes["brightness"]
+                )
+            if "colorTemperature" in changes:
+                self.coordinator.update_cached_value(
+                    self.node_id,
+                    "colorTemperature",
+                    changes["colorTemperature"],
+                )
+            await self.coordinator.api.async_change_light_state(
+                self._device.home_id,
+                self._device.node_id,
+                changes,
             )
 
     async def async_turn_off(self, **kwargs: Any) -> None:
@@ -217,13 +221,14 @@ class EnkiFanLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
             await self._switch_endpoint_power(self._endpoint_id, "OFF")
             return
 
-        await self.coordinator.api.async_change_light_state(
-            self._device.home_id,
-            self._device.node_id,
-            {"power": "OFF"},
-        )
-        self._cache_global_light_off(self.coordinator)
-        self._update_light_endpoint_cache("OFF", self._endpoint_id)
+        with self.coordinator.optimistic(self._device.node_id):
+            self._cache_global_light_off(self.coordinator)
+            self._update_light_endpoint_cache("OFF", self._endpoint_id)
+            await self.coordinator.api.async_change_light_state(
+                self._device.home_id,
+                self._device.node_id,
+                {"power": "OFF"},
+            )
 
 
 class EnkiLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
@@ -342,13 +347,14 @@ class EnkiLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
         node_id = self._device.node_id
 
         if not self._supports_light_state:
-            await self.coordinator.api.async_switch_electrical_power(
-                home_id,
-                node_id,
-                "ON",
-                endpoint=self._endpoint_id,
-            )
-            self._cache_electrical_power("ON")
+            with self.coordinator.optimistic(node_id):
+                self._cache_electrical_power("ON")
+                await self.coordinator.api.async_switch_electrical_power(
+                    home_id,
+                    node_id,
+                    "ON",
+                    endpoint=self._endpoint_id,
+                )
             return
 
         if (
@@ -362,13 +368,16 @@ class EnkiLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
 
         if ATTR_HS_COLOR in kwargs:
             hue, saturation = hs_to_enki(*kwargs[ATTR_HS_COLOR])
-            await self.coordinator.api.async_change_light_color(home_id, node_id, hue, saturation)
-            self.coordinator.update_cached_value(node_id, "hue", hue)
-            self.coordinator.update_cached_value(node_id, "saturation", saturation)
-            self.coordinator.update_cached_value(node_id, "colorMode", "hs")
-            self.coordinator.update_cached_value(node_id, "colorTemperature", None)
-            self.coordinator.update_cached_value(node_id, "power", "ON")
-            self._update_light_endpoint_cache("ON", self._endpoint_id)
+            with self.coordinator.optimistic(node_id):
+                self.coordinator.update_cached_value(node_id, "hue", hue)
+                self.coordinator.update_cached_value(node_id, "saturation", saturation)
+                self.coordinator.update_cached_value(node_id, "colorMode", "hs")
+                self.coordinator.update_cached_value(node_id, "colorTemperature", None)
+                self.coordinator.update_cached_value(node_id, "power", "ON")
+                self._update_light_endpoint_cache("ON", self._endpoint_id)
+                await self.coordinator.api.async_change_light_color(
+                    home_id, node_id, hue, saturation
+                )
             return
 
         await self._mixed_endpoint_workaround()
@@ -376,44 +385,47 @@ class EnkiLightEntity(EnkiLightBehaviorMixin, EnkiEntity, LightEntity):
         if changes.get("power") == "OFF":
             await self.async_turn_off(**kwargs)
             return
-        await self.coordinator.api.async_change_light_state(home_id, node_id, changes)
-        self.coordinator.update_cached_value(node_id, "power", "ON")
-        if "brightness" in changes:
-            self.coordinator.update_cached_value(node_id, "brightness", changes["brightness"])
-        if "colorTemperature" in changes:
-            self.coordinator.update_cached_value(
-                node_id,
-                "colorTemperature",
-                changes["colorTemperature"],
-            )
-            self.coordinator.update_cached_value(node_id, "colorMode", "ct")
-        self._update_light_endpoint_cache("ON", self._endpoint_id)
+        with self.coordinator.optimistic(node_id):
+            self.coordinator.update_cached_value(node_id, "power", "ON")
+            if "brightness" in changes:
+                self.coordinator.update_cached_value(node_id, "brightness", changes["brightness"])
+            if "colorTemperature" in changes:
+                self.coordinator.update_cached_value(
+                    node_id,
+                    "colorTemperature",
+                    changes["colorTemperature"],
+                )
+                self.coordinator.update_cached_value(node_id, "colorMode", "ct")
+            self._update_light_endpoint_cache("ON", self._endpoint_id)
+            await self.coordinator.api.async_change_light_state(home_id, node_id, changes)
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         home_id = self._device.home_id
         node_id = self._device.node_id
 
         if not self._supports_light_state:
-            await self.coordinator.api.async_switch_electrical_power(
-                home_id,
-                node_id,
-                "OFF",
-                endpoint=self._endpoint_id,
-            )
-            self._cache_electrical_power("OFF")
+            with self.coordinator.optimistic(node_id):
+                self._cache_electrical_power("OFF")
+                await self.coordinator.api.async_switch_electrical_power(
+                    home_id,
+                    node_id,
+                    "OFF",
+                    endpoint=self._endpoint_id,
+                )
             return
 
         if self._endpoint_id is not None and self._uses_endpoint_power(self._endpoint_id):
             await self._switch_endpoint_power(self._endpoint_id, "OFF")
             return
 
-        await self.coordinator.api.async_change_light_state(
-            home_id,
-            node_id,
-            {"power": "OFF"},
-        )
-        self.coordinator.update_cached_value(node_id, "power", "OFF")
-        self._update_light_endpoint_cache("OFF", self._endpoint_id)
+        with self.coordinator.optimistic(node_id):
+            self.coordinator.update_cached_value(node_id, "power", "OFF")
+            self._update_light_endpoint_cache("OFF", self._endpoint_id)
+            await self.coordinator.api.async_change_light_state(
+                home_id,
+                node_id,
+                {"power": "OFF"},
+            )
 
     def _cache_electrical_power(self, power: str) -> None:
         node_id = self._device.node_id

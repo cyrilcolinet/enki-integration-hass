@@ -121,16 +121,17 @@ class EnkiThermostatClimate(EnkiEntity, ClimateEntity):
         temperature = kwargs.get(ATTR_TEMPERATURE)
         if temperature is None:
             return
-        await self.coordinator.api.async_set_thermostat_target_temperature(
-            self._device.home_id,
-            self._device.node_id,
-            float(temperature),
-        )
-        self.coordinator.update_cached_value(
-            self.node_id,
-            "thermostat_target_temperature",
-            float(temperature),
-        )
+        with self.coordinator.optimistic(self.node_id):
+            self.coordinator.update_cached_value(
+                self.node_id,
+                "thermostat_target_temperature",
+                float(temperature),
+            )
+            await self.coordinator.api.async_set_thermostat_target_temperature(
+                self._device.home_id,
+                self._device.node_id,
+                float(temperature),
+            )
 
 
 class EnkiAirConditionerClimate(EnkiEntity, ClimateEntity):
@@ -211,17 +212,21 @@ class EnkiAirConditionerClimate(EnkiEntity, ClimateEntity):
         await self._async_write(airco_swing_horizontal=swing_horizontal_mode.upper())
 
     async def _async_write(self, **changes: Any) -> None:
-        await self.coordinator.api.async_set_airconditioner_state(
-            self._device.home_id,
-            self._device.node_id,
-            self._state,
-            **changes,
-        )
-        with self.coordinator.batch_updates():
-            for field, value in changes.items():
-                # Swing changes are passed by state key already, the rest by API field.
-                key = STATE_KEY_BY_FIELD.get(field, field)
-                self.coordinator.update_cached_value(self.node_id, key, value)
+        # The write carries the whole state, so it is built from what was read
+        # before the cache is patched.
+        state = dict(self._state)
+        with self.coordinator.optimistic(self.node_id):
+            with self.coordinator.batch_updates():
+                for field, value in changes.items():
+                    # Swing changes come keyed by state key already, the rest by API field.
+                    key = STATE_KEY_BY_FIELD.get(field, field)
+                    self.coordinator.update_cached_value(self.node_id, key, value)
+            await self.coordinator.api.async_set_airconditioner_state(
+                self._device.home_id,
+                self._device.node_id,
+                state,
+                **changes,
+            )
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
         temperature = kwargs.get(ATTR_TEMPERATURE)

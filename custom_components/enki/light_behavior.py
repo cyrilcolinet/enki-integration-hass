@@ -63,13 +63,14 @@ class EnkiLightBehaviorMixin:
         return self._device.profile.bare_power_fallback_endpoint
 
     async def _switch_endpoint_power(self: EnkiEntity, endpoint_id: int, power: str) -> None:
-        await self.coordinator.api.async_switch_electrical_power(
-            self._device.home_id,
-            self._device.node_id,
-            power,
-            endpoint=endpoint_id,
-        )
-        self._cache_endpoint_power(endpoint_id, power)
+        with self.coordinator.optimistic(self._device.node_id):
+            self._cache_endpoint_power(endpoint_id, power)
+            await self.coordinator.api.async_switch_electrical_power(
+                self._device.home_id,
+                self._device.node_id,
+                power,
+                endpoint=endpoint_id,
+            )
 
     def _light_endpoints_have_mixed_power(self: EnkiEntity) -> bool:
         return self._device.reported.light_endpoints_have_mixed_power(self._light_endpoint_ids())

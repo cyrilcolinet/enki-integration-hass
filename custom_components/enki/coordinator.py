@@ -7,6 +7,7 @@ import math
 import time
 from collections.abc import Iterator
 from contextlib import contextmanager
+from copy import deepcopy
 from datetime import timedelta
 from typing import Any
 
@@ -172,6 +173,32 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
         if self._suspend_notify or self.data is None:
             return
         self.async_set_updated_data(self.data)
+
+    @contextmanager
+    def optimistic(self, node_id: str) -> Iterator[None]:
+        """Apply the cache writes inside the block now, undo them if it raises.
+
+        Writing optimistic state *after* awaiting the command leaves the entity
+        showing the old value for the whole round trip, and the Enki cloud takes
+        seconds: long enough for a toggle to send the opposite command (#296).
+        So callers write first and send second, and this puts the node back the
+        way it was when the command fails.
+        """
+        device = self.get_device_by_node(node_id)
+        before_state = deepcopy(device.last_reported_value) if device is not None else None
+        before_overrides = dict(self._overrides.get(node_id, {}))
+        try:
+            yield
+        except Exception:
+            if device is not None and before_state is not None:
+                device.last_reported_value.clear()
+                device.last_reported_value.update(before_state)
+            if before_overrides:
+                self._overrides[node_id] = before_overrides
+            else:
+                self._overrides.pop(node_id, None)
+            self._notify()
+            raise
 
     @contextmanager
     def batch_updates(self) -> Iterator[None]:

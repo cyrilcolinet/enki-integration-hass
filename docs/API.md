@@ -168,6 +168,23 @@ derogation and answers 201 with the created object ([#269](https://github.com/cy
 answers — except on the few routes that reply with the updated state, which pass their own
 list (alarm mode, meari `change-*`).
 
+## Optimistic state
+
+The Enki cloud takes **seconds** to answer a command, and a poll inside that window still returns
+the pre-command value. Every control therefore writes the new value into the coordinator cache and
+holds it for 45 s, so a poll cannot revert it before the cloud catches up.
+
+**The write happens before the command is sent, not after.** Awaiting the round trip first left the
+entity showing the old value for four to five seconds, long enough for a user toggling a light to
+send the opposite command ([#296](https://github.com/cyrilcolinet/enki-integration-hass/issues/296)).
+`EnkiCoordinator.optimistic(node_id)` wraps each command: it snapshots the node, lets the writes land
+immediately, and restores them if the command raises, so a refused write never leaves a state the
+device never took.
+
+A device that never reports back holds its value forever instead
+([#203](https://github.com/cyrilcolinet/enki-integration-hass/issues/203)); expiring it would only
+turn the entity unknown until the next command.
+
 ## Operational notifications
 
 Home Assistant raises **repair issues** (Settings → Repairs, French or English) when:

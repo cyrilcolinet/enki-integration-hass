@@ -101,8 +101,9 @@ class EnkiCoverEntity(EnkiEntity, CoverEntity):
     async def async_stop_cover(self, **kwargs: Any) -> None:
         home_id = self._device.home_id
         node_id = self._device.node_id
-        await self.coordinator.api.async_stop_shutter(home_id, node_id)
-        self.coordinator.update_cached_value(node_id, "roller_shutter_state", "STOPPED")
+        with self.coordinator.optimistic(node_id):
+            self.coordinator.update_cached_value(node_id, "roller_shutter_state", "STOPPED")
+            await self.coordinator.api.async_stop_shutter(home_id, node_id)
 
     async def _move(self, opening: str) -> None:
         if self._supports_switch and not self._supports_position:
@@ -112,20 +113,22 @@ class EnkiCoverEntity(EnkiEntity, CoverEntity):
 
     async def _switch(self, opening: str) -> None:
         node_id = self._device.node_id
-        await self.coordinator.api.async_switch_roller_shutter(
-            self._device.home_id,
-            node_id,
-            opening,
-        )
-        self.coordinator.update_cached_value(node_id, "shutter_opening", opening)
+        with self.coordinator.optimistic(node_id):
+            self.coordinator.update_cached_value(node_id, "shutter_opening", opening)
+            await self.coordinator.api.async_switch_roller_shutter(
+                self._device.home_id,
+                node_id,
+                opening,
+            )
 
     async def _set_position(self, position: int) -> None:
         clamped = max(0, min(100, position))
         home_id = self._device.home_id
         node_id = self._device.node_id
-        await self.coordinator.api.async_set_shutter_position(home_id, node_id, clamped)
-        self.coordinator.update_cached_value(node_id, "shutter_position", clamped)
-        if clamped <= 0:
-            self.coordinator.update_cached_value(node_id, "shutter_opening", "CLOSED")
-        elif clamped >= 100:
-            self.coordinator.update_cached_value(node_id, "shutter_opening", "OPEN")
+        with self.coordinator.optimistic(node_id):
+            self.coordinator.update_cached_value(node_id, "shutter_position", clamped)
+            if clamped <= 0:
+                self.coordinator.update_cached_value(node_id, "shutter_opening", "CLOSED")
+            elif clamped >= 100:
+                self.coordinator.update_cached_value(node_id, "shutter_opening", "OPEN")
+            await self.coordinator.api.async_set_shutter_position(home_id, node_id, clamped)

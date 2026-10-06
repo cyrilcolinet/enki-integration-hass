@@ -82,12 +82,13 @@ class EnkiPilotWireSelect(EnkiEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         api_value = pilot_wire_api_value(option)
-        await self.coordinator.api.async_set_pilot_wire_mode(
-            self._device.home_id,
-            self._device.node_id,
-            api_value,
-        )
-        self.coordinator.update_cached_value(self.node_id, "pilot_wire_state", api_value)
+        with self.coordinator.optimistic(self.node_id):
+            self.coordinator.update_cached_value(self.node_id, "pilot_wire_state", api_value)
+            await self.coordinator.api.async_set_pilot_wire_mode(
+                self._device.home_id,
+                self._device.node_id,
+                api_value,
+            )
 
 
 class EnkiRollerShutterModeSelect(EnkiEntity, SelectEntity):
@@ -114,12 +115,13 @@ class EnkiRollerShutterModeSelect(EnkiEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         api_value = roller_shutter_mode_api_value(option)
-        await self.coordinator.api.async_set_roller_shutter_mode(
-            self._device.home_id,
-            self._device.node_id,
-            api_value,
-        )
-        self.coordinator.update_cached_value(self.node_id, "roller_shutter_mode", api_value)
+        with self.coordinator.optimistic(self.node_id):
+            self.coordinator.update_cached_value(self.node_id, "roller_shutter_mode", api_value)
+            await self.coordinator.api.async_set_roller_shutter_mode(
+                self._device.home_id,
+                self._device.node_id,
+                api_value,
+            )
 
 
 # The heater reported a new mode 1.5 to 4 minutes after the app wrote it (AD-HEWH3-1,
@@ -148,17 +150,18 @@ class EnkiWaterHeaterModeSelect(EnkiEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         api_value = water_heater_mode_api_value(option)
-        await self.coordinator.api.async_set_water_heater_mode(
-            self._device.home_id,
-            self._device.node_id,
-            api_value,
-        )
-        self.coordinator.update_cached_value(
-            self.node_id,
-            "water_heater_mode",
-            api_value,
-            hold_seconds=_WATER_HEATER_MODE_HOLD_SECONDS,
-        )
+        with self.coordinator.optimistic(self.node_id):
+            self.coordinator.update_cached_value(
+                self.node_id,
+                "water_heater_mode",
+                api_value,
+                hold_seconds=_WATER_HEATER_MODE_HOLD_SECONDS,
+            )
+            await self.coordinator.api.async_set_water_heater_mode(
+                self._device.home_id,
+                self._device.node_id,
+                api_value,
+            )
 
 
 class EnkiCameraSettingSelect(EnkiCameraSettingEntity, SelectEntity):
