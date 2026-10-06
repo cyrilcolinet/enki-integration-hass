@@ -46,16 +46,37 @@ jobs:
           cd "${{ github.workspace }}/custom_components/enki"
           zip -r enki.zip .
 
-      - name: Upload enki.zip and append install note
+      # release-please writes the changelog from commit messages, which say nothing
+      # about who sent them. GitHub works out first-time contributors from pull
+      # request authors, so ask it and keep only that section. Someone who helped
+      # through an issue rather than a PR will not be in it.
+      - name: Compose the release footer
+        id: footer
+        uses: actions/github-script@v9
+        env:
+          TAG: ${{ needs.release-please.outputs.tag_name }}
+        with:
+          script: |
+            const { data } = await github.rest.repos.generateReleaseNotes({
+              ...context.repo,
+              tag_name: process.env.TAG,
+            });
+            const found = data.body.match(/## New Contributors\n([\s\S]*?)(?:\n\n|$)/);
+            const thanks = found
+              ? `## Thanks\n\nFirst contribution in this release:\n\n${found[1].trim()}\n\n`
+              : '';
+            core.setOutput(
+              'body',
+              `${thanks}## Install\n\nHACS → Enki → Update, then restart Home Assistant.\n`,
+            );
+
+      - name: Upload enki.zip and append the footer
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.release-please.outputs.tag_name }}
           files: ${{ github.workspace }}/custom_components/enki/enki.zip
           append_body: true
-          body: |
-            ## Install
-
-            HACS → Enki → Update, then restart Home Assistant.
+          body: ${{ steps.footer.outputs.body }}
 
   mark-released-issues:
     name: mark-released-issues
