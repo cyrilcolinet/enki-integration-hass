@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.32.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.31.3...v1.32.0) (2026-10-07)
+
+
+### Features
+
+* **airco:** name the oscillation and fan steps ([c5e24b3](https://github.com/cyrilcolinet/enki-integration-hass/commit/c5e24b356ed9ceb2778f647dab906295c19281d4))
+
+
+### Bug Fixes
+
+* **airco:** offer only the louvres the unit reports ([2932f5e](https://github.com/cyrilcolinet/enki-integration-hass/commit/2932f5e61448614ff83ddaa9a53a6f8551414c34))
+
 ## [1.31.3](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.31.2...v1.31.3) (2026-10-06)
 
 
