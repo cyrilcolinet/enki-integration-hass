@@ -152,8 +152,6 @@ class EnkiAirConditionerClimate(EnkiEntity, ClimateEntity):
     _attr_supported_features = (
         ClimateEntityFeature.TARGET_TEMPERATURE
         | ClimateEntityFeature.FAN_MODE
-        | ClimateEntityFeature.SWING_MODE
-        | ClimateEntityFeature.SWING_HORIZONTAL_MODE
         | ClimateEntityFeature.TURN_ON
         | ClimateEntityFeature.TURN_OFF
     )
@@ -163,6 +161,14 @@ class EnkiAirConditionerClimate(EnkiEntity, ClimateEntity):
     def __init__(self, coordinator: EnkiCoordinator, device: EnkiDevice) -> None:
         super().__init__(coordinator, device)
         self._attr_unique_id = f"{DOMAIN}-{device.node_id}-air-conditioner"
+        # A unit with one louvre still answers for both orientations in the API,
+        # so offering the pair unconditionally put a second oscillation control
+        # on the card that moved nothing (#286). Offer what the unit reports.
+        reported = device.last_reported_value
+        if "airco_swing_vertical" in reported:
+            self._attr_supported_features |= ClimateEntityFeature.SWING_MODE
+        if "airco_swing_horizontal" in reported:
+            self._attr_supported_features |= ClimateEntityFeature.SWING_HORIZONTAL_MODE
 
     @property
     def _state(self) -> dict[str, Any]:
