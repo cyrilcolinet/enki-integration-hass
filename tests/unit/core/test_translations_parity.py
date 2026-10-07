@@ -58,3 +58,21 @@ def test_every_entity_translation_key_is_declared() -> None:
     # Dynamic keys, built from a tuple rather than a literal assignment.
     declared |= {"fan_light_main", "fan_light_ambient", "fan_light_numbered"}
     assert _translation_keys_used_in_code() - declared == set()
+
+
+def test_every_air_conditioner_option_has_a_label() -> None:
+    """Options come from constants, labels from JSON: they drift silently (#286)."""
+    from enki.domain.airco import FAN_SPEEDS, SWING_HORIZONTAL, SWING_VERTICAL
+
+    expected = {
+        "fan_mode": FAN_SPEEDS,
+        "swing_mode": SWING_VERTICAL,
+        "swing_horizontal_mode": SWING_HORIZONTAL,
+    }
+    for path in [_PACKAGE / "strings.json", *_TRANSLATIONS]:
+        attributes = _load(path)["entity"]["climate"]["air_conditioner"]["state_attributes"]
+        for attribute, values in expected.items():
+            labelled = set(attributes[attribute]["state"])
+            assert labelled == {value.lower() for value in values}, (
+                f"{path.name}: {attribute} labels do not match the options"
+            )

@@ -347,7 +347,36 @@
     },
     "climate": {
       "air_conditioner": {
-        "name": "Air conditioner"
+        "name": "Air conditioner",
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "Auto",
+              "low": "Low",
+              "medium": "Medium",
+              "high": "High"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "auto": "Auto",
+              "niv_1": "Level 1",
+              "niv_2": "Level 2",
+              "niv_3": "Level 3",
+              "niv_4": "Level 4"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "auto": "Auto",
+              "niv_1": "Level 1",
+              "niv_2": "Level 2",
+              "niv_3": "Level 3",
+              "niv_4": "Level 4",
+              "niv_5": "Level 5"
+            }
+          }
+        }
       },
       "thermostat": {
         "name": "Thermostat"
