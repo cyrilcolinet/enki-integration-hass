@@ -164,3 +164,19 @@ def test_the_two_louvres_have_their_own_steps() -> None:
     assert entity.swing_horizontal_mode == "niv_5"
     assert entity._attr_swing_modes == ["auto", "niv_1", "niv_2", "niv_3", "niv_4"]
     assert "niv_5" in entity._attr_swing_horizontal_modes
+
+
+def test_only_the_louvres_the_unit_reports_are_offered() -> None:
+    """Offering both gave a second oscillation control that moved nothing (#286)."""
+    from homeassistant.components.climate.const import ClimateEntityFeature
+
+    vertical_only, _ = _entity(_aircon(airco_swing_vertical="AUTO"))
+    both, _ = _entity(_aircon(airco_swing_vertical="AUTO", airco_swing_horizontal="NIV_1"))
+    neither, _ = _entity(_aircon())
+
+    assert vertical_only._attr_supported_features & ClimateEntityFeature.SWING_MODE
+    assert not vertical_only._attr_supported_features & ClimateEntityFeature.SWING_HORIZONTAL_MODE
+    assert both._attr_supported_features & ClimateEntityFeature.SWING_HORIZONTAL_MODE
+    assert not neither._attr_supported_features & ClimateEntityFeature.SWING_MODE
+    # `supported_features` is a ClimateEntity property, stubbed away here.
+    assert neither._attr_supported_features & ClimateEntityFeature.FAN_MODE

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import inspect
 import sys
+from enum import IntFlag
 from pathlib import Path
 from unittest.mock import MagicMock, Mock
 
@@ -270,7 +271,20 @@ _climate = sys.modules["homeassistant.components.climate"]
 _climate.ClimateEntity = _HaEntity
 
 _climate_const = sys.modules["homeassistant.components.climate.const"]
-_climate_const.ClimateEntityFeature = MagicMock()
+
+
+class _ClimateEntityFeature(IntFlag):
+    """Real flags, so code that combines them can actually be asserted on."""
+
+    TARGET_TEMPERATURE = 1
+    FAN_MODE = 8
+    SWING_MODE = 32
+    TURN_OFF = 128
+    TURN_ON = 256
+    SWING_HORIZONTAL_MODE = 1024
+
+
+_climate_const.ClimateEntityFeature = _ClimateEntityFeature
 _climate_const.HVACAction = MagicMock()
 _climate_const.HVACMode = MagicMock()
 

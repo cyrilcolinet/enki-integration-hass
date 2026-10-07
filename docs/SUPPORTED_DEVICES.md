@@ -74,7 +74,9 @@ one setting that changed, so the integration does the same: it takes what the la
 and sends it all back. Setting only a temperature would otherwise clear the mode and the fan speed.
 
 The louvres are two independent settings, horizontal and vertical, and they do not have the same number of
-steps: horizontal offers auto plus five positions, vertical auto plus four. Both are exposed as swing modes.
+steps: horizontal offers auto plus five positions, vertical auto plus four. Only the ones a unit actually
+reports are offered: the service answers for both orientations whatever the hardware has, so a unit with a
+single louvre would otherwise get a second oscillation control on its card that moves nothing.
 
 The comfort flags the unit also carries (night, quiet, health, self-clean, frost protection) are preserved
 across writes but have no entity yet
