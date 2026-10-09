@@ -196,3 +196,36 @@ def test_a_period_with_nothing_yet_has_no_total() -> None:
     }
 
     assert parse_energy_history(empty)["energy_period_total"] is None
+
+
+def test_the_energy_state_reaches_diagnostics() -> None:
+    """A report about a missing energy sensor has to show the energy state (#268)."""
+    from enki.domain.profile import sanitize_poll_state
+
+    exported = sanitize_poll_state(parse_energy_history(SEPTEMBER))
+
+    assert exported["energy_period_total"] == 25.255
+    assert exported["energy_period_unit"] == "kWh"
+
+
+def test_a_consumption_capable_plug_reports_a_sensor_platform() -> None:
+    """It read as switch-only, so a diagnostics export looked like no sensor existed."""
+    from enki.domain.telemetry_enrichment import ha_platforms_for_profile
+
+    plug = EnkiDevice(
+        home_id="home-1",
+        device_id="dev-1",
+        node_id="node-plug",
+        device_name="Prise",
+        device_type="outlets",
+        is_enabled=True,
+        state="ACTIVE",
+        capabilities=[
+            "switch_electrical_power",
+            "check_electrical_power",
+            "check_electrical_consumption",
+        ],
+    )
+
+    assert "sensor" in ha_platforms_for_profile(plug.profile)
+    assert "switch" in ha_platforms_for_profile(plug.profile)
