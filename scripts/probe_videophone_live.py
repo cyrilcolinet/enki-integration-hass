@@ -78,7 +78,7 @@ def _summarize_sdp(value: Any) -> Any:
 
 
 def _scrub(payload: Any) -> Any:
-    """Anonymize as the other probes do, then flatten SDP blobs to their shape."""
+    """Flatten SDP blobs to their shape, before the anonymiser redacts them whole."""
     if isinstance(payload, dict):
         return {
             key: _summarize_sdp(value) if key in SDP_KEYS else _scrub(value)
@@ -103,7 +103,9 @@ async def _get(http: Any, home_id: str, path: str) -> tuple[int, Any]:
     async with http.session.get(f"{ENKI_BASE_URL}{path}", headers=headers) as response:
         body = (await response.text()).strip()
         try:
-            parsed = _scrub(anonymize(json.loads(body))) if body else None
+            # Summarise before anonymising: `anonymize` redacts a long string
+            # outright, which threw away the one thing an SDP is read for.
+            parsed = anonymize(_scrub(json.loads(body))) if body else None
         except json.JSONDecodeError:
             parsed = mask_ids(body[:300])
         return response.status, parsed
