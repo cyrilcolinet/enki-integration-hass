@@ -156,27 +156,31 @@ async def test_setting_a_swing_step_sends_only_that_louvre() -> None:
     )
 
 
-def test_the_two_louvres_have_their_own_steps() -> None:
-    """Horizontal goes to 5, vertical to 4: one shared list would offer a dead step."""
+def test_the_vertical_louvre_has_four_steps() -> None:
     entity, _ = _entity(_aircon(airco_swing_vertical="NIV_4", airco_swing_horizontal="NIV_5"))
 
     assert entity.swing_mode == "niv_4"
-    assert entity.swing_horizontal_mode == "niv_5"
     assert entity._attr_swing_modes == ["auto", "niv_1", "niv_2", "niv_3", "niv_4"]
-    assert "niv_5" in entity._attr_swing_horizontal_modes
 
 
-def test_only_the_louvres_the_unit_reports_are_offered() -> None:
-    """Offering both gave a second oscillation control that moved nothing (#286)."""
+def test_the_horizontal_louvre_gets_no_control() -> None:
+    """Both sit at AUTO at rest and only the vertical ever moved (#286)."""
     from homeassistant.components.climate.const import ClimateEntityFeature
 
-    vertical_only, _ = _entity(_aircon(airco_swing_vertical="AUTO"))
     both, _ = _entity(_aircon(airco_swing_vertical="AUTO", airco_swing_horizontal="NIV_1"))
     neither, _ = _entity(_aircon())
 
-    assert vertical_only._attr_supported_features & ClimateEntityFeature.SWING_MODE
-    assert not vertical_only._attr_supported_features & ClimateEntityFeature.SWING_HORIZONTAL_MODE
-    assert both._attr_supported_features & ClimateEntityFeature.SWING_HORIZONTAL_MODE
+    assert both._attr_supported_features & ClimateEntityFeature.SWING_MODE
+    assert not both._attr_supported_features & ClimateEntityFeature.SWING_HORIZONTAL_MODE
     assert not neither._attr_supported_features & ClimateEntityFeature.SWING_MODE
     # `supported_features` is a ClimateEntity property, stubbed away here.
     assert neither._attr_supported_features & ClimateEntityFeature.FAN_MODE
+
+
+def test_the_horizontal_value_is_still_carried_through_a_write() -> None:
+    """No control, but the louvre keeps whatever position it had."""
+    state = {**REPORTED, "airco_swing_horizontal": "NIV_3", "airco_swing_vertical": "AUTO"}
+
+    payload = build_airconditioner_payload(state, targetTemperature=22.0)
+
+    assert payload["swingOrientation"] == {"horizontal": "NIV_3", "vertical": "AUTO"}

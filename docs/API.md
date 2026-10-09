@@ -271,7 +271,7 @@ a unit reporting `COOL` / `AUTO`:
 | `operatingMode` | `AUTO`, `COOL`, `DRY`, `FAN`, `HEAT` |
 | `fanSpeed` | `AUTO`, `LOW`, `MEDIUM`, `HIGH` |
 | `power` | `ON`, `OFF` |
-| `swingOrientation` | an object: `horizontal` takes `AUTO`, `NIV_1`…`NIV_5`, `vertical` `AUTO`, `NIV_1`…`NIV_4` |
+| `swingOrientation` | an object: `horizontal` takes `AUTO`, `NIV_1`…`NIV_5`, `vertical` `AUTO`, `NIV_1`…`NIV_4`. Both answer whatever the hardware has, so only the vertical is exposed ([#286](https://github.com/cyrilcolinet/enki-integration-hass/issues/286)) |
 
 The four comfort flags (`sleepMode`, `quietMode`, `healthMode`, `selfCleanMode`) and `frostProtectionMode` are
 booleans. They are carried through writes but not exposed as entities yet

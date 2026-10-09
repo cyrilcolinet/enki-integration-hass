@@ -62,13 +62,9 @@ def test_every_entity_translation_key_is_declared() -> None:
 
 def test_every_air_conditioner_option_has_a_label() -> None:
     """Options come from constants, labels from JSON: they drift silently (#286)."""
-    from enki.domain.airco import FAN_SPEEDS, SWING_HORIZONTAL, SWING_VERTICAL
+    from enki.domain.airco import FAN_SPEEDS, SWING_VERTICAL
 
-    expected = {
-        "fan_mode": FAN_SPEEDS,
-        "swing_mode": SWING_VERTICAL,
-        "swing_horizontal_mode": SWING_HORIZONTAL,
-    }
+    expected = {"fan_mode": FAN_SPEEDS, "swing_mode": SWING_VERTICAL}
     for path in [_PACKAGE / "strings.json", *_TRANSLATIONS]:
         attributes = _load(path)["entity"]["climate"]["air_conditioner"]["state_attributes"]
         for attribute, values in expected.items():

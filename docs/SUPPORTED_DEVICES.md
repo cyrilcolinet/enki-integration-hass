@@ -73,10 +73,11 @@ dry, fan only and auto are all available, with four fan speeds.
 one setting that changed, so the integration does the same: it takes what the last poll read, applies the change
 and sends it all back. Setting only a temperature would otherwise clear the mode and the fan speed.
 
-The louvres are two independent settings, horizontal and vertical, and they do not have the same number of
-steps: horizontal offers auto plus five positions, vertical auto plus four. Only the ones a unit actually
-reports are offered: the service answers for both orientations whatever the hardware has, so a unit with a
-single louvre would otherwise get a second oscillation control on its card that moves nothing.
+**Only the vertical louvre is exposed**, as auto plus four positions. The service answers for both
+orientations whatever the hardware has, both sit at `AUTO` at rest, and nothing in the app tells them apart, so
+there is no way to know which one a given unit really has. On the only unit measured, moving the oscillation
+from the Enki app changed the vertical value and never the horizontal one. The horizontal value is still read
+and kept across writes, so the control can come back the day someone has that louvre.
 
 The comfort flags the unit also carries (night, quiet, health, self-clean, frost protection) are preserved
 across writes but have no entity yet
