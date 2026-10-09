@@ -229,3 +229,37 @@ def test_a_consumption_capable_plug_reports_a_sensor_platform() -> None:
 
     assert "sensor" in ha_platforms_for_profile(plug.profile)
     assert "switch" in ha_platforms_for_profile(plug.profile)
+
+
+def _plug(**reported) -> EnkiDevice:
+    return EnkiDevice(
+        home_id="home-1",
+        device_id="dev-1",
+        node_id="node-plug",
+        device_name="Prise",
+        device_type="outlets",
+        is_enabled=True,
+        state="ACTIVE",
+        capabilities=["switch_electrical_power", "check_electrical_consumption"],
+        last_reported_value=reported,
+    )
+
+
+def test_a_plug_the_instant_route_ignores_gets_no_power_sensor() -> None:
+    """It read unknown for ever, while the energy sensor worked on the same plug (#268)."""
+    from enki.sensor import (
+        EnkiElectricalConsumptionSensor,
+        EnkiEnergySensor,
+        _build_sensor_entities,
+    )
+
+    coordinator = MagicMock()
+    coordinator.last_update_success = True
+
+    silent = _build_sensor_entities(coordinator, _plug())
+    answering = _build_sensor_entities(coordinator, _plug(electrical_consumption=0.0))
+
+    assert not any(isinstance(e, EnkiElectricalConsumptionSensor) for e in silent)
+    assert any(isinstance(e, EnkiEnergySensor) for e in silent), "energy stays, it works"
+    # An idle device reports 0.0 rather than nothing, so it keeps its sensor.
+    assert any(isinstance(e, EnkiElectricalConsumptionSensor) for e in answering)

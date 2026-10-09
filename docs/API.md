@@ -323,7 +323,7 @@ Base: `https://enki.api.devportal.adeo.cloud/api-enki-consumption-prod/v1/consum
 
 | Method | Path | Notes |
 |--------|------|-------|
-| GET | `/{nodeId}/check-instant-consumption?homeId={homeId}` | `lastReportedValue` (W), `unit`, `lastReportedDate` |
+| GET | `/{nodeId}/check-instant-consumption?homeId={homeId}` | `lastReportedValue` (W), `unit`, `lastReportedDate`. Not served by every device that declares the capability ([#268](https://github.com/cyrilcolinet/enki-integration-hass/issues/268)) |
 | GET | `/nodes/{nodeId}?startDate=&timePeriod=` | Energy over one period, in buckets (`homeId` **header**) |
 
 `lastReportedDate` is exposed as a `last_reported_at` attribute. It is not the time of the last poll: on the
