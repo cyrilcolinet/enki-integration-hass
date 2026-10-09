@@ -45,6 +45,14 @@ def ha_platforms_for_profile(profile: EnkiCapabilityProfile) -> list[str]:
         platforms.append("binary_sensor")
     if profile.is_environment_sensor:
         platforms.append("sensor")
+    # Reported as switch-only on a plug that does create power and energy
+    # sensors, which made a diagnostics export read as "no sensor at all" (#268).
+    if profile.supports_electrical_consumption:
+        platforms.append("sensor")
+    if profile.supports_water_heater_mode:
+        platforms.append("sensor")
+    if profile.supports_airconditioner_state:
+        platforms.append("climate")
     if profile.is_config_switch:
         platforms.append("switch")
     if profile.supports_vibration_sensibility or profile.supports_offset_temperature:

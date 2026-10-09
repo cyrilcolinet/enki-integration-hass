@@ -54,6 +54,15 @@ _POLL_STATE_EXPORT_KEYS = frozenset(
         "electrical_power",
         "electrical_consumption",
         "electrical_consumption_unit",
+        "electrical_consumption_at",
+        # Without these, a report about a missing energy sensor says nothing
+        # about the energy sensor (#268).
+        "energy_period_total",
+        "energy_period_unit",
+        "energy_period_buckets",
+        "energy_first_measurement_at",
+        "energy_last_measurement_at",
+        "water_heater_mode",
         # The air conditioner's own state, so a reporter's diagnostics can say
         # which modes and fan speeds it accepts before anything is built (#286).
         *AIRCO_STATE_KEYS,
