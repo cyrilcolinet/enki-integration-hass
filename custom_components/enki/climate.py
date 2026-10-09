@@ -21,7 +21,6 @@ from .domain.airco import (
     FAN_SPEEDS,
     OPERATING_MODES,
     STATE_KEY_BY_FIELD,
-    SWING_HORIZONTAL,
     SWING_VERTICAL,
 )
 from .domain.models import EnkiDevice
@@ -145,10 +144,7 @@ class EnkiAirConditionerClimate(EnkiEntity, ClimateEntity):
     _attr_has_entity_name = True
     _attr_hvac_modes = [HVACMode.OFF, *(_HVAC_BY_MODE[mode] for mode in OPERATING_MODES)]
     _attr_fan_modes = [speed.lower() for speed in FAN_SPEEDS]
-    # The louvres are two independent settings, and they do not have the same
-    # number of steps: horizontal goes to 5, vertical to 4 (#286).
     _attr_swing_modes = [step.lower() for step in SWING_VERTICAL]
-    _attr_swing_horizontal_modes = [step.lower() for step in SWING_HORIZONTAL]
     _attr_supported_features = (
         ClimateEntityFeature.TARGET_TEMPERATURE
         | ClimateEntityFeature.FAN_MODE
@@ -161,14 +157,14 @@ class EnkiAirConditionerClimate(EnkiEntity, ClimateEntity):
     def __init__(self, coordinator: EnkiCoordinator, device: EnkiDevice) -> None:
         super().__init__(coordinator, device)
         self._attr_unique_id = f"{DOMAIN}-{device.node_id}-air-conditioner"
-        # A unit with one louvre still answers for both orientations in the API,
-        # so offering the pair unconditionally put a second oscillation control
-        # on the card that moved nothing (#286). Offer what the unit reports.
-        reported = device.last_reported_value
-        if "airco_swing_vertical" in reported:
+        # Only the vertical louvre is offered. The API answers for both whatever
+        # the hardware has, both sit at AUTO at rest, and nothing in the app
+        # distinguishes them, so there is no way to tell a real one from an inert
+        # one. On the only unit measured, the horizontal never moved (#286). The
+        # value is still read and carried through writes, so adding the control
+        # back is a few lines the day someone has that louvre.
+        if "airco_swing_vertical" in device.last_reported_value:
             self._attr_supported_features |= ClimateEntityFeature.SWING_MODE
-        if "airco_swing_horizontal" in reported:
-            self._attr_supported_features |= ClimateEntityFeature.SWING_HORIZONTAL_MODE
 
     @property
     def _state(self) -> dict[str, Any]:
@@ -197,12 +193,6 @@ class EnkiAirConditionerClimate(EnkiEntity, ClimateEntity):
     def swing_mode(self) -> str | None:
         return self._option(self._state.get("airco_swing_vertical"), self._attr_swing_modes)
 
-    @property
-    def swing_horizontal_mode(self) -> str | None:
-        return self._option(
-            self._state.get("airco_swing_horizontal"), self._attr_swing_horizontal_modes
-        )
-
     @staticmethod
     def _option(value: Any, allowed: list[str]) -> str | None:
         """Home Assistant logs an error for every value outside the declared list."""
@@ -213,9 +203,6 @@ class EnkiAirConditionerClimate(EnkiEntity, ClimateEntity):
 
     async def async_set_swing_mode(self, swing_mode: str) -> None:
         await self._async_write(airco_swing_vertical=swing_mode.upper())
-
-    async def async_set_swing_horizontal_mode(self, swing_horizontal_mode: str) -> None:
-        await self._async_write(airco_swing_horizontal=swing_horizontal_mode.upper())
 
     async def _async_write(self, **changes: Any) -> None:
         # The write carries the whole state, so it is built from what was read

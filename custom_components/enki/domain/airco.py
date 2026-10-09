@@ -36,9 +36,10 @@ _STATE_FIELDS = {
     "sleepMode": "airco_sleep_mode",
 }
 
-# `swingOrientation` is an object of two independent louvre settings, and they do
-# not have the same number of steps: horizontal goes to 5, vertical to 4 (#286).
-SWING_HORIZONTAL = ("AUTO", "NIV_1", "NIV_2", "NIV_3", "NIV_4", "NIV_5")
+# `swingOrientation` is an object of two louvre settings. Only the vertical one
+# is exposed: the API answers for both whatever the hardware has, and on the only
+# unit measured the horizontal never moved (#286). Horizontal takes AUTO plus
+# five steps, if it is ever wired up.
 SWING_VERTICAL = ("AUTO", "NIV_1", "NIV_2", "NIV_3", "NIV_4")
 _SWING_FIELDS = {
     "horizontal": "airco_swing_horizontal",

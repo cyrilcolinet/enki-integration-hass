@@ -365,16 +365,6 @@
               "niv_3": "Niveau 3",
               "niv_4": "Niveau 4"
             }
-          },
-          "swing_horizontal_mode": {
-            "state": {
-              "auto": "Auto",
-              "niv_1": "Niveau 1",
-              "niv_2": "Niveau 2",
-              "niv_3": "Niveau 3",
-              "niv_4": "Niveau 4",
-              "niv_5": "Niveau 5"
-            }
           }
         }
       },
