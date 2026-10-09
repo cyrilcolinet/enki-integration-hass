@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.32.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.32.0...v1.32.1) (2026-10-09)
+
+
+### Bug Fixes
+
+* **airco:** expose only the louvre that moves ([8e8bcc8](https://github.com/cyrilcolinet/enki-integration-hass/commit/8e8bcc8388cb2aab6d6d778e47f2d517c90a015d))
+* **diagnostics:** show what a consumption device reports ([d6cb21c](https://github.com/cyrilcolinet/enki-integration-hass/commit/d6cb21c1f4b5157b8f9354e749d4b4720edfced4))
+* **sensor:** drop the power sensor a plug never answers for ([267d6f6](https://github.com/cyrilcolinet/enki-integration-hass/commit/267d6f62c796826c4790ed5a4043f7bb1085e6a5))
+
 ## [1.32.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.31.3...v1.32.0) (2026-10-07)
 
 
