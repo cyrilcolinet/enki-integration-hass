@@ -63,7 +63,12 @@ def _build_sensor_entities(
     if profile.supports_illuminance_level:
         entities.append(EnkiIlluminanceSensor(coordinator, device))
     if profile.supports_electrical_consumption:
-        entities.append(EnkiElectricalConsumptionSensor(coordinator, device))
+        # Some plugs declare the capability but the instant route answers nothing
+        # for them, leaving a sensor that reads unknown for ever. The energy one
+        # works on the same devices, so the reading is not lost (#268). A device
+        # that starts answering later needs a reload.
+        if "electrical_consumption" in device.last_reported_value:
+            entities.append(EnkiElectricalConsumptionSensor(coordinator, device))
         entities.append(EnkiEnergySensor(coordinator, device))
     if profile.supports_water_heater_mode and not profile.supports_water_heater_mode_change:
         entities.append(EnkiWaterHeaterModeSensor(coordinator, device))
