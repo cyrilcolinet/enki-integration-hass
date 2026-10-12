@@ -109,12 +109,14 @@ def _slim_section(section: str) -> str:
 
 
 def reject_unanswered(offer: str, answer: str) -> str:
-    """Add back, as rejected, the offer's trailing m-sections the camera dropped.
+    """Add back, as rejected, the offer's trailing m-sections the device dropped.
 
     The camera answers audio and video only and drops the frontend's data
     channel, but a browser refuses an answer with fewer m-sections than its offer.
+    The doorbell has the same gap: the app opens no data channel either, so its
+    firmware has never had to answer one (#259).
     """
-    # ponytail: assumes the camera keeps the offer's order and only drops the tail.
+    # ponytail: assumes the device keeps the offer's order and only drops the tail.
     sections = re.split(r"\r?\n(?=m=)", offer)[1:]
     missing = sections[len(_media_lines(answer)) :]
     if not missing:

@@ -510,8 +510,9 @@ Gateway key: `ENKI_VIDEOPHONE_API_KEY`. Headers: `Authorization`, `X-Gateway-API
 |--------|------|-------|
 | GET | `{nodeId}/check-videophone-state` | `{"connected": true, "connectors": "none"}` |
 | GET | `{nodeId}/check-videophone-events` | calls, captures and openings, newest first |
-| GET | `{nodeId}/check-turn-info` | TURN relay, `ttl` 3600 — live view, not wired yet |
-| GET | `{nodeId}/check-sdp-candidates-info` | `204` outside a call |
+| GET | `{nodeId}/check-turn-info` | TURN relay, `ttl` 3600 — not wired yet |
+| GET | `{nodeId}/check-sdp-candidates-info` | the live view's answer, `204` when the mailbox is empty |
+| POST | `{nodeId}/change-sdp-candidates-info` | the live view's offer and its ICE candidates |
 | POST | `{nodeId}/change-videophone-call` | answer / hang up |
 | POST | `{nodeId}/change-portal-state` | `GATE` / `STRIKE` |
 | POST | `{nodeId}/change-videophone-config`, `{nodeId}/record` | settings, recording |
@@ -534,8 +535,22 @@ history, so browsing re-reads it on demand instead of the coordinator carrying i
 unique to the millisecond and is the only thing an entry can be identified by ([#267](https://github.com/cyrilcolinet/enki-integration-hass/issues/267)). The referentiel advertises `check_videophone_media_events`, but the app calls
 `check-videophone-events`: the capability name and the route do not match ([#233](https://github.com/cyrilcolinet/enki-integration-hass/issues/233)).
 
-Unlike the meari camera, the live view here is plain WebRTC over REST (`check-turn-info` plus the
-SDP routes), not a signaling WebSocket — it is not implemented yet.
+Unlike the meari camera, the live view here is plain WebRTC over REST, not a signaling WebSocket:
+the two SDP routes are one mailbox per node, one slot, whoever reads it last. The app always
+offers — it waits for its own ICE gathering to finish, posts the offer with the whole candidate
+list in a single body, then polls for the answer under a ten second budget. Home Assistant's
+frontend takes the app's part, so the integration holds its offer back until the browser's trickle
+of candidates goes quiet, then posts and polls the same way ([#259](https://github.com/cyrilcolinet/enki-integration-hass/issues/259)).
+
+Three things about it are worth knowing. The answer comes back with its newlines **escaped**
+rather than sent, and has to be unescaped before any peer will take it — the app does the same
+substitution. A poll can read back **the offer that was just posted**, since the slot is shared, so
+an SDP that is ours or that still proposes `a=setup:actpass` is not an answer. And nothing opens or
+closes a session: depositing the offer is what wakes the doorbell, and hanging up is local, so
+`change-videophone-call` is not part of this — that route answers a ring, and its `ringingMediaId`
+only exists for a real call. `check-turn-info` is not read yet: the doorbell's answer
+carries its own relay candidate, and the peer is the viewer's browser, so a viewer on the same
+network connects directly and one further away needs that relay plus a public address of its own.
 
 ## Future device families
 

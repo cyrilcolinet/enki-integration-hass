@@ -7,10 +7,14 @@
 openings do not. The doorbell's own settings decide whether a capture is an image
 or a video clip; a clip comes with a ``thumbnail``, which is the still to show
 (#233). ``check-videophone-state`` answers ``{"connected", "connectors"}``.
+
+The live view runs over the two SDP routes rather than a signaling socket, so
+the pieces an offer and an answer are made of are parsed here too (#259).
 """
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 ACCEPTED_CALL = "ACCEPTED_CALL"
@@ -126,3 +130,80 @@ def parse_videophone_state(payload: dict[str, Any]) -> dict[str, Any]:
     if isinstance(payload.get("connectors"), str):
         state["videophone_connectors"] = payload["connectors"]
     return state
+
+
+def unescape_sdp(sdp: str) -> str:
+    """Real line breaks from the escaped ones the doorbell sends (#259).
+
+    The answer comes back with its newlines written out rather than sent, so it
+    reads as one line and no peer would take it. The app substitutes them before
+    ``setRemoteDescription`` (APK ``s0e``), through a plain string replace of
+    ``\\r\\n``; this accepts the single-escaped form as well, and leaves an
+    answer that already carries real line breaks alone.
+    """
+    if "\n" in sdp:
+        return sdp
+    return re.sub(r"(?:\\+r)?\\+n", "\r\n", sdp)
+
+
+def _normalized_sdp(sdp: str) -> str:
+    """One comparable form, whatever escaping and line endings it arrived with."""
+    return unescape_sdp(sdp).replace("\r\n", "\n").strip()
+
+
+def _candidate_body(line: str, mid: str | None, index: int) -> dict[str, Any]:
+    """One ``a=candidate:`` line in the shape ``IceCandidateDTO`` wants."""
+    return {"candidate": line[2:].strip(), "sdpMid": mid, "sdpMLineIndex": index}
+
+
+def offer_candidates(sdp: str) -> list[dict[str, Any]]:
+    """The candidates an offer already carries, for the POST body (#259).
+
+    Home Assistant's frontend appends the candidates it has gathered by the time
+    it sends the offer to the SDP itself, and trickles the rest afterwards. The
+    doorbell takes them in a list beside the SDP, keyed by their m-section, so
+    the embedded ones are read back out.
+    """
+    found: list[dict[str, Any]] = []
+    index = -1
+    mid: str | None = None
+    for line in unescape_sdp(sdp).splitlines():
+        if line.startswith("m="):
+            index += 1
+            mid = None
+        elif line.startswith("a=mid:"):
+            mid = line[6:].strip() or None
+        elif line.startswith("a=candidate:"):
+            found.append(_candidate_body(line, mid, max(index, 0)))
+    return found
+
+
+def parse_sdp_answer(
+    payload: dict[str, Any], *, offered: str
+) -> tuple[str, list[dict[str, Any]]] | None:
+    """The doorbell's answer, or None while the mailbox holds nothing of ours (#259).
+
+    ``check-sdp-candidates-info`` is one slot per node: a poll can read back the
+    very offer that was just deposited there. An offer is not an answer — it
+    carries ``a=setup:actpass``, where an answer commits to a role — and it is
+    the string we sent, so either tell is enough to keep polling.
+    """
+    if not isinstance(payload, dict):
+        return None
+    sdp = payload.get("sdp")
+    if not isinstance(sdp, str) or not sdp.strip():
+        return None
+    sdp = unescape_sdp(sdp)
+    if _normalized_sdp(sdp) == _normalized_sdp(offered) or "a=setup:actpass" in sdp:
+        return None
+    items = payload.get("candidates")
+    candidates = [
+        {
+            "candidate": item["candidate"],
+            "sdpMid": item.get("sdpMid"),
+            "sdpMLineIndex": item.get("sdpMLineIndex"),
+        }
+        for item in (items if isinstance(items, list) else [])
+        if isinstance(item, dict) and isinstance(item.get("candidate"), str)
+    ]
+    return sdp, candidates
