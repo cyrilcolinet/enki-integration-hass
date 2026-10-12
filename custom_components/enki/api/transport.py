@@ -668,6 +668,29 @@ class EnkiHttpClient:
             "videophone", f"/{node_id}/check-videophone-events", home_id=home_id, not_found_ok=True
         )
 
+    async def get_videophone_sdp_info(self, home_id: str, node_id: str) -> dict[str, Any]:
+        """Whatever the doorbell's SDP mailbox holds, {} while it is empty (APK phf.i)."""
+        return await self._read_optional(
+            "videophone",
+            f"/{node_id}/check-sdp-candidates-info",
+            home_id=home_id,
+            not_found_ok=True,
+        )
+
+    async def change_videophone_sdp_info(
+        self, home_id: str, node_id: str, payload: dict[str, Any]
+    ) -> None:
+        """Deposit an SDP and its ICE candidates for the doorbell (APK phf.b, #259)."""
+        prefix = WIRED_PATH_PREFIXES["videophone"]
+        await self.post_command(
+            "videophone",
+            f"{prefix}/{node_id}/change-sdp-candidates-info",
+            home_id=home_id,
+            json=payload,
+            # The app takes any 2xx here, and 200 is not a command status.
+            ok_statuses=OK_WITH_BODY,
+        )
+
     async def get_camera_status(self, home_id: str, node_id: str) -> dict[str, Any]:
         """Every current setting of a meari camera (APK udf.r → check-camera-status)."""
         return await self._read_optional(

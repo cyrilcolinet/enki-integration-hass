@@ -211,6 +211,7 @@ custom_components/enki/
 │   ├── gateway_keys.py        # key lookup by transport + mobile-config settings read
 │   ├── device_metadata.py     # firmware / update / connectivity reads
 │   ├── meari_signaling.py     # camera live view: WebRTC signaling relay
+│   ├── videophone_signaling.py # doorbell live view: WebRTC over the SDP routes
 │   ├── capability_routing.py  # capability → read routing table
 │   └── capability_routes_data.py  # generated capability→route catalogue (APK)
 │

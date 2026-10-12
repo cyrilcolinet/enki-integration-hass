@@ -194,7 +194,7 @@ Reads, writes and the live view are confirmed on a real camera ([#216](https://g
 
 ## Video doorbell (Lexman visiophone) — beta
 
-**HA entities:** `event` (doorbell), `camera` (last call snapshot), `binary_sensor` (connection, diagnostic)
+**HA entities:** `event` (doorbell), `camera` (live view + last call snapshot), `binary_sensor` (connection, diagnostic)
 **Media:** past calls and captures, under **Media › Enki › \<your doorbell\>**
 
 The doorbell has its own service, `api-enki-videophone-prod`, and its own event list:
@@ -211,9 +211,13 @@ The `event` entity fires when a newer entry appears, with the snapshot URL as an
 
 **Browsing past calls.** The doorbell also shows up in **Media**, listing every call and capture it still holds, newest first — each one opens its picture or plays its clip. The list is fetched when you open it, not kept in an entity attribute, so the recorder stays out of it. How far back it goes is the API's decision, not ours — the one unit we have seen held about two weeks — and an entry that has dropped out stops opening. Openings are left out of Media — they carry no media at all, and would only be entries that cannot be opened ([#267](https://github.com/cyrilcolinet/enki-integration-hass/issues/267)).
 
+**Live view.** The `camera` entity streams through Home Assistant's native WebRTC: open it and the browser talks to the doorbell directly, no media passes through the integration. A ring is not needed — the doorbell answers an offer with nobody at the door. Negotiation is a mailbox on the Enki side rather than a signaling socket, so opening the stream takes a few seconds, and the doorbell is given ten of them to answer before the view gives up. One viewer at a time per doorbell: the mailbox has a single slot, and two streams opening at once would overwrite each other's offer.
+
+The peer is the browser you are watching from, not Home Assistant, so what matters is whether *that* device can reach the doorbell: on the same network it connects directly. From outside, it falls back to the relay the doorbell offers, and the integration does not yet hand the doorbell's own TURN credentials to the browser — so a phone on mobile data may fail to connect. Say so on [#259](https://github.com/cyrilcolinet/enki-integration-hass/issues/259) if that is your case.
+
 Gate and door opening (`change-portal-state`) and the doorbell's settings are left out until someone has one wired: the reporter's unit drives nothing yet, and it reports `connectors: none` ([#233](https://github.com/cyrilcolinet/enki-integration-hass/issues/233)).
 
-Reads are confirmed on a real doorbell, snapshots included; the pictures open without signing in.
+Reads are confirmed on a real doorbell, snapshots included; the pictures open without signing in. The live view follows the app's own sequence, read out of the Android app, and is waiting on a first report from real hardware.
 
 **Blueprint:** someone rings → notify with the caller's picture — `blueprints/automation/enki/videophone_call_notification.yaml`.
 

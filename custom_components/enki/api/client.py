@@ -48,6 +48,7 @@ from .device_metadata import refresh_device_metadata
 from .gateway_keys import fetch_mobile_config
 from .meari_signaling import MeariSignalingError, MeariSignalingSession
 from .transport import OK_WITH_BODY, EnkiHttpClient
+from .videophone_signaling import VideophoneLiveSession
 
 _DISCOVERY_CONCURRENCY = 8
 _CAMERA_SETTINGS_TTL_SECONDS = 300.0
@@ -802,6 +803,16 @@ class EnkiAPI:
             ok_statuses=OK_WITH_BODY,
         )
         self._camera_settings_cache.pop(node_id, None)
+
+    async def async_start_videophone_live(
+        self,
+        home_id: str,
+        node_id: str,
+        session: VideophoneLiveSession,
+    ) -> tuple[str, list[dict[str, Any]]]:
+        """Negotiate a live view with a video doorbell for a WebRTC peer (#259)."""
+        http = await self._get_http()
+        return await session.negotiate(http, home_id, node_id)
 
     async def async_start_camera_live(
         self,
