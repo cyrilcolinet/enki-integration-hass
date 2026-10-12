@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.33.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.32.1...v1.33.0) (2026-10-12)
+
+
+### Features
+
+* **videophone:** add live view over native WebRTC ([d7fe7d3](https://github.com/cyrilcolinet/enki-integration-hass/commit/d7fe7d3a6a3f626a43a52ff9ec341123c61fa18f)), closes [#259](https://github.com/cyrilcolinet/enki-integration-hass/issues/259)
+
 ## [1.32.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.32.0...v1.32.1) (2026-10-12)
 
 
