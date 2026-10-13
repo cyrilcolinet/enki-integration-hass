@@ -117,6 +117,7 @@ Coming from [CyrilP/hass-enki-component](https://github.com/CyrilP/hass-enki-com
 - ⚡ [Ready-made automations](docs/BLUEPRINTS.md)
 - 🗺️ [Roadmap](docs/ROADMAP.md)
 - 🛠️ [Development notes](docs/DEVELOPMENT.md) and [API notes](docs/API.md)
+- 🔍 [Showing what the Enki app sends](docs/CAPTURE.md), when a device works there and not here
 - 📡 [Telemetry, opt-in](docs/TELEMETRY.md)
 - ⚠️ [Disclaimer](docs/DISCLAIMER.md)
 - 🏠 [Enki support](https://support.enki-home.com/)
