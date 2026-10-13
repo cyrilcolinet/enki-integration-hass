@@ -138,50 +138,142 @@ Neither of the last two is a failure on your part. Report what you saw and we wo
 ## Getting an AI assistant to walk you through it
 
 If you would rather be guided step by step, paste the prompt below into ChatGPT, Claude or
-whichever assistant you use. Fill in the three lines at the top first.
+whichever assistant you use. Paste it as it is — it starts by asking you about your phone, your
+computer and what you are trying to capture, and it adapts from your answers.
 
 <details>
 <summary>Prompt to copy</summary>
 
 ```text
-I am helping debug an open-source Home Assistant integration for the Enki app
-(Leroy Merlin smart home). A maintainer asked me to capture the HTTP request the
-Enki phone app sends when I perform one action, using mitmproxy, and to paste it
-into a GitHub issue.
+You are helping me capture one HTTP request from a phone app, for a bug report
+on an open-source project. Read all of these instructions before replying.
 
-My setup:
-- Phone: <iPhone or Android, and which OS version>
-- Computer: <macOS, Windows or Linux, and which version>
-- The action I was asked to capture: <for example "turn the main light of my ceiling fan off">
+## Context
 
-Please walk me through it one step at a time. Wait for me to tell you a step
-worked before giving me the next one, and ask me what I see on screen rather
-than assuming. I am not a developer, so name the menus and buttons rather than
-describing them.
+The project is a Home Assistant integration for Enki, Leroy Merlin's smart home
+system. It talks to Enki's cloud, and sometimes a device works in the official
+Enki phone app but not in Home Assistant. That means the integration is calling
+the wrong address or sending the wrong payload, and the way to find out is to
+read what the app itself sends.
 
-Cover, in this order: installing mitmproxy on my computer, finding my computer's
-address on my Wi-Fi, pointing my phone's Wi-Fi through it, installing and
-trusting mitmproxy's certificate on my phone, checking that interception works
-at all, filtering the captured requests for the address "adeo", performing the
-action once, and reading the request out of the mitmproxy interface.
+A maintainer asked me to capture that request with mitmproxy and post it on a
+GitHub issue. I am not a developer. I have a computer and a phone.
 
-Two things to know about my phone:
-- On iOS, trusting the certificate takes a second step that is easy to miss,
-  in Settings under General then About then Certificate Trust Settings.
-- On Android 7 and later, apps ignore certificates I install myself, so the
-  Enki app's traffic will probably not appear at all. If that is my situation,
-  tell me early rather than after an hour, so I can report that instead.
+Useful facts about this particular app:
+- Every Enki request goes to the host enki.api.devportal.adeo.cloud, so
+  filtering captured traffic on "adeo" isolates it from everything else.
+- Each request carries an Authorization header with a bearer token, an
+  X-Gateway-APIKey header, and often a homeId header. The address usually
+  contains the micro-service name, for example api-enki-power-prod, and the
+  identifier of one device.
+- The maintainer needs the method, the address, the request body, the status
+  that came back and the response body. Nothing else.
 
-Rules:
-- Never ask me for my Enki password, my email, or any access token, and tell me
-  not to paste them to you.
-- At the end, help me write what to post on the issue: the method and address of
-  the request, its body, the status that came back and its body, with my home id
-  and device id replaced by <home> and <node> and the Authorization header
-  removed. Nothing else is needed.
+## Before you give me any instruction
+
+Interview me first. Ask these questions, **one message at a time**, and wait for
+my answer before the next one. Do not number them all out at once, and do not
+start explaining mitmproxy until you have the answers.
+
+1. What phone do I have, and which operating system version? (If I do not know
+   where to find it, tell me where to look.)
+2. What computer do I have, Windows, macOS or Linux, and which version?
+3. Can I install software on that computer, or is it managed by an employer?
+4. Is the phone managed by an employer or a school? (Managed phones often block
+   installing certificate profiles, which would stop us.)
+5. Are the phone and the computer on the same Wi-Fi network?
+6. What exactly did the maintainer ask me to capture? Ask me to paste their
+   request in their words.
+7. Can I reproduce the problem whenever I want, or does it only happen
+   sometimes? (We need to perform the action while the capture is running.)
+8. Have I ever used a terminal or command prompt? Answering no is fine, it only
+   changes how you phrase things.
+
+## What to do with my answers
+
+- **Android 7 or later.** Stop and tell me plainly, before any setup, that apps
+  on modern Android ignore certificates I install myself, so the Enki app's
+  traffic will almost certainly not appear. Explain that the alternatives need a
+  rooted phone or a repackaged app and are not worth it. Then help me write a
+  short note for the issue saying I only have Android, and offer to help me
+  produce the Home Assistant diagnostics file instead. Do not walk me through
+  mitmproxy anyway "just in case" unless I ask for it.
+- **iPhone or iPad.** This is the path that works. Continue.
+- **Managed phone or computer.** Warn me that a step may be blocked, tell me
+  which one, and agree with me to stop there rather than fighting it.
+- **The problem is intermittent.** Plan for it: have me start the capture and
+  leave it running, rather than trying to time the action.
+
+## Then walk me through it
+
+One step per message. After each step, ask me what I see and wait. Tell me what
+the screen should look like when a step worked, so I can tell you if it does
+not. Name menus and buttons exactly rather than describing them. No jargon
+without a one-line explanation the first time.
+
+The steps, in this order:
+
+1. Install mitmproxy on my computer, and start it with mitmweb. Tell me what the
+   page that opens looks like.
+2. Find my computer's address on the Wi-Fi, and have me read it back to you so
+   you can sanity-check it. It normally starts with 192.168 or 10.
+3. Point the phone's Wi-Fi through it: a manual proxy, my computer's address,
+   port 8080.
+4. Install mitmproxy's certificate from http://mitm.it on the phone. If that
+   page does not load, go back to step 3 with me, do not continue.
+5. On iOS, trust the certificate. This is a separate step in a different place
+   and it is the one people miss: Settings, then General, then About, then
+   Certificate Trust Settings. Confirm with me that the switch is on.
+6. Check that interception works at all: have me open any website on the phone
+   and tell you whether lines appear in mitmweb.
+7. Have me clear the captured list, then filter it on "adeo".
+8. Have me perform the one action the maintainer asked about, once.
+9. Help me find the right line among the new ones, and read the Request and
+   Response tabs out of the mitmweb interface.
+
+## Troubleshooting, when I report a problem
+
+- mitm.it does not load: the proxy is not reaching the computer. Check with me,
+  in this order, that both are on the same Wi-Fi, that the address is right,
+  that mitmweb is still running, and that the computer's firewall is not
+  blocking port 8080.
+- Websites appear in mitmweb but nothing from the Enki app: on iOS, the
+  certificate trust step. On Android, it is the expected dead end above.
+- The Enki app shows a connection error while the proxy is on: the app is
+  probably checking the certificate itself, which a proxy cannot fake. Tell me
+  that this is a real possibility, not my mistake, and help me report it.
+
+## At the end
+
+Help me write the comment to post, in this shape:
+
+    POST /api-enki-power-prod/v1/power/<node>/switch-electrical-power?endpoints=1
+    body: {"value":"OFF"}
+    -> 202, no body
+
+Then take me through the redaction, item by item, and ask me to confirm each one
+before I post:
+- the Authorization header is removed entirely;
+- my home id is replaced by <home>, wherever it appears;
+- my device id is replaced by <node>, wherever it appears;
+- no email address and no password anywhere.
+
+Finally, remind me to undo the setup: turn the proxy off in the phone's Wi-Fi
+settings, and delete the mitmproxy profile from the phone.
+
+If we gave up at some point, help me write what we did and where it stopped
+instead. That is still useful to the maintainer and I should post it.
+
+## Rules
+
+- Never ask me for my Enki password, my email address or any access token, and
+  tell me not to paste them to you. If I paste one by accident, tell me to treat
+  it as compromised and to sign out of the Enki app on all devices.
+- One step at a time. Do not dump the whole procedure in one message, even if I
+  seem comfortable.
 - If a menu you describe does not exist on my version, ask me what I see instead
-  and adapt. Do not insist.
-- When I am finished, remind me to turn the proxy off and delete the certificate.
+  and adapt. Do not insist that it must be there.
+- If I say I want to stop, stop, and tell me what is still worth reporting.
 ```
 
 </details>
