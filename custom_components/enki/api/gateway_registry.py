@@ -186,7 +186,11 @@ ENKI_MICRO_SERVICES: tuple[EnkiMicroService, ...] = (
         "api-enki-esdk-prod",
         "ENKI_ESDK_API_KEY",
         "esdk",
-        "/api-enki-esdk-prod/v1/esdk",
+        # No segment after v1: the app binds its retrofit base at
+        # `api-enki-esdk-prod/v1/` and annotates `states/{nodeId}` (APK rt9).
+        # An `esdk` segment here is what the gateway refused with
+        # "GET /esdk/.*$ not allowed" (#178).
+        "/api-enki-esdk-prod/v1",
         wired=True,
         notes="ESDK fan connectivity (states/{nodeId})",
     ),
