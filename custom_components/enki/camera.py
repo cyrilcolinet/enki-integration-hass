@@ -28,7 +28,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from webrtc_models import RTCIceCandidateInit
 
 from .api.meari_signaling import MeariCandidate, MeariSignalingError, MeariSignalingSession
-from .api.videophone_signaling import VideophoneLiveError, VideophoneLiveSession
+from .api.videophone_signaling import VideophoneLiveSession
 from .const import DOMAIN, LOGGER
 from .coordinator import EnkiCoordinator
 from .domain.models import EnkiDevice
@@ -122,7 +122,7 @@ class EnkiVideophoneCamera(EnkiEventSnapshotCamera):
                 answer, candidates = await self.coordinator.api.async_start_videophone_live(
                     self._device.home_id, self._device.node_id, session
                 )
-        except (VideophoneLiveError, EnkiConnectionError) as err:
+        except EnkiConnectionError as err:
             LOGGER.debug("Live view refused for %s: %s", self.node_id, err)
             self._sessions.pop(session_id, None)
             send_message(WebRTCError("videophone_signaling", str(err)))

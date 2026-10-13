@@ -138,22 +138,15 @@ def unescape_sdp(sdp: str) -> str:
     The answer comes back with its newlines written out rather than sent, so it
     reads as one line and no peer would take it. The app substitutes them before
     ``setRemoteDescription`` (APK ``s0e``), through a plain string replace of
-    ``\\r\\n``; this accepts the single-escaped form as well, and leaves an
-    answer that already carries real line breaks alone.
+    ``\\r\\n``; this accepts the single-escaped form as well. An answer that
+    already carries real line breaks has nothing to match and comes back as is.
     """
-    if "\n" in sdp:
-        return sdp
     return re.sub(r"(?:\\+r)?\\+n", "\r\n", sdp)
 
 
 def _normalized_sdp(sdp: str) -> str:
     """One comparable form, whatever escaping and line endings it arrived with."""
     return unescape_sdp(sdp).replace("\r\n", "\n").strip()
-
-
-def _candidate_body(line: str, mid: str | None, index: int) -> dict[str, Any]:
-    """One ``a=candidate:`` line in the shape ``IceCandidateDTO`` wants."""
-    return {"candidate": line[2:].strip(), "sdpMid": mid, "sdpMLineIndex": index}
 
 
 def offer_candidates(sdp: str) -> list[dict[str, Any]]:
@@ -174,7 +167,9 @@ def offer_candidates(sdp: str) -> list[dict[str, Any]]:
         elif line.startswith("a=mid:"):
             mid = line[6:].strip() or None
         elif line.startswith("a=candidate:"):
-            found.append(_candidate_body(line, mid, max(index, 0)))
+            found.append(
+                {"candidate": line[2:].strip(), "sdpMid": mid, "sdpMLineIndex": max(index, 0)}
+            )
     return found
 
 
