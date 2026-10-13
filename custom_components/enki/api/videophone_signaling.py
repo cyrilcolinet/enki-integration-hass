@@ -11,7 +11,7 @@ ICE gathering to finish, posts the offer with the entire candidate list in one
 body, then polls for the answer under a ten second budget. Home Assistant's
 frontend takes the app's part here, so the sequence is the same — except that it
 trickles its candidates after sending the offer, which is why the offer is held
-back until the trickle goes quiet.
+back for a moment to let them in.
 
 No route starts or ends a session: depositing the offer is what wakes the
 doorbell, and hanging up is local (APK ``yde.a`` cancels its jobs and closes its
@@ -27,23 +27,18 @@ from typing import TYPE_CHECKING, Any
 
 from ..const import LOGGER
 from ..domain.videophone import offer_candidates, parse_sdp_answer
+from ..exceptions import EnkiConnectionError
 from .meari_signaling import reject_unanswered
 
 if TYPE_CHECKING:
     from .transport import EnkiHttpClient
 
-# How long the offer waits for the browser's candidates, and how much quiet is
-# enough to call the gathering done. The doorbell takes them in a single body,
-# so a candidate that arrives after the post is lost — hence the wait.
+# How long the offer waits for the browser's candidates. They go in a single
+# body, so one that arrives after the post is lost — hence the wait.
 _GATHER_SECONDS = 2.5
-_QUIET_SECONDS = 0.5
 # The app's own budget for the doorbell to answer, and how often it looks.
 _ANSWER_SECONDS = 10.0
 _POLL_SECONDS = 0.5
-
-
-class VideophoneLiveError(Exception):
-    """The doorbell did not take the offer, or never answered it."""
 
 
 class VideophoneLiveSession:
@@ -53,27 +48,24 @@ class VideophoneLiveSession:
         self._offer_sdp = offer_sdp
         # The frontend appends what it has gathered to the offer it sends.
         self._candidates = offer_candidates(offer_sdp)
-        self._trickled = asyncio.Event()
         self._closed = False
 
     def add_candidate(self, candidate: dict[str, Any]) -> None:
         """Keep a candidate the browser trickled, as long as the offer is held."""
         if candidate not in self._candidates:
             self._candidates.append(candidate)
-        self._trickled.set()
 
     def close(self) -> None:
         """Give up: the viewer closed the stream before it was negotiated."""
         self._closed = True
-        self._trickled.set()
 
     async def negotiate(
         self, transport: EnkiHttpClient, home_id: str, node_id: str
     ) -> tuple[str, list[dict[str, Any]]]:
         """Post the offer once the candidates are in, and wait for the answer."""
-        await self._gather()
+        await asyncio.sleep(_GATHER_SECONDS)
         if self._closed:
-            raise VideophoneLiveError("the live view was closed before it started")
+            raise EnkiConnectionError("the live view was closed before it started")
         LOGGER.debug(
             "Videophone live offer for %s: %s candidate(s)", node_id, len(self._candidates)
         )
@@ -83,17 +75,6 @@ class VideophoneLiveSession:
             {"sdp": self._offer_sdp, "candidates": self._candidates},
         )
         return await self._await_answer(transport, home_id, node_id)
-
-    async def _gather(self) -> None:
-        """Hold the offer until the browser stops trickling, or long enough."""
-        deadline = monotonic() + _GATHER_SECONDS
-        while not self._closed and monotonic() < deadline:
-            self._trickled.clear()
-            try:
-                await asyncio.wait_for(self._trickled.wait(), _QUIET_SECONDS)
-            except TimeoutError:
-                if self._candidates:
-                    return
 
     async def _await_answer(
         self, transport: EnkiHttpClient, home_id: str, node_id: str
@@ -110,6 +91,4 @@ class VideophoneLiveSession:
                 # The app opens no data channel, so the doorbell drops the one the
                 # browser offers — and a browser refuses a shorter answer.
                 return reject_unanswered(self._offer_sdp, sdp), candidates
-        if self._closed:
-            raise VideophoneLiveError("the live view was closed before the doorbell answered")
-        raise VideophoneLiveError("the doorbell did not answer the live view offer")
+        raise EnkiConnectionError("the doorbell did not answer the live view offer")

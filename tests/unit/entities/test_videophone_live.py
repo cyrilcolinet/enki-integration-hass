@@ -7,10 +7,11 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from enki.api.transport import EnkiHttpClient
-from enki.api.videophone_signaling import VideophoneLiveError, VideophoneLiveSession
+from enki.api.videophone_signaling import VideophoneLiveSession
 from enki.camera import EnkiVideophoneCamera, async_setup_entry
 from enki.domain.models import EnkiDevice
 from enki.domain.videophone import offer_candidates, parse_sdp_answer, unescape_sdp
+from enki.exceptions import EnkiConnectionError
 from homeassistant.components.camera import (
     CameraEntityFeature,
     WebRTCAnswer,
@@ -63,13 +64,9 @@ ANSWER_CANDIDATES = [
 @pytest.fixture(autouse=True)
 def _fast(monkeypatch: pytest.MonkeyPatch) -> None:
     """The real waits are seconds long; the sequence is what is under test."""
-    for name, value in (
-        ("_GATHER_SECONDS", 0.05),
-        ("_QUIET_SECONDS", 0.01),
-        ("_ANSWER_SECONDS", 0.2),
-        ("_POLL_SECONDS", 0.01),
-    ):
-        monkeypatch.setattr(f"enki.api.videophone_signaling.{name}", value)
+    monkeypatch.setattr("enki.api.videophone_signaling._GATHER_SECONDS", 0.05)
+    monkeypatch.setattr("enki.api.videophone_signaling._ANSWER_SECONDS", 0.2)
+    monkeypatch.setattr("enki.api.videophone_signaling._POLL_SECONDS", 0.01)
 
 
 def _doorbell() -> EnkiDevice:
@@ -230,7 +227,7 @@ async def test_a_session_closed_before_it_posted_posts_nothing() -> None:
     http = _transport([])
     session.close()
 
-    with pytest.raises(VideophoneLiveError):
+    with pytest.raises(EnkiConnectionError):
         await session.negotiate(http, "home", "node-bell")
 
     http.change_videophone_sdp_info.assert_not_awaited()
