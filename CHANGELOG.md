@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.33.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.33.0...v1.33.1) (2026-10-13)
+
+
+### Bug Fixes
+
+* **esdk:** drop the path segment the gateway refuses ([3b09b50](https://github.com/cyrilcolinet/enki-integration-hass/commit/3b09b50d3f0bbe8ba82d719dbe07c1edefdda7c6)), closes [#178](https://github.com/cyrilcolinet/enki-integration-hass/issues/178)
+
 ## [1.33.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.32.1...v1.33.0) (2026-10-12)
 
 
