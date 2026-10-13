@@ -33,6 +33,18 @@ def test_consumption_ota_and_esdk_keys_are_the_ones_the_app_sends() -> None:
     assert keys_module.ENKI_OTA_API_KEY != keys_module.ENKI_ACCESS_MOTORIZATION_API_KEY
 
 
+def test_the_esdk_read_sits_where_the_app_asks_for_it() -> None:
+    """A key is useless behind a path the gateway refuses (#178).
+
+    The app binds `api-enki-esdk-prod/v1/` as its base and annotates
+    `states/{nodeId}` (APK `rt9`), so the invented `esdk` segment turned every
+    fan's connectivity read into "GET /esdk/.*$ not allowed".
+    """
+    from enki.api.gateway_registry import WIRED_PATH_PREFIXES
+
+    assert WIRED_PATH_PREFIXES["esdk"] == "/api-enki-esdk-prod/v1"
+
+
 def test_unknown_transport_has_no_key() -> None:
     assert transport_key("no-such-service") is None
 
