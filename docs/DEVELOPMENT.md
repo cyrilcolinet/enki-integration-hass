@@ -94,7 +94,8 @@ Two things follow. Regenerate the catalogue after every app update, with `--from
 Asking a reporter for a capture? Send them to [CAPTURE.md](CAPTURE.md) instead of this section. It
 covers the same setup written for someone who is not a developer, with the iOS certificate-trust
 step spelled out, Android's dead end stated up front, what to redact before posting, and a prompt
-they can hand to an AI assistant to be walked through it. This section is the maintainer's errand:
+they can hand to an AI assistant, which interviews them about their phone, their computer and what
+was asked before it starts, and bails out early on Android rather than after an hour. This section is the maintainer's errand:
 reading one key out of live traffic.
 
 When APK extraction misses a key or you need to validate one against live traffic (e.g. a 403 on a
