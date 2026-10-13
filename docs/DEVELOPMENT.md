@@ -91,7 +91,14 @@ Two things follow. Regenerate the catalogue after every app update, with `--from
 
 ### Capturing a gateway key with mitmproxy (fallback)
 
-When APK extraction misses a key or you need to validate one against live traffic (e.g. a 403 on a micro-service), intercept the app:
+Asking a reporter for a capture? Send them to [CAPTURE.md](CAPTURE.md) instead of this section. It
+covers the same setup written for someone who is not a developer, with the iOS certificate-trust
+step spelled out, Android's dead end stated up front, what to redact before posting, and a prompt
+they can hand to an AI assistant to be walked through it. This section is the maintainer's errand:
+reading one key out of live traffic.
+
+When APK extraction misses a key or you need to validate one against live traffic (e.g. a 403 on a
+micro-service), intercept the app:
 
 1. PC and phone on the same Wi‑Fi. Start [mitmproxy](https://mitmproxy.org/): `mitmweb` (proxy on `:8080`, UI on `:8081`).
 2. Phone Wi‑Fi → manual proxy → PC IP, port `8080`. Install the mitmproxy cert from `http://mitm.it`.
