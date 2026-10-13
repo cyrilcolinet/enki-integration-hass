@@ -89,6 +89,19 @@ The route catalogue has the same trap as the keys had, from the other side. Its 
 
 Two things follow. Regenerate the catalogue after every app update, with `--from-jadx` if you already have a dump. And read an entry as "the app called this once", not as "this endpoint exists" — `--check` lists the wired routes the current app no longer calls, which is the signal worth acting on.
 
+### Ground rules
+
+Everything in this section is reverse engineering for **interoperability**, which is what makes it
+lawful in the EU — see the [disclaimer](DISCLAIMER.md#legal-basis) for the footing and its
+conditions. Three of those conditions bind what you do here:
+
+- Work from an app you installed yourself, against your own account and your own devices.
+- **Never commit a dump.** `*.apk`, `scripts/apk/` and `.apk-work/` are gitignored; keep it that
+  way, and do not attach decompiled sources to an issue or a PR.
+- Defeat no protection measure. A route that refuses our key is our bug until proven otherwise —
+  verify the key *and the path* against the app, as [#178](https://github.com/cyrilcolinet/enki-integration-hass/issues/178)
+  showed — not something to work around.
+
 ### Capturing a gateway key with mitmproxy (fallback)
 
 Asking a reporter for a capture? Send them to [CAPTURE.md](CAPTURE.md) instead of this section. It

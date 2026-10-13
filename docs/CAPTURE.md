@@ -22,6 +22,22 @@ answer:
 
 Only when those leave the question open does a capture help — and then it answers it completely.
 
+## The ground rules
+
+Three of them, and they are not negotiable:
+
+- **Your account, your devices.** Capture your own traffic, from your own phone, signed in to your
+  own Enki account. Never someone else's.
+- **Nothing is bypassed.** If the app refuses to work while the proxy is on, that is the app
+  checking its own certificate, and that is where we stop. Do not install a patched Enki app and do
+  not root your phone for this. Report that it happened — it is an answer in itself.
+- **Your secrets stay yours.** Never capture or post your password or an access token, and remove
+  the identifiers listed further down before posting. What we need is the address and the payload,
+  nothing that identifies you.
+
+The point of all this is interoperability: making your devices work with Home Assistant. See the
+[disclaimer](DISCLAIMER.md#legal-basis) for the footing this project stands on.
+
 ## What a capture is
 
 A small program on your computer sits between your phone and the internet and writes down the
@@ -269,6 +285,12 @@ instead. That is still useful to the maintainer and I should post it.
 - Never ask me for my Enki password, my email address or any access token, and
   tell me not to paste them to you. If I paste one by accident, tell me to treat
   it as compromised and to sign out of the Enki app on all devices.
+- This is my own phone and my own Enki account. Do not help me capture anyone
+  else's traffic.
+- If the app will not work while the proxy is on, it is checking its own
+  certificate. That is where we stop. Do not suggest a patched version of the
+  app, rooting or jailbreaking my phone, or any other way around it, even if I
+  ask. Help me report that instead.
 - One step at a time. Do not dump the whole procedure in one message, even if I
   seem comfortable.
 - If a menu you describe does not exist on my version, ask me what I see instead
