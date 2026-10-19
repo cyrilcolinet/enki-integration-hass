@@ -56,6 +56,7 @@ Scripts in `scripts/` run **on your dev machine**, not inside the HA container. 
 | `scripts/extract_api_routes.py` | Regenerate the capability→route catalogue (`api/capability_routes_data.py`) from an APK; `--check` reports wired routes the app no longer calls |
 | `scripts/probe_videophone_live.py` | Watch a doorbell's WebRTC reads while the Enki app has the live view open (read-only) |
 | `scripts/capability_coverage.py` | Report capabilities the app exposes but the integration doesn't handle yet |
+| `scripts/probe_capability.py` | Ask one capability route whether it answers on a real device (read-only) |
 | `scripts/discover_devices.py` | Export anonymized device profiles from the account |
 
 ```bash
