@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.34.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.34.0...v1.34.1) (2026-10-19)
+
+
+### Bug Fixes
+
+* **auth:** say where the sign-in code actually is ([1f8bd0e](https://github.com/cyrilcolinet/enki-integration-hass/commit/1f8bd0efcb2e676c2e0348285354a77e85bca271)), closes [#329](https://github.com/cyrilcolinet/enki-integration-hass/issues/329)
+* **ota:** stop doubling the service segment in the path ([3193801](https://github.com/cyrilcolinet/enki-integration-hass/commit/319380155b7fd4a813ad9807800137d6ed5d6dfd)), closes [#329](https://github.com/cyrilcolinet/enki-integration-hass/issues/329)
+
 ## [1.34.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.33.1...v1.34.0) (2026-10-19)
 
 
