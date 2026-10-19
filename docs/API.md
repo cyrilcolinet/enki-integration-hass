@@ -37,7 +37,11 @@ back, reads the code out of it and exchanges it. Chrome does not reliably leave 
 the address bar, so the form tells the user to catch it in the network panel. The first reporter
 through this flow found it there himself ([#329](https://github.com/cyrilcolinet/enki-integration-hass/issues/329)).
 `enki://oauth/callback` is the only redirect the client accepts: a localhost one, which would have
-made this seamless, answers 400. What comes back is a refresh token, and for these
+made this seamless, answers 400, and so do the device-code and CIBA grants the realm advertises
+but this client is not allowed to start. A token issued through the broker carries the same claim
+set as a password one, `realm_access` and `scope` included, and the gateway accepts it: confirmed
+on a real Google account and on a real Apple one
+([#325](https://github.com/cyrilcolinet/enki-integration-hass/issues/325)). What comes back is a refresh token, and for these
 accounts it is the whole credential: there is no password to fall back on, so a refresh that fails
 opens Home Assistant's reauthentication rather than retrying. Keycloak may rotate the token on every
 use, so the config entry is rewritten whenever it changes.
