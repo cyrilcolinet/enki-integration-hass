@@ -139,6 +139,13 @@ def enki_to_hs(hue: Any, saturation: Any) -> tuple[float, float] | None:
     return round(float(hue) * 360, 2), round(float(saturation) * 100, 2)
 
 
+# Every field ``ChangeLightStateRequestApiModel`` carries in the app (APK ls2).
+# All six are nullable there, and the app's serializer writes nulls rather than
+# omitting them, so a body built without a reported state to copy still names
+# them all.
+LIGHT_STATE_FIELDS = ("brightness", "colorMode", "hue", "saturation", "colorTemperature", "power")
+
+
 def merge_light_state_payload(
     current: dict[str, Any],
     changes: dict[str, Any],
@@ -148,22 +155,32 @@ def merge_light_state_payload(
     Enki requires the full lastReportedValue object on every POST. When turning ON,
     the API also expects ``power: ON`` even if the caller only asked for brightness
     or color temperature, otherwise Siroco+ kits ignore the command.
+
+    With no reported state to copy, the body is padded with explicit nulls for the
+    fields the app would have sent: a bulb whose ``check-light-state`` is refused
+    was getting a one-key body and a 400 back (#337). Devices whose read works are
+    untouched, their reported object already names every field.
     """
     payload = dict(current)
     if changes.get("power") == "OFF":
         payload.update(changes)
-        return payload
+        return _with_every_field(payload) if not current else payload
     brightness = changes.get("brightness")
     if brightness is not None and float(brightness) <= 0:
         payload = dict(current)
         payload.update(changes)
         payload["power"] = "OFF"
-        return payload
+        return _with_every_field(payload) if not current else payload
     payload["power"] = "ON"
     payload.update(changes)
     if "colorTemperature" in changes:
         payload["colorMode"] = "ct"
-    return payload
+    return _with_every_field(payload) if not current else payload
+
+
+def _with_every_field(payload: dict[str, Any]) -> dict[str, Any]:
+    """The same body, naming every field the app names, nulls included."""
+    return {field: payload.get(field) for field in LIGHT_STATE_FIELDS} | payload
 
 
 def is_command_success_status(status: int) -> bool:
