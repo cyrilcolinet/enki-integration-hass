@@ -47,14 +47,14 @@
       },
       "sso_code": {
         "title": "Terminer la connexion",
-        "description": "**[Ouvrez ce lien pour vous connecter]({authorize_url})**, puis revenez ici.\n\nEnsuite votre navigateur n'arrivera pas à ouvrir une adresse qui commence par `enki://`. C'est normal : copiez cette adresse entière depuis la barre d'adresse et collez-la ci-dessous.\n\nDeux choses à savoir. Faites-le **sur un ordinateur** : sur un téléphone où l'application Enki est installée, c'est elle qui s'ouvre et l'adresse est perdue. Et le code ne vit qu'**une minute environ**, donc collez-le tout de suite ; s'il est refusé, rouvrez le lien.",
+        "description": "**[Ouvrez ce lien pour vous connecter]({authorize_url})**, sur un ordinateur.\n\nKeycloak vous envoie ensuite vers une adresse qui commence par `enki://`, qu'aucun navigateur ne sait ouvrir. C'est elle qui contient le code, et le moyen le plus sûr de la lire est d'ouvrir le panneau réseau avant de vous connecter :\n\n1. appuyez sur **F12**, onglet **Réseau**, laissez-le ouvert ;\n2. connectez-vous ;\n3. la dernière ligne est l'adresse `enki://`, clic droit puis copier.\n\nParfois elle reste simplement dans la barre d'adresse, auquel cas copiez-la de là. Le code ne vit qu'une minute environ, collez-le tout de suite ; s'il est refusé, rouvrez le lien.",
         "data": {
           "sso_code": "L'adresse enki://, ou juste le code"
         }
       },
       "reauth_sso": {
         "title": "Reconnexion à Enki",
-        "description": "La connexion de {username} ne fonctionne plus. Il n'y a pas de mot de passe à ressaisir : **[reconnectez-vous avec votre fournisseur]({authorize_url})**, puis collez l'adresse `enki://` que votre navigateur refuse d'ouvrir.\n\nUtilisez le même compte qu'avant, sur un ordinateur, et collez dans la minute.",
+        "description": "La connexion de {username} ne fonctionne plus, et il n'y a pas de mot de passe à ressaisir : **[reconnectez-vous avec votre fournisseur]({authorize_url})**, avec le même compte.\n\nComme avant, le code est dans l'adresse `enki://` que le navigateur ne peut pas ouvrir, plus facile à attraper avec l'onglet **Réseau** (F12) ouvert avant de vous connecter. Collez dans la minute.",
         "data": {
           "sso_code": "L'adresse enki://, ou juste le code"
         }

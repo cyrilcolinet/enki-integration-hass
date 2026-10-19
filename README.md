@@ -111,8 +111,9 @@ Coming from [CyrilP/hass-enki-component](https://github.com/CyrilP/hass-enki-com
 
 - **Wrong password** — Home Assistant asks you to sign in again, from **Settings → Repairs**
 - **Signing in with Google or Apple** — choose that option rather than typing a password:
-  those accounts have none at Enki. Do it from a computer, and paste the `enki://` address
-  your browser refuses to open within a minute
+  those accounts have none at Enki. Do it from a computer, with the browser's **Network** tab
+  (F12) open before you sign in: the code is in the `enki://` address your browser cannot open,
+  and that panel is where it is always visible. Paste it within a minute
 - **No device appears** — check the device is visible in the Enki app, in the same home
 - **A device does not react** — open an [issue](https://github.com/cyrilcolinet/enki-integration-hass/issues/new?template=bug.yml); the bug form lists what to attach
 - **A message in Settings → Repairs** — it usually explains what to do; if not, the issue link above works too

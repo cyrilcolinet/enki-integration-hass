@@ -47,14 +47,14 @@
       },
       "sso_code": {
         "title": "Finish signing in",
-        "description": "**[Open this link to sign in]({authorize_url})**, then come back here.\n\nAfterwards your browser will fail to open an address starting with `enki://`. That is expected: copy that whole address from the address bar and paste it below.\n\nTwo things to know. Do it **on a computer** — on a phone with the Enki app installed, the app opens instead and swallows the address. And the code lasts **about a minute**, so paste it straight away; if it is refused, open the link again.",
+        "description": "**[Open this link to sign in]({authorize_url})**, on a computer.\n\nKeycloak then sends you to an address starting with `enki://`, which no browser can open. That address holds the code, and the surest way to read it is to have the network panel open before you sign in:\n\n1. press **F12**, open the **Network** tab, leave it open;\n2. sign in;\n3. the last line is the `enki://` address — right-click it and copy it.\n\nSometimes it is simply left in the address bar, in which case copy it from there. The code lasts about a minute, so paste it straight away; if it is refused, open the link again.",
         "data": {
           "sso_code": "The enki:// address, or just the code"
         }
       },
       "reauth_sso": {
         "title": "Sign in to Enki again",
-        "description": "The sign-in for {username} stopped working. There is no password to re-enter: **[sign in with your provider again]({authorize_url})**, then paste the `enki://` address your browser refuses to open.\n\nUse the same account as before, on a computer, and paste within a minute.",
+        "description": "The sign-in for {username} stopped working, and there is no password to re-enter: **[sign in with your provider again]({authorize_url})**, with the same account.\n\nAs before, the code is in the `enki://` address your browser cannot open — easiest to catch with the **Network** tab (F12) open before you sign in. Paste it within a minute.",
         "data": {
           "sso_code": "The enki:// address, or just the code"
         }
