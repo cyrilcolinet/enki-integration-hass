@@ -629,7 +629,9 @@ class EnkiAPI:
         caps = profile.capabilities
 
         async def read_one(read: CapabilityRead) -> tuple[str, Any] | None:
-            if read.capability not in caps:
+            if read.capability not in caps and not (
+                read.also_when is not None and read.also_when(profile)
+            ):
                 return None
             if read.skip is not None and read.skip(profile):
                 return None
