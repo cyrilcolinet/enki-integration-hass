@@ -190,3 +190,37 @@ async def test_unrelated_403_still_raises_every_time() -> None:
                 with pytest.raises(EnkiConnectionError):
                     await client.get_json("lighting", "/probe")
             assert not client.forbidden_services
+
+
+def test_no_transport_path_repeats_a_segment() -> None:
+    """A prefix and a call site both carrying `ota/` built `/v1/ota/ota/...` (#329).
+
+    The gateway answered 403 to that, which read as a closed micro-service for
+    months on a key that was correct. Nothing else catches it: the key evidence
+    checks keys, and the route catalogue only covers capability reads, not the
+    hand-written ones.
+
+    It sees the `"alias", f"/..."` call shape, which is most of them, not every
+    possible one.
+    """
+    import re
+    from pathlib import Path
+
+    from enki.api.gateway_registry import WIRED_PATH_PREFIXES
+
+    source = (
+        Path(__file__).resolve().parents[3] / "custom_components" / "enki" / "api" / "transport.py"
+    ).read_text()
+    calls = re.findall(r'"([a-z_]+)",\s*\n?\s*f?"(/[^"]*)"', source)
+    assert calls, "the call-site pattern stopped matching; this guard is blind"
+
+    doubled = []
+    for alias, suffix in calls:
+        prefix = WIRED_PATH_PREFIXES.get(alias)
+        if prefix is None:
+            continue
+        parts = [part for part in f"{prefix}{suffix}".split("/") if part]
+        if any(a == b for a, b in zip(parts, parts[1:], strict=False)):
+            doubled.append(f"{prefix}{suffix}")
+
+    assert not doubled, f"repeated path segment: {doubled}"
