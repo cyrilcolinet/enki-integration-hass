@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.34.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.33.1...v1.34.0) (2026-10-19)
+
+
+### Features
+
+* **auth:** sign in with Google or Apple ([3468687](https://github.com/cyrilcolinet/enki-integration-hass/commit/3468687c800673e8a5757ae96f54d3603ac3843f)), closes [#325](https://github.com/cyrilcolinet/enki-integration-hass/issues/325)
+
 ## [1.33.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.33.0...v1.33.1) (2026-10-13)
 
 
