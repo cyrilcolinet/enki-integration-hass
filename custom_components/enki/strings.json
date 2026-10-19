@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Connect to Enki",
-        "description": "Use the same email and password as the Enki mobile app (Leroy Merlin).",
+        "description": "Use the same email and password as the Enki mobile app (Leroy Merlin). An account that signs in with Google or Apple has no Enki password and cannot be used here.",
         "data": {
           "username": "Email",
           "password": "Password"
@@ -33,7 +33,7 @@
     },
     "error": {
       "cannot_connect": "Cannot reach the Enki cloud. Check your network and try again.",
-      "invalid_auth": "Invalid credentials. Verify your Enki app email and password.",
+      "invalid_auth": "Invalid credentials. Verify your Enki app email and password. An account that signs in with Google or Apple has no Enki password, so this will always fail.",
       "unknown": "Unexpected error. Check Home Assistant logs."
     },
     "abort": {
