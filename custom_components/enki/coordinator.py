@@ -18,7 +18,7 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import EnkiAPI
-from .const import DOMAIN, LOGGER
+from .const import CONF_REFRESH_TOKEN, DOMAIN, LOGGER
 from .domain.models import EnkiDevice
 from .exceptions import EnkiAuthError, EnkiConnectionError
 from .migration import resolve_scan_interval
@@ -86,8 +86,13 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
         self._fan_light_restore: dict[str, dict[int, str | None]] = {}
         self.api = EnkiAPI(
             config_entry.data[CONF_USERNAME],
-            config_entry.data[CONF_PASSWORD],
+            config_entry.data.get(CONF_PASSWORD),
+            refresh_token=config_entry.data.get(CONF_REFRESH_TOKEN),
         )
+        # What the entry's options looked like when this coordinator was built, so
+        # a data-only rewrite — a rotated refresh token — is not read as a settings
+        # change that needs the integration reloaded (#325).
+        self._known_options = dict(config_entry.options)
         self._notifier = EnkiNotifier(hass, config_entry)
         self._telemetry = EnkiTelemetryReporter(hass, config_entry, self)
         scan_interval = resolve_scan_interval(config_entry)
@@ -96,6 +101,34 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
             LOGGER,
             name=DOMAIN,
             update_interval=timedelta(seconds=scan_interval),
+        )
+
+    def options_changed(self) -> bool:
+        """True when the entry's options moved since this coordinator read them."""
+        current = dict(self.config_entry.options)
+        if current == self._known_options:
+            return False
+        self._known_options = current
+        return True
+
+    def _persist_rotated_refresh_token(self) -> None:
+        """Keep a federated account's stored token current (#325).
+
+        Keycloak may hand back a new refresh token every time one is used, and
+        for an account signed in with Google or Apple that token is the only
+        credential there is: lose the current one and the next Home Assistant
+        restart has nothing to start from. A password entry is left alone — its
+        password is the credential of record, and a token written beside it would
+        outlive a password change.
+        """
+        data = self.config_entry.data
+        if data.get(CONF_PASSWORD) is not None:
+            return
+        current = self.api.refresh_token
+        if not current or current == data.get(CONF_REFRESH_TOKEN):
+            return
+        self.hass.config_entries.async_update_entry(
+            self.config_entry, data={**data, CONF_REFRESH_TOKEN: current}
         )
 
     async def _async_update_data(self) -> list[EnkiDevice]:
@@ -110,6 +143,7 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
             notify_for_connection_error(self._notifier, err)
             raise UpdateFailed(f"Cannot reach Enki cloud: {err}") from err
         else:
+            self._persist_rotated_refresh_token()
             self._notifier.dismiss_operational_errors()
             try:
                 await self._telemetry.async_report(self.api.discovery_records)

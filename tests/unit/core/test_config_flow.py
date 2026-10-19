@@ -13,6 +13,7 @@ def _flow() -> EnkiConfigFlow:
     flow.hass = MagicMock()
     flow.context = {}
     flow.async_show_form = MagicMock(return_value={"type": "form"})
+    flow.async_show_menu = MagicMock(return_value={"type": "menu"})
     flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
     flow.async_set_unique_id = AsyncMock()
     flow._abort_if_unique_id_configured = MagicMock()  # noqa: SLF001
@@ -23,46 +24,47 @@ def _flow() -> EnkiConfigFlow:
 
 
 @pytest.mark.asyncio
-async def test_user_step_shows_form_without_input() -> None:
+async def test_user_step_offers_both_ways_in() -> None:
+    """A Google account has no password, so the first question is which way (#325)."""
     flow = _flow()
     await flow.async_step_user()
-    assert flow.async_show_form.call_args.kwargs["step_id"] == "user"
+    assert flow.async_show_menu.call_args.kwargs["menu_options"] == ["password", "sso"]
 
 
 @pytest.mark.asyncio
-async def test_user_step_valid_advances_to_telemetry() -> None:
+async def test_password_step_valid_advances_to_telemetry() -> None:
     flow = _flow()
     creds = {"username": "a@b.c", "password": "secret"}
     with patch("enki.config_flow._validate_credentials", new=AsyncMock()):
-        await flow.async_step_user(creds)
+        await flow.async_step_password(creds)
     # credentials stashed, telemetry form shown next
     assert flow.context["credentials"] == creds
     assert flow.async_show_form.call_args.kwargs["step_id"] == "telemetry"
 
 
 @pytest.mark.asyncio
-async def test_user_step_invalid_auth_shows_error() -> None:
+async def test_password_step_invalid_auth_shows_error() -> None:
     flow = _flow()
     with patch("enki.config_flow._validate_credentials", new=AsyncMock(side_effect=InvalidAuth)):
-        await flow.async_step_user({"username": "a@b.c", "password": "bad"})
+        await flow.async_step_password({"username": "a@b.c", "password": "bad"})
     assert flow.async_show_form.call_args.kwargs["errors"] == {"base": "invalid_auth"}
 
 
 @pytest.mark.asyncio
-async def test_user_step_cannot_connect_shows_error() -> None:
+async def test_password_step_cannot_connect_shows_error() -> None:
     flow = _flow()
     with patch("enki.config_flow._validate_credentials", new=AsyncMock(side_effect=CannotConnect)):
-        await flow.async_step_user({"username": "a@b.c", "password": "x"})
+        await flow.async_step_password({"username": "a@b.c", "password": "x"})
     assert flow.async_show_form.call_args.kwargs["errors"] == {"base": "cannot_connect"}
 
 
 @pytest.mark.asyncio
-async def test_user_step_unexpected_error_shows_unknown() -> None:
+async def test_password_step_unexpected_error_shows_unknown() -> None:
     flow = _flow()
     with patch(
         "enki.config_flow._validate_credentials", new=AsyncMock(side_effect=RuntimeError("boom"))
     ):
-        await flow.async_step_user({"username": "a@b.c", "password": "x"})
+        await flow.async_step_password({"username": "a@b.c", "password": "x"})
     assert flow.async_show_form.call_args.kwargs["errors"] == {"base": "unknown"}
 
 
@@ -86,8 +88,8 @@ async def test_telemetry_step_creates_entry() -> None:
 async def test_telemetry_step_without_credentials_restarts_user() -> None:
     flow = _flow()
     await flow.async_step_telemetry({"telemetry": True})
-    # no credentials in context → falls back to the user form
-    assert flow.async_show_form.call_args.kwargs["step_id"] == "user"
+    # no credentials in context → back to the choice of sign-in
+    assert flow.async_show_menu.call_args.kwargs["step_id"] == "user"
 
 
 # --- reconfigure ------------------------------------------------------------

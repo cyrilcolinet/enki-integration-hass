@@ -127,3 +127,19 @@ async def test_ensure_token_falls_back_to_password_when_refresh_fails() -> None:
 
         assert api._auth.access_token == "password-token"
         await api.async_close()
+
+
+@pytest.mark.asyncio
+async def test_a_refused_password_grant_reads_as_bad_credentials_on_400() -> None:
+    """Keycloak answers 400 for a code it will not take and 401 for a bad password.
+
+    Both are the realm refusing a grant rather than a fault, so both route to
+    Home Assistant's reauthentication. Before #325 a 400 read as "cannot
+    connect", which hid a refusal behind a network error.
+    """
+    with aioresponses() as mocked:
+        mocked.post(ENKI_OIDC_URL, status=400, payload={"error": "invalid_grant"})
+        api = EnkiAPI("user@example.com", "wrong")
+        with pytest.raises(EnkiAuthError):
+            await api.async_connect()
+        await api.async_close()

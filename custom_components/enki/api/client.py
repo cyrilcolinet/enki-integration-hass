@@ -74,8 +74,14 @@ class EnkiAPI:
     discovery and state refresh stay internal.
     """
 
-    def __init__(self, username: str, password: str) -> None:
-        self._auth = EnkiAuthSession(username, password)
+    def __init__(
+        self,
+        username: str,
+        password: str | None = None,
+        *,
+        refresh_token: str | None = None,
+    ) -> None:
+        self._auth = EnkiAuthSession(username, password, refresh_token=refresh_token)
         self._session: aiohttp.ClientSession | None = None
         self._http: EnkiHttpClient | None = None
         self._discovery_records: list[EnkiDiscoveryRecord] = []
@@ -97,6 +103,11 @@ class EnkiAPI:
         self._pending_read_errors: dict[str, dict[str, str]] = {}
         self._pending_read_reports: dict[str, dict[str, dict[str, Any]]] = {}
         self._pending_poll_state: dict[str, dict[str, Any]] = {}
+
+    @property
+    def refresh_token(self) -> str | None:
+        """The session's current refresh token, for an entry that stores one (#325)."""
+        return self._auth.refresh_token
 
     async def async_close(self) -> None:
         """Close the underlying HTTP session."""
