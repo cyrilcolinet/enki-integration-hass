@@ -82,7 +82,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: EnkiConfigEntry) -> bool
 
 
 async def _async_update_listener(hass: HomeAssistant, entry: EnkiConfigEntry) -> None:
-    await hass.config_entries.async_reload(entry.entry_id)
+    """Reload on a settings change, and only on a settings change.
+
+    Every write to the entry lands here, including the one an ordinary poll makes
+    when Keycloak rotates a federated account's refresh token (#325). Reloading
+    on that would restart the integration on the first poll after every restart,
+    and the reload would rotate the token again.
+    """
+    coordinator = getattr(entry, "runtime_data", None)
+    if coordinator is None or coordinator.options_changed():
+        await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: EnkiConfigEntry) -> bool:

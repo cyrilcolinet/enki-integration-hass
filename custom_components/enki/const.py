@@ -10,12 +10,28 @@ NAME = "Enki"
 CONF_SCAN_INTERVAL = "scan_interval"
 CONF_TELEMETRY = "telemetry"
 CONF_TELEMETRY_ONBOARDING = "telemetry_onboarding_shown"
+# An account that signs in with Google or Apple has no password in the Enki realm,
+# so its entry stores the refresh token as its credential instead (#325).
+CONF_REFRESH_TOKEN = "refresh_token"
+CONF_AUTH_PROVIDER = "auth_provider"
 
 DEFAULT_SCAN_INTERVAL = 30
 MIN_SCAN_INTERVAL = 10
 MAX_SCAN_INTERVAL = 300
 
 ENKI_OIDC_URL = "https://keycloak-prod.iot.leroymerlin.fr/realms/enki/protocol/openid-connect/token"
+# Spelled out rather than derived from the token URL: both appear verbatim in the
+# app, and deriving one from the other breaks quietly when a realm moves.
+ENKI_OIDC_AUTH_URL = (
+    "https://keycloak-prod.iot.leroymerlin.fr/realms/enki/protocol/openid-connect/auth"
+)
+ENKI_OIDC_CLIENT_ID = "enki-front"
+# Where Keycloak sends the authorization code back. It is the mobile app's own
+# deep link, registered in its manifest, and the only redirect the client takes.
+ENKI_SSO_REDIRECT_URI = "enki://oauth/callback"
+# `kc_idp_hint` on the authorize call, `provider_type` on the token exchange —
+# the app sends the lowercase name to one and the uppercase to the other (APK sfn).
+SSO_PROVIDERS = {"google": "GOOGLE", "apple": "APPLE"}
 ENKI_BASE_URL = "https://enki.api.devportal.adeo.cloud"
 
 # Mobile app version used for gateway key extraction and HTTP impersonation.

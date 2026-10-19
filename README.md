@@ -58,7 +58,9 @@ Home Assistant also gets ready-made automations — notify on camera motion, ale
 
 ## Before you start
 
-- An **Enki account** — the one you use in the app
+- An **Enki account** — the one you use in the app. Email and password, or **sign in with
+  Google or Apple**, which takes a short detour through your browser
+  ([#325](https://github.com/cyrilcolinet/enki-integration-hass/issues/325))
 - Your devices **already installed in the Enki app**: this integration reads your Enki home, it does not replace pairing
 
 Devices paired on the hub that are not Enki brands — Sonoff, Tuya, Aqara and the like — are not imported. [Zigbee2MQTT](https://www.zigbee2mqtt.io/) or ZHA handle those.
@@ -77,7 +79,8 @@ Enki is in the default HACS store, so there is nothing to add by hand.
 
 1. **HACS** → search **Enki** → **Download** (the button above opens it on your own instance)
 2. **Restart** Home Assistant
-3. **Settings** → **Devices & services** → **Add integration** → **Enki**, then enter your Enki email and password
+3. **Settings** → **Devices & services** → **Add integration** → **Enki**, then pick how you
+   sign in: email and password, or Google / Apple
 4. Your devices show up after about 30 seconds
 
 <details>
@@ -107,6 +110,9 @@ Coming from [CyrilP/hass-enki-component](https://github.com/CyrilP/hass-enki-com
 ## If something goes wrong
 
 - **Wrong password** — Home Assistant asks you to sign in again, from **Settings → Repairs**
+- **Signing in with Google or Apple** — choose that option rather than typing a password:
+  those accounts have none at Enki. Do it from a computer, and paste the `enki://` address
+  your browser refuses to open within a minute
 - **No device appears** — check the device is visible in the Enki app, in the same home
 - **A device does not react** — open an [issue](https://github.com/cyrilcolinet/enki-integration-hass/issues/new?template=bug.yml); the bug form lists what to attach
 - **A message in Settings → Repairs** — it usually explains what to do; if not, the issue link above works too

@@ -3,10 +3,10 @@
     "step": {
       "user": {
         "title": "Connexion à Enki",
-        "description": "Utilisez le même e-mail et mot de passe que l'application mobile Enki (Leroy Merlin).",
-        "data": {
-          "username": "E-mail",
-          "password": "Mot de passe"
+        "description": "Choisissez votre méthode de connexion. Un compte créé avec Google ou Apple n'a pas de mot de passe Enki et utilise la seconde option.",
+        "menu_options": {
+          "password": "E-mail et mot de passe",
+          "sso": "Google ou Apple"
         }
       },
       "reconfigure": {
@@ -29,12 +29,43 @@
         "data": {
           "telemetry": "M’avertir des nouveaux appareils (recommandé)"
         }
+      },
+      "password": {
+        "title": "Connexion à Enki",
+        "description": "Utilisez le même e-mail et mot de passe que l'application mobile Enki (Leroy Merlin).",
+        "data": {
+          "username": "E-mail",
+          "password": "Mot de passe"
+        }
+      },
+      "sso": {
+        "title": "Connexion avec un fournisseur",
+        "description": "Le fournisseur avec lequel votre compte Enki a été créé.",
+        "data": {
+          "auth_provider": "Fournisseur"
+        }
+      },
+      "sso_code": {
+        "title": "Terminer la connexion",
+        "description": "**[Ouvrez ce lien pour vous connecter]({authorize_url})**, puis revenez ici.\n\nEnsuite votre navigateur n'arrivera pas à ouvrir une adresse qui commence par `enki://`. C'est normal : copiez cette adresse entière depuis la barre d'adresse et collez-la ci-dessous.\n\nDeux choses à savoir. Faites-le **sur un ordinateur** : sur un téléphone où l'application Enki est installée, c'est elle qui s'ouvre et l'adresse est perdue. Et le code ne vit qu'**une minute environ**, donc collez-le tout de suite ; s'il est refusé, rouvrez le lien.",
+        "data": {
+          "sso_code": "L'adresse enki://, ou juste le code"
+        }
+      },
+      "reauth_sso": {
+        "title": "Reconnexion à Enki",
+        "description": "La connexion de {username} ne fonctionne plus. Il n'y a pas de mot de passe à ressaisir : **[reconnectez-vous avec votre fournisseur]({authorize_url})**, puis collez l'adresse `enki://` que votre navigateur refuse d'ouvrir.\n\nUtilisez le même compte qu'avant, sur un ordinateur, et collez dans la minute.",
+        "data": {
+          "sso_code": "L'adresse enki://, ou juste le code"
+        }
       }
     },
     "error": {
       "cannot_connect": "Impossible de joindre le cloud Enki. Vérifiez votre réseau.",
       "invalid_auth": "Identifiants invalides. Vérifiez votre e-mail et mot de passe Enki.",
-      "unknown": "Erreur inattendue. Consultez les journaux Home Assistant."
+      "unknown": "Erreur inattendue. Consultez les journaux Home Assistant.",
+      "invalid_code": "Code refusé : il expire au bout d'une minute environ et ne sert qu'une fois. Rouvrez le lien de connexion.",
+      "wrong_account": "Ce n'est pas le même compte Enki. Reconnectez-vous avec celui pour lequel cette entrée a été créée."
     },
     "abort": {
       "already_configured": "Ce compte Enki est déjà configuré.",
@@ -434,6 +465,14 @@
       "opened": "{entity_name} ouvert",
       "closed": "{entity_name} fermé",
       "vibration_detected": "{entity_name} a détecté une vibration"
+    }
+  },
+  "selector": {
+    "auth_provider": {
+      "options": {
+        "google": "Google",
+        "apple": "Apple"
+      }
     }
   }
 }

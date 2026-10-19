@@ -99,6 +99,10 @@ class _OptionsFlow:
     """Minimal OptionsFlow stand-in for config_flow imports."""
 
 
+# Real strings, not mocks: the flow branches on which source asked for it, and a
+# MagicMock would make every comparison False (#325).
+_config_entries.SOURCE_REAUTH = "reauth"
+_config_entries.SOURCE_RECONFIGURE = "reconfigure"
 _config_entries.ConfigFlow = _ConfigFlow
 _config_entries.OptionsFlow = _OptionsFlow
 _config_entries.ConfigFlowResult = dict

@@ -3,10 +3,10 @@
     "step": {
       "user": {
         "title": "Connect to Enki",
-        "description": "Use the same email and password as the Enki mobile app (Leroy Merlin).",
-        "data": {
-          "username": "Email",
-          "password": "Password"
+        "description": "Choose how you sign in to Enki. An account created with Google or Apple has no Enki password, and takes the second option.",
+        "menu_options": {
+          "password": "Email and password",
+          "sso": "Google or Apple"
         }
       },
       "reconfigure": {
@@ -29,12 +29,43 @@
         "data": {
           "telemetry": "Notify me about new devices (recommended)"
         }
+      },
+      "password": {
+        "title": "Connect to Enki",
+        "description": "Use the same email and password as the Enki mobile app (Leroy Merlin).",
+        "data": {
+          "username": "Email",
+          "password": "Password"
+        }
+      },
+      "sso": {
+        "title": "Sign in with a provider",
+        "description": "Which provider your Enki account was created with.",
+        "data": {
+          "auth_provider": "Provider"
+        }
+      },
+      "sso_code": {
+        "title": "Finish signing in",
+        "description": "**[Open this link to sign in]({authorize_url})**, then come back here.\n\nAfterwards your browser will fail to open an address starting with `enki://`. That is expected: copy that whole address from the address bar and paste it below.\n\nTwo things to know. Do it **on a computer** — on a phone with the Enki app installed, the app opens instead and swallows the address. And the code lasts **about a minute**, so paste it straight away; if it is refused, open the link again.",
+        "data": {
+          "sso_code": "The enki:// address, or just the code"
+        }
+      },
+      "reauth_sso": {
+        "title": "Sign in to Enki again",
+        "description": "The sign-in for {username} stopped working. There is no password to re-enter: **[sign in with your provider again]({authorize_url})**, then paste the `enki://` address your browser refuses to open.\n\nUse the same account as before, on a computer, and paste within a minute.",
+        "data": {
+          "sso_code": "The enki:// address, or just the code"
+        }
       }
     },
     "error": {
       "cannot_connect": "Cannot reach the Enki cloud. Check your network and try again.",
       "invalid_auth": "Invalid credentials. Verify your Enki app email and password.",
-      "unknown": "Unexpected error. Check Home Assistant logs."
+      "unknown": "Unexpected error. Check Home Assistant logs.",
+      "invalid_code": "That code was refused: it expires after about a minute and works only once. Open the sign-in link again.",
+      "wrong_account": "That is a different Enki account. Sign in again with the one this entry was set up for."
     },
     "abort": {
       "already_configured": "This Enki account is already configured.",
@@ -434,6 +465,14 @@
       "opened": "{entity_name} opened",
       "closed": "{entity_name} closed",
       "vibration_detected": "{entity_name} detected vibration"
+    }
+  },
+  "selector": {
+    "auth_provider": {
+      "options": {
+        "google": "Google",
+        "apple": "Apple"
+      }
     }
   }
 }

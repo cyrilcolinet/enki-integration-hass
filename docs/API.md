@@ -19,6 +19,25 @@ Every microservice call sends:
 
 Gateway keys are bundled in `custom_components/enki/gateway_keys_data.py` (re-exported by `const.py`). They are **embedded in the Enki mobile APK** (one key per micro-service), not fetched from a central API. Refresh them after an app update with `scripts/extract_gateway_keys.py` (see [DEVELOPMENT.md](DEVELOPMENT.md)). Each wired key is followed from its literal in the APK to the retrofit interface bound to that micro-service, and that chain is recorded in `scripts/gateway_key_evidence.json`, which CI enforces — a key the extractor cannot prove is refused rather than shipped ([#275](https://github.com/cyrilcolinet/enki-integration-hass/issues/275)). A `401` means the credentials no longer work: Home Assistant opens its **reauthentication** flow. A `403` on the device poll usually means an outdated gateway key, and raises a **repair issue** with guidance.
 
+**Two ways to sign in.** Email and password is the resource-owner password grant above. An account
+created with Google or Apple has no password in this realm, and goes through Keycloak's own identity
+brokering instead ([#325](https://github.com/cyrilcolinet/enki-integration-hass/issues/325)):
+
+```
+GET  …/openid-connect/auth?client_id=enki-front&kc_idp_hint=google
+         &redirect_uri=enki://oauth/callback&response_type=code&scope=profile%20email
+POST …/openid-connect/token   grant_type=authorization_code&code=…&provider_type=GOOGLE
+                              &redirect_uri=enki://oauth/callback&client_id=enki-front
+```
+
+`kc_idp_hint` takes the provider's lowercase name and `provider_type` its uppercase one, which is
+how the app spells them (APK `sfn`). The redirect is the app's own deep link, the only one the
+client accepts, so no browser can complete it — the integration has the user paste that address
+back, reads the code out of it and exchanges it. What comes back is a refresh token, and for these
+accounts it is the whole credential: there is no password to fall back on, so a refresh that fails
+opens Home Assistant's reauthentication rather than retrying. Keycloak may rotate the token on every
+use, so the config entry is rewritten whenever it changes.
+
 A `403 {"message":"You cannot consume this service"}` is different: the gateway is refusing the key for a whole micro-service rather than the account. The transport records the first one (so it still reaches diagnostics and read-error telemetry), then stops reading that service until Home Assistant restarts, instead of retrying on every polling cycle.
 
 **Always check the key against the app before blaming the gateway.** Every such 403 traced so far turned out to be our own key: the extractor had picked a neighbouring micro-service's key for `api-enki-luminosity-sensor-prod` ([#256](https://github.com/cyrilcolinet/enki-integration-hass/issues/256)), `api-enki-consumption-prod` ([#270](https://github.com/cyrilcolinet/enki-integration-hass/issues/270)), `api-enki-ota-prod` ([#268](https://github.com/cyrilcolinet/enki-integration-hass/issues/268)) and `api-enki-esdk-prod`. Grep the APK for the key the app passes to that service's retrofit interface — no service has been proven closed on Adeo's side.
