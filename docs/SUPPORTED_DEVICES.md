@@ -282,7 +282,7 @@ Validating the gateway key with mitmproxy: [DEVELOPMENT.md](DEVELOPMENT.md#captu
 
 ## Cross-cutting features
 
-- **OAuth auth**: Keycloak refresh token; invalid credentials open Home Assistant's **reauthentication** flow
+- **OAuth auth**: email and password, or **Google / Apple** through Keycloak's identity brokering, both confirmed on real accounts ([#325](https://github.com/cyrilcolinet/enki-integration-hass/issues/325)). A provider account has no Enki password, so its refresh token is the credential and a sign-in that stops working opens Home Assistant's **reauthentication** flow
 - **Opt-in telemetry**: a repair card for unsupported profiles, and one aggregated card for unrecognized brands, each with a pre-filled GitHub link (nothing sent without a click), [TELEMETRY.md](TELEMETRY.md)
 - **Operational alerts**: gateway key rejected, cloud unreachable, Enki maintenance, as **repair issues** ([API.md](API.md#operational-notifications))
 - **Diagnostics**: anonymized JSON export from Enki UI, with an anonymized request report attached on API failures

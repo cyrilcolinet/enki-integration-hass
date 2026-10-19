@@ -34,7 +34,10 @@
 
 ---
 
-Use your Enki devices in Home Assistant, with the same email and password as the Enki app. Lights, blinds, heating, cameras, sensors and scenes appear as normal Home Assistant devices, ready for dashboards, automations and voice assistants.
+Use your Enki devices in Home Assistant, with the same account as the Enki app: email and
+password, or **sign in with Google or Apple**. Lights, blinds, heating, cameras, sensors and
+scenes appear as normal Home Assistant devices, ready for dashboards, automations and voice
+assistants.
 
 > **Unofficial project.** Community-maintained, **not** affiliated with or endorsed by Leroy Merlin, ADEO or Enki. See the [disclaimer](docs/DISCLAIMER.md).
 
@@ -51,6 +54,7 @@ Use your Enki devices in Home Assistant, with the same email and password as the
 - **Sensors**: motion, opening, temperature, humidity, water leak, battery, solar production
 - **Energy**: what a plug or a water heater has used this month, ready for the Energy dashboard
 - **Scenes**: run the scenes you created in the Enki app
+- **Any Enki account**: email and password, or signed in with **Google** or **Apple**, both confirmed on real accounts
 
 The full list, device by device, is in [supported devices](docs/SUPPORTED_DEVICES.md).
 
