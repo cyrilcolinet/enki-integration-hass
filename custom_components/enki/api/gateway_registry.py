@@ -383,9 +383,12 @@ ENKI_MICRO_SERVICES: tuple[EnkiMicroService, ...] = (
         "api-enki-ota-prod",
         "ENKI_OTA_API_KEY",
         "ota",
-        "/api-enki-ota-prod/v1/ota",
+        # No segment after v1: the app binds its base at `api-enki-ota-prod/v1/`
+        # and annotates `ota/check/{nodeId}`, which the call sites already carry.
+        # An `ota` here doubled it, and the gateway refused the result (#329).
+        "/api-enki-ota-prod/v1",
         wired=True,
-        notes="Firmware version and OTA inventory",
+        notes="Firmware version and OTA inventory (ota/version, ota/check)",
     ),
     EnkiMicroService(
         "api-enki-payment-prod",
