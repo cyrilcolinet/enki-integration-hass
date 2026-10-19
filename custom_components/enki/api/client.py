@@ -1258,7 +1258,23 @@ class EnkiAPI:
         http = await self._get_http()
         base = await self._current_light_base(http, home_id, node_id)
         payload = merge_light_state_payload(base, changes)
-        await http.change_light_state(home_id, node_id, payload)
+        try:
+            await http.change_light_state(home_id, node_id, payload)
+        except EnkiConnectionError as err:
+            if err.status != 400 or set(changes) != {"power"}:
+                raise
+            # The lighting service refuses some bulbs outright, read and write
+            # both (#337). On/off is the one thing another service can carry, so
+            # it is worth one attempt before giving the user an error.
+            LOGGER.debug(
+                "change-light-state refused for node %s (%s); trying switch-electrical-power",
+                node_id,
+                err,
+            )
+            try:
+                await http.switch_electrical_power(home_id, node_id, changes["power"])
+            except EnkiConnectionError:
+                raise err from None
 
     async def async_change_light_color(
         self,
