@@ -2,7 +2,7 @@
 """Ask one capability route whether it answers, on your own devices.
 
 The referentiel advertises capabilities the app never calls, and a capability's
-name and its route's name do not always match — the doorbell advertises
+name and its route's name do not always match, the doorbell advertises
 ``check_videophone_media_events`` while the app calls ``check-videophone-events``
 (#233). So "does this read work on your device" is not answerable from the app's
 code alone, and it is the question behind most capability-gap reports.

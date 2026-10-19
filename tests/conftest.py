@@ -173,7 +173,7 @@ class _DataUpdateCoordinator:
 
 
 class _UpdateFailed(Exception):
-    """Minimal UpdateFailed stand-in — must stay raisable."""
+    """Minimal UpdateFailed stand-in, must stay raisable."""
 
 
 _update_coordinator = sys.modules["homeassistant.helpers.update_coordinator"]
@@ -192,15 +192,15 @@ _core.callback = lambda fn: fn
 
 
 class _HomeAssistantError(Exception):
-    """Minimal HomeAssistantError stand-in — must stay raisable."""
+    """Minimal HomeAssistantError stand-in, must stay raisable."""
 
 
 class _ConfigEntryNotReady(_HomeAssistantError):
-    """Minimal ConfigEntryNotReady stand-in — must stay raisable."""
+    """Minimal ConfigEntryNotReady stand-in, must stay raisable."""
 
 
 class _ConfigEntryAuthFailed(_HomeAssistantError):
-    """Minimal ConfigEntryAuthFailed stand-in — must stay raisable."""
+    """Minimal ConfigEntryAuthFailed stand-in, must stay raisable."""
 
 
 _ha_exceptions = sys.modules["homeassistant.exceptions"]
@@ -474,7 +474,7 @@ class _PlayMedia:
 
 
 class _Unresolvable(_HomeAssistantError):
-    """Minimal Unresolvable stand-in — must stay raisable."""
+    """Minimal Unresolvable stand-in, must stay raisable."""
 
 
 class _MediaClass:
@@ -493,7 +493,7 @@ sys.modules["homeassistant.components.media_source"] = _media_source
 
 
 class _BrowseError(_HomeAssistantError):
-    """Minimal BrowseError stand-in — must stay raisable."""
+    """Minimal BrowseError stand-in, must stay raisable."""
 
 
 _media_player = MagicMock()

@@ -2,12 +2,12 @@
 """Probe Enki mobile-config and document how to obtain missing gateway keys.
 
 The Enki app calls GET /api-enki-mobile-config-prod/v1/settings (not config/app/).
-That endpoint returns app version flags (minIOSVersion, maintenance, …) — it does
+That endpoint returns app version flags (minIOSVersion, maintenance, …), it does
 **not** expose X-Gateway-APIKey values for heating, water leak, or rolling.
 
 For missing keys (ENKI_HEATING_API_KEY, ENKI_WATER_SENSOR_API_KEY,
 ENKI_ACCESS_MOTORIZATION_API_KEY), scan an APK with
-scripts/extract_gateway_keys.py, or use the mitmproxy fallback — see
+scripts/extract_gateway_keys.py, or use the mitmproxy fallback, see
 docs/DEVELOPMENT.md.
 
 Usage:
@@ -130,7 +130,7 @@ def main() -> int:
 
     print(json.dumps(payload, indent=2, sort_keys=True))
     print(
-        f"\n(mobile-config OK — endpoint {MOBILE_CONFIG_PATH}; no gateway keys here)",
+        f"\n(mobile-config OK, endpoint {MOBILE_CONFIG_PATH}; no gateway keys here)",
         file=sys.stderr,
     )
     print_missing_key_help()

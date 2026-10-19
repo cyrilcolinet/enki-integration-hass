@@ -81,7 +81,7 @@ def test_boiler_relay_without_capabilities_is_a_switch() -> None:
     )
     assert device.profile.is_boiler_switch is True
     assert device_is_supported(device) is True
-    # Not a light, not an outlet — a plain switch driven via the power API.
+    # Not a light, not an outlet, a plain switch driven via the power API.
     assert is_light_controllable(device) is False
     assert device.profile.is_outlet is False
 
@@ -107,7 +107,7 @@ def test_main_change_capability_endpoints() -> None:
 def _unschemed_fan_light_device(**overrides) -> EnkiDevice:
     """AD_TCFL_1-shaped device: change_light_state is listed in capabilities
     but has no possibleValues schema, while switch_electrical_power (endpoint
-    1) does — the referentiel's real bare on/off channel.
+    1) does, the referentiel's real bare on/off channel.
     """
     defaults = {
         "device_type": "ceiling_fans",
@@ -140,7 +140,7 @@ def test_light_state_has_schema_true_when_possible_values_present() -> None:
 
 def test_bare_power_fallback_endpoint_single_endpoint_falls_back_to_power_switch() -> None:
     # AD_TCFL_1: a single switch_electrical_power endpoint doubles as the
-    # light channel — fan speed is driven separately via change_fan_speed,
+    # light channel, fan speed is driven separately via change_fan_speed,
     # so infer_fan_motor_endpoints classifies the lone endpoint as the
     # motor and fan_light_endpoints comes back empty, falling through to
     # the raw power-switch endpoint. Verified live against real hardware.
@@ -225,7 +225,7 @@ def test_fan_light_endpoints_cadix_two_lights_motor_on_unlisted_endpoint() -> No
     # Inspire Cadix (AD_TCFL_1) variant: switch_electrical_power exposes two
     # light kits on endpoints 1 and 3, and the electrical-power service also
     # reports endpoint 2 (the speed-driven motor). Both switch endpoints must
-    # resolve as lights — endpoint 1 must not be stolen as the motor.
+    # resolve as lights, endpoint 1 must not be stolen as the motor.
     device = _device(
         device_type="ceiling_fans",
         device_name="Inspire Cadix",
@@ -254,7 +254,7 @@ def test_fan_light_endpoints_cadix_without_reported_motor_keeps_legacy_single_li
 def test_fan_light_endpoints_siroco_matching_reported_endpoints_keeps_motor() -> None:
     # Siroco+ [1, 2]: the electrical-power service reports exactly the switch
     # endpoints (no unlisted motor), so the legacy motor-on-endpoint-1 mapping
-    # must stand — one light on endpoint 2.
+    # must stand, one light on endpoint 2.
     device = _device(
         device_type="ceiling_fans",
         device_name="Inspire Siroco+",

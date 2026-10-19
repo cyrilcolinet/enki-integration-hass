@@ -29,7 +29,7 @@ async def async_setup_entry(
 
 
 class EnkiFirmwareUpdate(EnkiEntity, UpdateEntity):
-    """Firmware state from the Enki OTA endpoints (read-only — install via Enki app)."""
+    """Firmware state from the Enki OTA endpoints (read-only: install via Enki app)."""
 
     _attr_has_entity_name = True
     _attr_translation_key = "firmware"

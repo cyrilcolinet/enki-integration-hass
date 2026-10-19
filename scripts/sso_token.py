@@ -3,14 +3,14 @@
 
 The probes ask for an email and a password. An account created with Google or
 Apple has no password in the Enki realm (#325), so its owner could not run any of
-them — which is backwards, since those are the accounts we most need reports
+them, which is backwards, since those are the accounts we most need reports
 from.
 
 This does the same browser dance the integration does: open the link, sign in,
 and paste back the ``enki://`` address your browser cannot open. What comes out
 is a refresh token the probes take with ``--refresh-token``.
 
-Two things to know. Do it **on a computer** — on a phone with the Enki app
+Two things to know. Do it **on a computer**: on a phone with the Enki app
 installed, the app opens instead and swallows the address. And the code lasts
 about a minute, so paste it straight away.
 
@@ -60,7 +60,7 @@ async def sign_in(provider: str) -> int:
 
     claims = claims_from_token(payload["access_token"])
     print(f"\nSigned in as {account_from_claims(claims) or 'an account with no email claim'}.")
-    print("\nRefresh token — treat it like a password, do not post it anywhere:\n")
+    print("\nRefresh token, treat it like a password, do not post it anywhere:\n")
     print(f"   {payload['refresh_token']}\n")
     print("Pass it to a probe, for example:")
     print("   python3 scripts/probe_capability.py check_child_lock --refresh-token <the token>\n")

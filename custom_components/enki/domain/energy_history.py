@@ -2,7 +2,7 @@
 
 ``consumption/nodes/{nodeId}?startDate=&timePeriod=`` is what the Enki app's
 consumption screen reads. ``startDate`` picks a period rather than a range: the
-response snaps to the period enclosing that instant, and comes back as buckets —
+response snaps to the period enclosing that instant, and comes back as buckets
 24 hours for ``DAILY``, days for ``WEEKLY`` and ``MONTHLY``, 12 months for
 ``YEARLY``. Field names are the app's own (``ConsumptionApiModel``)::
 
@@ -18,7 +18,7 @@ device answers that way.
 
 ``null`` is "no reading", not zero: future hours and anything before
 ``firstMeasurementDate`` come back null, while a real zero is ``0.0``. The
-difference matters — a month whose buckets are all null is a device we have
+difference matters, a month whose buckets are all null is a device we have
 heard nothing from, and reporting 0 for it would tell Home Assistant the meter
 reset and cost the user their long-term total.
 

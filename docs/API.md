@@ -1,4 +1,4 @@
-# Enki cloud API — engineering notes
+# Enki cloud API, engineering notes
 
 This integration talks to the **unofficial** Enki REST API used by the Leroy Merlin / Adeo mobile app. There is no public developer portal for end users; behaviour was inferred from network traffic and [CyrilP/hass-enki-component](https://github.com/CyrilP/hass-enki-component).
 
@@ -17,7 +17,7 @@ Every microservice call sends:
 - `X-Gateway-APIKey: <service-specific key>`
 - `homeId: <uuid>` when the node belongs to a home
 
-Gateway keys are bundled in `custom_components/enki/gateway_keys_data.py` (re-exported by `const.py`). They are **embedded in the Enki mobile APK** (one key per micro-service), not fetched from a central API. Refresh them after an app update with `scripts/extract_gateway_keys.py` (see [DEVELOPMENT.md](DEVELOPMENT.md)). Each wired key is followed from its literal in the APK to the retrofit interface bound to that micro-service, and that chain is recorded in `scripts/gateway_key_evidence.json`, which CI enforces — a key the extractor cannot prove is refused rather than shipped ([#275](https://github.com/cyrilcolinet/enki-integration-hass/issues/275)). A `401` means the credentials no longer work: Home Assistant opens its **reauthentication** flow. A `403` on the device poll usually means an outdated gateway key, and raises a **repair issue** with guidance.
+Gateway keys are bundled in `custom_components/enki/gateway_keys_data.py` (re-exported by `const.py`). They are **embedded in the Enki mobile APK** (one key per micro-service), not fetched from a central API. Refresh them after an app update with `scripts/extract_gateway_keys.py` (see [DEVELOPMENT.md](DEVELOPMENT.md)). Each wired key is followed from its literal in the APK to the retrofit interface bound to that micro-service, and that chain is recorded in `scripts/gateway_key_evidence.json`, which CI enforces: a key the extractor cannot prove is refused rather than shipped ([#275](https://github.com/cyrilcolinet/enki-integration-hass/issues/275)). A `401` means the credentials no longer work: Home Assistant opens its **reauthentication** flow. A `403` on the device poll usually means an outdated gateway key, and raises a **repair issue** with guidance.
 
 **Two ways to sign in.** Email and password is the resource-owner password grant above. An account
 created with Google or Apple has no password in this realm, and goes through Keycloak's own identity
@@ -32,9 +32,9 @@ POST …/openid-connect/token   grant_type=authorization_code&code=…&provider_
 
 `kc_idp_hint` takes the provider's lowercase name and `provider_type` its uppercase one, which is
 how the app spells them (APK `sfn`). The redirect is the app's own deep link, the only one the
-client accepts, so no browser can complete it — the integration has the user paste that address
+client accepts, so no browser can complete it. The integration has the user paste that address
 back, reads the code out of it and exchanges it. Chrome does not reliably leave that address in
-the address bar, so the form tells the user to catch it in the network panel — the first reporter
+the address bar, so the form tells the user to catch it in the network panel. The first reporter
 through this flow found it there himself ([#329](https://github.com/cyrilcolinet/enki-integration-hass/issues/329)).
 `enki://oauth/callback` is the only redirect the client accepts: a localhost one, which would have
 made this seamless, answers 400. What comes back is a refresh token, and for these
@@ -44,9 +44,9 @@ use, so the config entry is rewritten whenever it changes.
 
 A `403 {"message":"You cannot consume this service"}` is different: the gateway is refusing the key for a whole micro-service rather than the account. The transport records the first one (so it still reaches diagnostics and read-error telemetry), then stops reading that service until Home Assistant restarts, instead of retrying on every polling cycle.
 
-**Always check the key against the app before blaming the gateway.** Every such 403 traced so far turned out to be our own key: the extractor had picked a neighbouring micro-service's key for `api-enki-luminosity-sensor-prod` ([#256](https://github.com/cyrilcolinet/enki-integration-hass/issues/256)), `api-enki-consumption-prod` ([#270](https://github.com/cyrilcolinet/enki-integration-hass/issues/270)), `api-enki-ota-prod` ([#268](https://github.com/cyrilcolinet/enki-integration-hass/issues/268)) and `api-enki-esdk-prod`. Grep the APK for the key the app passes to that service's retrofit interface — no service has been proven closed on Adeo's side.
+**Always check the key against the app before blaming the gateway.** Every such 403 traced so far turned out to be our own key: the extractor had picked a neighbouring micro-service's key for `api-enki-luminosity-sensor-prod` ([#256](https://github.com/cyrilcolinet/enki-integration-hass/issues/256)), `api-enki-consumption-prod` ([#270](https://github.com/cyrilcolinet/enki-integration-hass/issues/270)), `api-enki-ota-prod` ([#268](https://github.com/cyrilcolinet/enki-integration-hass/issues/268)) and `api-enki-esdk-prod`. Grep the APK for the key the app passes to that service's retrofit interface, no service has been proven closed on Adeo's side.
 
-**Check the path too.** A refusal that names a path rather than the service is ours as well: `403 GET /esdk/.*$ not allowed` was an `esdk` segment this integration had invented. The app binds each retrofit base at `<micro-service>/v1/` and every segment after that comes from the route annotation, so a prefix with an extra segment produces a key that is correct behind a path the gateway will not serve ([#178](https://github.com/cyrilcolinet/enki-integration-hass/issues/178)). The first segment of every wired prefix in `gateway_registry.py` has to appear in that service's own annotations — and must not be repeated by the call site, which is the other half of the same mistake: `/v1/ota` plus a call site carrying `ota/check/{nodeId}` asked for `/v1/ota/ota/check/{nodeId}` and was refused the same way ([#329](https://github.com/cyrilcolinet/enki-integration-hass/issues/329)). A unit test now builds the transport's paths and fails on a repeated segment.
+**Check the path too.** A refusal that names a path rather than the service is ours as well: `403 GET /esdk/.*$ not allowed` was an `esdk` segment this integration had invented. The app binds each retrofit base at `<micro-service>/v1/` and every segment after that comes from the route annotation, so a prefix with an extra segment produces a key that is correct behind a path the gateway will not serve ([#178](https://github.com/cyrilcolinet/enki-integration-hass/issues/178)). The first segment of every wired prefix in `gateway_registry.py` has to appear in that service's own annotations, and must not be repeated by the call site, which is the other half of the same mistake: `/v1/ota` plus a call site carrying `ota/check/{nodeId}` asked for `/v1/ota/ota/check/{nodeId}` and was refused the same way ([#329](https://github.com/cyrilcolinet/enki-integration-hass/issues/329)). A unit test now builds the transport's paths and fails on a repeated segment.
 
 ## Discovery flow
 
@@ -69,7 +69,7 @@ sequenceDiagram
     HA->>Ref: GET /v1/devices/{deviceId}?version={REFERENTIEL_VERSION}
 ```
 
-`REFERENTIEL_VERSION` is defined in [`const.py`](../custom_components/enki/const.py) and tracks the value the Enki app sends — a stale value returns a thinner capability set.
+`REFERENTIEL_VERSION` is defined in [`const.py`](../custom_components/enki/const.py) and tracks the value the Enki app sends, a stale value returns a thinner capability set.
 
 ## Supported device types (this integration)
 
@@ -81,11 +81,11 @@ Detection is **capability-based** (referentiel metadata + BFF dashboard), not li
 | `lights` (+ light capabilities) | `light` | `api-enki-lighting-prod` |
 | Switches / outlets (Edisio, …) | `light` (ON/OFF) | `api-enki-power-prod` (`switch-electrical-power`) |
 | `inverters` (Envertech-Lexman solar) | `sensor` (power W) | BFF dashboard `description.value` |
-| `access_and_motorizations` (Evology, Nodon, …) | `cover` (beta) | `api-enki-rolling-prod` — `shutter/{nodeId}/…` (key in `gateway_keys_data.py`) |
+| `access_and_motorizations` (Evology, Nodon, …) | `cover` (beta) | `api-enki-rolling-prod`: `shutter/{nodeId}/…` (key in `gateway_keys_data.py`) |
 | `sensors` (motion, contact, temperature, …) | `binary_sensor`, `sensor`, `switch`, `number` | presence, contact, temperature-humidity, battery-health, siren micro-services |
 | Heating / pilot wire / thermostat | `select`, `climate`, `switch`, `number`, `binary_sensor` | `api-enki-thermostat-prod` (setpoint, pilot wire, window/presence, offset, child-lock, preheating), `api-enki-presence-detector-prod` (occupancy); `ENKI_HEATING_API_KEY`/`ENKI_THERMOSTAT_API_KEY` in `gateway_keys_data.py`; if cleared, reads are skipped silently and writes raise an error |
-| Water leak sensors | `binary_sensor`, `sensor` (battery) | `api-enki-water-leak-detector-prod` + `api-enki-battery-health-prod` — keys in `gateway_keys_data.py`; same fallback if a key is missing |
-| `cameras` (Lexman / Meari) | `camera`, `sensor`, `binary_sensor` | `api-enki-lexman-camera-prod` (`/events?nodeId=…`) for events; config controls and live signaling on `api-enki-lexman-camera-meari-prod` — see [Lexman cameras](#lexman-cameras-api-enki-lexman-camera-meari-prod) for what each generation exposes |
+| Water leak sensors | `binary_sensor`, `sensor` (battery) | `api-enki-water-leak-detector-prod` + `api-enki-battery-health-prod`: keys in `gateway_keys_data.py`; same fallback if a key is missing |
+| `cameras` (Lexman / Meari) | `camera`, `sensor`, `binary_sensor` | `api-enki-lexman-camera-prod` (`/events?nodeId=…`) for events; config controls and live signaling on `api-enki-lexman-camera-meari-prod`: see [Lexman cameras](#lexman-cameras-api-enki-lexman-camera-meari-prod) for what each generation exposes |
 
 Sensor capability paths: `GET/POST …/v1/sensors/{node_id}/{kebab-case-capability}` (siren uses `/v1/siren/`).
 
@@ -105,15 +105,15 @@ State is split across services:
 
 Commands:
 
-- `POST …/change-fan-speed` — body `{"value": <0-6>}`, expect `202`
-- `POST …/change-airflow-mode` — body `{"value": "MANUAL"|"BREEZE"}`, expect `202` or `204` (mode brise)
-- `POST …/change-fan-rotation-direction` — body `{"value": "CLOCKWISE"|"COUNTERCLOCKWISE"}`, expect `202` or `204` (Inspire; enables `fan.set_direction` in HA)
-- `POST …/change-light-state` — full `lastReportedValue` object; `power` ON/OFF for the fan light kit
-- `POST …/switch-electrical-power?endpoints=1|2` — fan motor only in practice; light kit uses lighting `power`
+- `POST …/change-fan-speed`, body `{"value": <0-6>}`, expect `202`
+- `POST …/change-airflow-mode`, body `{"value": "MANUAL"|"BREEZE"}`, expect `202` or `204` (mode brise)
+- `POST …/change-fan-rotation-direction`, body `{"value": "CLOCKWISE"|"COUNTERCLOCKWISE"}`, expect `202` or `204` (Inspire; enables `fan.set_direction` in HA)
+- `POST …/change-light-state`, full `lastReportedValue` object; `power` ON/OFF for the fan light kit
+- `POST …/switch-electrical-power?endpoints=1|2`: fan motor only in practice; light kit uses lighting `power`
 
 Fan motor and light kit are **independent** (turning the fan on does not switch the light on).
 
-### Roller shutters (Evology SIN2RS1, …) — beta
+### Roller shutters (Evology SIN2RS1, …), beta
 
 **Base URL:** `https://enki.api.devportal.adeo.cloud/api-enki-rolling-prod/v1/shutter/{nodeId}/`
 
@@ -126,28 +126,28 @@ Fan motor and light kit are **independent** (turning the fan on does not switch 
 
 Commands:
 
-- `POST …/change-shutter-position` — body `{"value": <0-100>}`, expect `202` or `204`
-- `POST …/stop-change-shutter-position` — stop mid-travel (no body)
-- `POST …/change-roller-shutter-mode` — body `{"value": "NORMAL"|"INVERTED"}`
-- `POST …/execute-preset` — body `{"value": "<preset>"}` when referentiel lists presets
-- `POST …/switch-roller-shutter` — body `{"value": "OPEN"|"CLOSED"}` for RTS motorizations
+- `POST …/change-shutter-position`, body `{"value": <0-100>}`, expect `202` or `204`
+- `POST …/stop-change-shutter-position`, stop mid-travel (no body)
+- `POST …/change-roller-shutter-mode`, body `{"value": "NORMAL"|"INVERTED"}`
+- `POST …/execute-preset`, body `{"value": "<preset>"}` when referentiel lists presets
+- `POST …/switch-roller-shutter`, body `{"value": "OPEN"|"CLOSED"}` for RTS motorizations
 
 RTS models (Somfy, `tr_device_rts_roller_shutter_motorization_label`) expose only
 `switch_roller_shutter` and `stop_change_shutter_position`: one-way radio, so no
 position and no `check-*` feedback. The cover entity reports `assumed_state`.
-Path segment unconfirmed against real hardware — see #96.
+Path segment unconfirmed against real hardware, see #96.
 
 Gateway key: `ENKI_ACCESS_MOTORIZATION_API_KEY` in `gateway_keys_data.py`. Legacy path `api-enki-access-and-motorizations-prod` is obsolete. See [DEVELOPMENT.md](DEVELOPMENT.md#capturing-a-gateway-key-with-mitmproxy-fallback) for validating a key with mitmproxy.
 
 ### Dry-contact gate / garage receiver (Lexman 83424576, Nodon SIN-4-1-20)
 
-**Referentiel capability:** `power_on_with_timer` only (Mpulse mode — timed impulse, no state read).
+**Referentiel capability:** `power_on_with_timer` only (Mpulse mode, timed impulse, no state read).
 
 **HA entity:** `button` “Trigger”
 
 | Command | Endpoint | Notes |
 |---------|----------|-------|
-| Impulse | `POST …/power-on-with-timer` | **No body** — `api-enki-power-prod` (APK `mbj.e`) |
+| Impulse | `POST …/power-on-with-timer` | **No body**: `api-enki-power-prod` (APK `mbj.e`) |
 
 Gateway key: `ENKI_POWER_API_KEY` (same as outlets). Distinct from roller shutters (`api-enki-rolling-prod`).
 
@@ -184,13 +184,13 @@ field (`hs` vs `ct`) indicates which mode is active.
 |------------|----------|
 | `check-water-sensor-state` | `binary_sensor` (moisture) |
 
-Gateway keys (`ENKI_HEATING_API_KEY`, `ENKI_WATER_SENSOR_API_KEY`, …) are in `gateway_keys_data.py`. Refresh with `scripts/extract_gateway_keys.py` after an app update — see [DEVELOPMENT.md](DEVELOPMENT.md). If a key is cleared, reads are skipped silently and writes raise a clear error.
+Gateway keys (`ENKI_HEATING_API_KEY`, `ENKI_WATER_SENSOR_API_KEY`, …) are in `gateway_keys_data.py`. Refresh with `scripts/extract_gateway_keys.py` after an app update: see [DEVELOPMENT.md](DEVELOPMENT.md). If a key is cleared, reads are skipped silently and writes raise a clear error.
 
 ## Command responses
 
 A write is accepted on **202**, **204** or **201**: the water-heater setpoint creates a
-derogation and answers 201 with the created object ([#269](https://github.com/cyrilcolinet/enki-integration-hass/issues/269)). **200** stays out — it is what a read
-answers — except on the few routes that reply with the updated state, which pass their own
+derogation and answers 201 with the created object ([#269](https://github.com/cyrilcolinet/enki-integration-hass/issues/269)). **200** stays out, it is what a read
+answers, except on the few routes that reply with the updated state, which pass their own
 list (alarm mode, meari `change-*`).
 
 ## Optimistic state
@@ -229,14 +229,14 @@ Base: `https://enki.api.devportal.adeo.cloud/api-enki-home-security-prod/v1/`
 Gateway key: `ENKI_HOME_SECURITY_API_KEY`.
 
 The alarm is **not a node**: the dashboard shows it as a tile with `template: "SECURITY"` and a
-`metadata.securityId`, without any `deviceId` — so device discovery never sees it. Discovery
+`metadata.securityId`, without any `deviceId`, so device discovery never sees it. Discovery
 records that id per home, and only homes with such a tile are polled.
 
 | Method | Path | Notes |
 |--------|------|-------|
 | GET | `security?homeId={homeId}` | `homeId`, `threatLevel`, `lastThreatDate`, `currentMode`, `alarmDelay` (s), `notificationsEnabled` |
-| GET | `modes?homeId={homeId}` | `items[].type` — the modes configured in the app (a mode needs ≥ 1 detector and ≥ 1 siren) |
-| PATCH | `security/{securityId}/homes/{homeId}/currentMode` | `{"currentMode": "FULL"}` — answers **200** with the new state, not 202 |
+| GET | `modes?homeId={homeId}` | `items[].type`: the modes configured in the app (a mode needs ≥ 1 detector and ≥ 1 siren) |
+| PATCH | `security/{securityId}/homes/{homeId}/currentMode` | `{"currentMode": "FULL"}`: answers **200** with the new state, not 202 |
 | PATCH | `security/{securityId}/homes/{homeId}/delay` / `…/notifications` | not wired |
 
 Modes (`currentMode`, app enum) and their Home Assistant state:
@@ -247,12 +247,12 @@ Modes (`currentMode`, app enum) and their Home Assistant state:
 | `FULL` | Total | `armed_away` |
 | `PARTIAL` | Partial | `armed_home` |
 | `PRESENCE` | Presence | `armed_night` |
-| `INACTIVE` | — (never offered) | `disarmed` |
+| `INACTIVE` |, (never offered) | `disarmed` |
 
 `threatLevel` values in the app: `DEFAULT`, `SAFE`, `ALERT`, `AUTO_PROTECTION`, `DANGER`,
 `DETERRENCE`, `DETERRENCE_CONFIRMED`, `INTRUSION`, `INTRUSION_CONFIRMED`. The entity reports
 **triggered** only for `INTRUSION`, `INTRUSION_CONFIRMED` and `DANGER`; the raw value stays in the
-`threat_level` attribute. That split is a first pass — none of this has run against a real
+`threat_level` attribute. That split is a first pass, none of this has run against a real
 installation yet.
 
 ## Scenarios (api-enki-scenario-prod)
@@ -275,7 +275,7 @@ Gateway key: `ENKI_EQUATION_AIRCO_API_KEY`. Headers: `Authorization`, `X-Gateway
 |--------|------|-------|
 | GET | `{nodeId}/check-airconditioner-state` | `lastReportedValue` is an **object**, not a scalar |
 | GET | `{nodeId}/check-airconditioner-error` | not read yet |
-| POST | `{nodeId}/change-airconditioner-state` | not called — see below |
+| POST | `{nodeId}/change-airconditioner-state` | not called: see below |
 
 ```json
 {"lastReportedValue": {
@@ -312,7 +312,7 @@ Gateway key: `ENKI_EQUATION_WATER_HEATER_API_KEY`. Headers: `Authorization`, `X-
 | GET | `{nodeId}/check-water-heater-mode` | `lastReportedValue` is the mode |
 | GET | `{nodeId}/check-water-heater-error` | not read yet |
 
-The mode is one of the values the heater declares for `check_water_heater_mode` in the referentiel —
+The mode is one of the values the heater declares for `check_water_heater_mode` in the referentiel
 `AUTO`, `MANUAL`, `BOOST`, `BOOST_PLUS`, `PROG`, `CLEAN` on an AD-HEWH3-1. Self-clean is `CLEAN` on the wire, not
 `SELF_CLEAN`, and there is no `ECO`.
 
@@ -337,7 +337,7 @@ What the heater does with it, seen on that unit:
 
 - A mode carries its own setpoint. CLEAN drove the target to 80 °C, above the 75 °C the `climate` entity
   allows, and a setpoint written during CLEAN was overridden.
-- MANUAL comes back with the setpoint it last held, not the last one written — 55 °C here, after the
+- MANUAL comes back with the setpoint it last held, not the last one written, 55 °C here, after the
   integration had set 40 °C.
 - Writing a setpoint does not change the mode.
 - `check-water-heater-mode` followed a write 1.5 to 4 minutes later.
@@ -359,17 +359,17 @@ The app sends `POST energy/{nodeId}/switch-instant-power-report` with `{"value":
 (`InstantPowerReportRequestApiModel`) once, as its consumption screen opens, right before reading. The
 integration does not call it, and measurement says it does not need to: on an Equation water heater with
 nothing calling it, the reading tracked the element cycling on and off in the same poll as `hvac_action`, and
-caught a three-minute off-cycle that `hvac_action` missed. What `30` means is unknown from one sample — a 30 s
-interval and a 30 min duration both fit — and in this service `switch-…` writes a setting, its sibling
-`switch-energy-mode` pairing with `check-energy-mode`, so calling it blind would reconfigure the device
+caught a three-minute off-cycle that `hvac_action` missed. What `30` means is unknown from one sample, a 30 s
+interval and a 30 min duration both fit, and in this service `switch-…` writes a setting (its sibling
+`switch-energy-mode` pairs with `check-energy-mode`), so calling it blind would reconfigure the device
 ([#279](https://github.com/cyrilcolinet/enki-integration-hass/issues/279)).
 
-Used for Edisio / Equation devices with `check_electrical_consumption` in referentiel. Gateway key: `ENKI_CONSUMPTION_API_KEY` — the shipped key was a neighbouring service's until [#270](https://github.com/cyrilcolinet/enki-integration-hass/issues/270).
+Used for Edisio / Equation devices with `check_electrical_consumption` in referentiel. Gateway key: `ENKI_CONSUMPTION_API_KEY`, the shipped key was a neighbouring service's until [#270](https://github.com/cyrilcolinet/enki-integration-hass/issues/270).
 
 ### Energy history
 
 `startDate` is an instant (ISO-8601 with `Z`) that **picks a period, not a range**: the response snaps to the
-period enclosing it. `timePeriod` decides the buckets — `DAILY` gives 24 hours, `WEEKLY` 7 days, `MONTHLY` the
+period enclosing it. `timePeriod` decides the buckets, `DAILY` gives 24 hours, `WEEKLY` 7 days, `MONTHLY` the
 days of that month, `YEARLY` 12 months. Note that `homeId` travels as a header here, while
 `check-instant-consumption` takes it as a query parameter.
 
@@ -388,10 +388,10 @@ Captured from app 2.26.3 on an AD-HEWH3-1 (`MONTHLY`, September):
 Each bucket is an `{"x", "value"}` object, `x` being the hour, weekday, day or month; dates are `dd/mm/yyyy`,
 not ISO. `null` is "no reading", **not** zero: future buckets and anything before `firstMeasurementDate` are
 null, while a real zero is `0.0`. `periodConsumption.value` is the sum of the buckets, not an independent
-figure — it matched to the last decimal in every period captured — and the integration sums the buckets itself
+figure: it matched to the last decimal in every period captured, and the integration sums the buckets itself
 rather than relying on it, because a period with nothing yet comes back with `periodChart` and
 `periodConsumption` both `null` (a `DAILY` read just after midnight UTC). Finished
-periods are stable — re-reading September returns the same total — so a backfill would be safe. The integration
+periods are stable: re-reading September returns the same total, so a backfill would be safe. The integration
 reads the current month once an hour and exposes the sum as a `total_increasing` energy sensor; it does not
 import history into long-term statistics ([#270](https://github.com/cyrilcolinet/enki-integration-hass/issues/270)).
 
@@ -405,11 +405,11 @@ Two camera generations coexist:
 | Generation | Backing service | Live video |
 |------------|-----------------|------------|
 | meari (solar / outdoor, 2K…) | `api-enki-lexman-camera-meari-prod` | WebRTC over the meari signaling WebSocket (documented below) |
-| earlier Lexman cameras | `api-enki-lexman-camera-prod` | TUTK Kalay P2P — node payload carries `p2pId` / `p2pAuthKey` / `p2pPassword`, and the app drives them through the native `com.tutk.IOTC` SDK |
+| earlier Lexman cameras | `api-enki-lexman-camera-prod` | TUTK Kalay P2P: node payload carries `p2pId` / `p2pAuthKey` / `p2pPassword`, and the app drives them through the native `com.tutk.IOTC` SDK |
 
 Only the meari generation is reachable without a native SDK. A camera that is not in the
-meari backend answers `404 NOT_FOUND` on **every** meari route — including all `change-*`
-writes — while an unknown enum value answers `400 BAD_REQUEST` first (values are validated
+meari backend answers `404 NOT_FOUND` on **every** meari route, including all `change-*`
+writes, while an unknown enum value answers `400 BAD_REQUEST` first (values are validated
 before the device lookup). `check-camera-status` is therefore the cheapest way to tell a
 "wrong value" from a "wrong service". A `403` would mean something else entirely: the gateway
 refusing the key for the service, as it does for `consumption` and `ota`.
@@ -420,9 +420,9 @@ generation ([#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/
 - every meari route answers `404`, under any identifier the node carries (`nodeId`,
   `deviceId`, `externalId`, `eui64`, `p2pId`, MAC);
 - a network capture of the app opening the live view shows **no HTTP call at all** for video
-  or settings — 12 packets to `enki.api.devportal.adeo.cloud` (the login), then a rendezvous
+  or settings, 12 packets to `enki.api.devportal.adeo.cloud` (the login), then a rendezvous
   with `*.iotcplatform.com` (ThroughTek) and ~6 MB of UDP straight from the camera on the LAN;
-- the camera opens **no local port** (RTSP, ONVIF, HTTP) — nothing to fall back on.
+- the camera opens **no local port** (RTSP, ONVIF, HTTP), nothing to fall back on.
 
 So on that generation both live video and settings are out of reach, and it is not a matter of
 finding the right endpoint: there is none. The meari generation, whose devices carry the
@@ -434,7 +434,7 @@ describe. Reads, writes and the live view are all **confirmed on a real solar ca
 
 | Method | Path | Notes |
 |--------|------|-------|
-| GET | `camera/{nodeId}/check-camera-status` | battery, wifi, sd card, firmware and every current setting — shape below |
+| GET | `camera/{nodeId}/check-camera-status` | battery, wifi, sd card, firmware and every current setting: shape below |
 | GET | `camera/{nodeId}/check-camera-events?day=…` | event list (thumbnails) |
 | GET | `camera/{nodeId}/check-camera-connect-wss` | signaling credentials (see below) |
 | GET | `camera/{nodeId}/check-detection-zone` / `check-firmware-update-status` | |
@@ -447,7 +447,7 @@ describe. Reads, writes and the live view are all **confirmed on a real solar ca
 | POST | `camera/{nodeId}/change-humanoid-detection-sensitivity-level` | `{"value": <int>}` |
 | POST | `camera/{nodeId}/change-recording-duration` | `{"value": "TEN_SECONDS" \| "TWENTY_SECONDS" \| "THIRTY_SECONDS" \| "FORTY_SECONDS" \| "ONE_MINUTE" \| "TWO_MINUTES" \| "THREE_MINUTES" \| "AUTO"}` |
 | POST | `camera/{nodeId}/change-light-mode`, `change-detection-zone` | not exposed: light mode reads `"ON"` on a solar camera, other values not pinned down yet |
-| POST | `camera/{nodeId}/format-sd-card`, `update-firmware-version` | destructive — not exposed |
+| POST | `camera/{nodeId}/format-sd-card`, `update-firmware-version` | destructive: not exposed |
 
 The `change-*` routes return the updated setting in the body (APK return types), so the integration accepts **200** as well as 202/204 for them. `check-camera-status` is polled at most every 5 minutes per camera, and the cache is dropped after each write.
 
@@ -468,7 +468,7 @@ The `change-*` routes return the updated setting in the body (APK return types),
 `NO_CARD_INSERTED`, `NORMAL_USE`, `ABNORMAL_CARD_READ_WRITE`, `FORMATTING`, `FILE_SYSTEM_NOT_SUPPORTED`,
 `CARD_BEING_RECOGNIZED`, `NOT_FORMATTED`, `OTHER_ERRORS`.
 
-### Live video — meari WebRTC signaling
+### Live video, meari WebRTC signaling
 
 `check-camera-connect-wss` returns `wssUrl`, `accessId`, `signature`, `token`,
 `expires`, `callee`, `deviceCode`. Open that WebSocket (no extra header) and exchange JSON
@@ -481,19 +481,19 @@ frames; every frame shares the same envelope:
 
 `caller` is a client id (16 hex chars), `callee` and `devicecode` come from the REST call.
 
-1. **Authenticate** — `method: "option"`, with `"auth": {accessId, signature, token}` and
+1. **Authenticate**: `method: "option"`, with `"auth": {accessId, signature, token}` and
    `params: {caller, callee, devicecode, expires, continent: "Europe", country: "France"}`.
    The reply (`method: "option"`) carries the relay: `coturn_host`, `coturn_ip`,
    `coturn_port`, `username`, `pwd`.
-2. **Offer** — `method: "offer"`, `params: {caller, callee, devicecode, sdp,
+2. **Offer**: `method: "offer"`, `params: {caller, callee, devicecode, sdp,
    settings: {method: "preview"}}`. The app offers audio `sendrecv` (two-way talk) plus
    video `recvonly`, ICE **relay-only** through that coturn server.
-3. **Answer** — inbound `method: "answer"`, `params.sdp`.
-4. **ICE** — `method: "candidate"` both ways, `params: {caller, callee,
+3. **Answer**: inbound `method: "answer"`, `params.sdp`.
+4. **ICE**: `method: "candidate"` both ways, `params: {caller, callee,
    candidate: {candidate, sdpMid, sdpMLineIndex}}`.
-5. **Connection up** — inbound `{errid: 0, errstr: "Connect Success"}` once the camera
-   reaches the peer. **Only then** does the app ask for the stream — asking earlier is ignored.
-6. **Start the stream** — `method: "settings"`, `params: {caller, callee,
+5. **Connection up**: inbound `{errid: 0, errstr: "Connect Success"}` once the camera
+   reaches the peer. **Only then** does the app ask for the stream, asking earlier is ignored.
+6. **Start the stream**: `method: "settings"`, `params: {caller, callee,
    settings: {sid, method: "preview", streams: [{channel: 0, stream: 1, stop: 0}]}}`.
    Recorded playback uses the same shape with `method: "playback"`.
 
@@ -515,12 +515,12 @@ The `camera` entity of a meari camera runs this sequence for Home Assistant's fr
 The stream is then requested on `Connect Success`, and stopped (`stop: 1`) on close.
 About two minutes in, the camera goes back to sleep: the next request answers `400`
 with `desc` `session not found`, and re-authenticating with fresh credentials only
-answers `dormancy` — tried twice on real hardware, so the integration asks once near
+answers `dormancy`, tried twice on real hardware. So the integration asks once near
 that mark and reports the end of the live view. The app hits the same limit and
 offers to reload the video. Errors are
 fatal only until the answer. The TURN relay from the `option` reply is **not** given to the
 browser: it only arrives after authentication, and Home Assistant configures the browser before
-its offer — the browser uses its own ICE servers and the camera's relay candidates.
+its offer, the browser uses its own ICE servers and the camera's relay candidates.
 
 `scripts/probe_camera_stream.py` replays the whole sequence and prints, per camera, whether
 it is a meari device, whether signaling authenticates and whether the camera answers an SDP
@@ -535,14 +535,14 @@ Gateway key: `ENKI_VIDEOPHONE_API_KEY`. Headers: `Authorization`, `X-Gateway-API
 |--------|------|-------|
 | GET | `{nodeId}/check-videophone-state` | `{"connected": true, "connectors": "none"}` |
 | GET | `{nodeId}/check-videophone-events` | calls, captures and openings, newest first |
-| GET | `{nodeId}/check-turn-info` | TURN relay, `ttl` 3600 — not wired yet |
+| GET | `{nodeId}/check-turn-info` | TURN relay, `ttl` 3600: not wired yet |
 | GET | `{nodeId}/check-sdp-candidates-info` | the live view's answer, `204` when the mailbox is empty |
 | POST | `{nodeId}/change-sdp-candidates-info` | the live view's offer and its ICE candidates |
 | POST | `{nodeId}/change-videophone-call` | answer / hang up |
 | POST | `{nodeId}/change-portal-state` | `GATE` / `STRIKE` |
 | POST | `{nodeId}/change-videophone-config`, `{nodeId}/record` | settings, recording |
 
-An event looks like this — the openings carry no media:
+An event looks like this: the openings carry no media:
 
 ```json
 {"items": [
@@ -553,8 +553,8 @@ An event looks like this — the openings carry no media:
 ```
 
 `eventType` is `ACCEPTED_CALL`, `REJECTED_CALL`, `MISSED_CALL`, `CAPTURED_MEDIA`, `GATE_OPENED` or
-`STRIKE_OPENED`. `media.type` is `image`, or `video` when the doorbell is set to record a clip —
-a clip then carries a `thumbnail`, which is the only still to show. The media URLs are readable without authentication, so the camera entity fetches
+`STRIKE_OPENED`. `media.type` is `image`, or `video` when the doorbell is set to record a clip.
+A clip then carries a `thumbnail`, which is the only still to show. The media URLs are readable without authentication, so the camera entity fetches
 them directly, and the media source hands them to the player as-is. One call returns the whole
 history, so browsing re-reads it on demand instead of the coordinator carrying it; `eventDate` is
 unique to the millisecond and is the only thing an entry can be identified by ([#267](https://github.com/cyrilcolinet/enki-integration-hass/issues/267)). The referentiel advertises `check_videophone_media_events`, but the app calls
@@ -562,17 +562,17 @@ unique to the millisecond and is the only thing an entry can be identified by ([
 
 Unlike the meari camera, the live view here is plain WebRTC over REST, not a signaling WebSocket:
 the two SDP routes are one mailbox per node, one slot, whoever reads it last. The app always
-offers — it waits for its own ICE gathering to finish, posts the offer with the whole candidate
+offers, it waits for its own ICE gathering to finish, posts the offer with the whole candidate
 list in a single body, then polls for the answer under a ten second budget. Home Assistant's
 frontend takes the app's part, so the integration holds its offer back until the browser's trickle
 of candidates goes quiet, then posts and polls the same way ([#259](https://github.com/cyrilcolinet/enki-integration-hass/issues/259)).
 
 Three things about it are worth knowing. The answer comes back with its newlines **escaped**
-rather than sent, and has to be unescaped before any peer will take it — the app does the same
+rather than sent, and has to be unescaped before any peer will take it. The app does the same
 substitution. A poll can read back **the offer that was just posted**, since the slot is shared, so
 an SDP that is ours or that still proposes `a=setup:actpass` is not an answer. And nothing opens or
 closes a session: depositing the offer is what wakes the doorbell, and hanging up is local, so
-`change-videophone-call` is not part of this — that route answers a ring, and its `ringingMediaId`
+`change-videophone-call` is not part of this: that route answers a ring, and its `ringingMediaId`
 only exists for a real call. `check-turn-info` is not read yet: the doorbell's answer
 carries its own relay candidate, and the peer is the viewer's browser, so a viewer on the same
 network connects directly and one further away needs that relay plus a public address of its own.
@@ -584,4 +584,4 @@ The Enki app also controls alarms via other microservices. Use `scripts/discover
 ## References
 
 - [CyrilP/hass-enki-component](https://github.com/CyrilP/hass-enki-component) (lights)
-- Product docs: [Enki support — Inspire](https://support.enki-home.com/)
+- Product docs: [Enki support. Inspire](https://support.enki-home.com/)

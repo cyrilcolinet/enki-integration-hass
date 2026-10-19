@@ -2,7 +2,7 @@
 
 Sometimes a device works in the Enki app and not in Home Assistant. When that happens the
 integration is almost certainly calling the wrong address, with the wrong payload, or on the wrong
-service — and the only way to know which is to look at what the app itself sends.
+service, and the only way to know which is to look at what the app itself sends.
 
 This page is for that. You do not need to be a developer to follow it, and nothing here touches
 your Home Assistant.
@@ -20,7 +20,7 @@ answer:
 3. **A one-line experiment**, when asked: toggle one entity at a time and say which, if any, moves
    the physical device.
 
-Only when those leave the question open does a capture help — and then it answers it completely.
+Only when those leave the question open does a capture help, and then it answers it completely.
 
 ## The ground rules
 
@@ -30,7 +30,7 @@ Three of them, and they are not negotiable:
   own Enki account. Never someone else's.
 - **Nothing is bypassed.** If the app refuses to work while the proxy is on, that is the app
   checking its own certificate, and that is where we stop. Do not install a patched Enki app and do
-  not root your phone for this. Report that it happened — it is an answer in itself.
+  not root your phone for this. Report that it happened, it is an answer in itself.
 - **Your secrets stay yours.** Never capture or post your password or an access token, and remove
   the identifiers listed further down before posting. What we need is the address and the payload,
   nothing that identifies you.
@@ -65,7 +65,7 @@ Start it:
 mitmweb
 ```
 
-That opens a page in your browser. Leave it open — that is where the requests will appear.
+That opens a page in your browser. Leave it open, that is where the requests will appear.
 
 Now find your computer's address on the Wi-Fi:
 
@@ -85,7 +85,7 @@ Server: your computer's address. Port: `8080`. Save.
 **2. Install mitmproxy's certificate.**
 
 Open Safari and go to **http://mitm.it**. If the page does not load, the proxy is not set
-correctly — go back to step 1. Tap the Apple icon to download the profile, then
+correctly, go back to step 1. Tap the Apple icon to download the profile, then
 Settings → **VPN & Device Management** → the downloaded profile → *Install*.
 
 **3. Trust it. People miss this step, and nothing works without it.**
@@ -111,7 +111,7 @@ instead.
 1. Clear the mitmweb list so it is easier to read (the broom icon).
 2. In the mitmweb filter box, type **`adeo`**. Every Enki request goes to one address, and that
    keeps everything else out.
-3. On the phone, **do the one action** that was asked — turn the light off, open the live view,
+3. On the phone, **do the one action** that was asked, turn the light off, open the live view,
    whatever it was. Do it once.
 4. New lines appear. Click the one whose address matches what was asked about, and look at the
    **Request** tab.
@@ -132,7 +132,7 @@ For each request that matters, four things:
 | `Authorization` header | `Bearer eyJ…` | drop the line entirely |
 | your home id | a long id in the address or an `homeId` header | `<home>` |
 | your device id | a long id in the address | `<node>` |
-| your email, your password | — | never capture them at all |
+| your email, your password | - | never capture them at all |
 
 You can drop every other header too. `X-Gateway-APIKey` is an app key rather than a personal
 secret, and the integration already ships them all, so it is of no use here.
@@ -154,7 +154,7 @@ Neither of the last two is a failure on your part. Report what you saw and we wo
 ## Getting an AI assistant to walk you through it
 
 If you would rather be guided step by step, paste the prompt below into ChatGPT, Claude or
-whichever assistant you use. Paste it as it is — it starts by asking you about your phone, your
+whichever assistant you use. Paste it as it is, it starts by asking you about your phone, your
 computer and what you are trying to capture, and it adapts from your answers.
 
 <details>
@@ -302,7 +302,7 @@ instead. That is still useful to the maintainer and I should post it.
 
 The menus in iOS and Android move between versions, so if the assistant describes something you
 cannot find, tell it what is on your screen instead of hunting for the name it used. If its steps
-and this page disagree, say so on the issue — it means this page needs updating.
+and this page disagree, say so on the issue, it means this page needs updating.
 
 ## Capturing a gateway key
 

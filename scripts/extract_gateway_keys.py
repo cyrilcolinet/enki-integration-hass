@@ -158,7 +158,7 @@ def ensure_jadx(apk_path: Path, jadx_dir: Path) -> Path:
         return sources
 
     if not jadx_available():
-        raise RuntimeError("jadx is required — install with: brew install jadx")
+        raise RuntimeError("jadx is required, install with: brew install jadx")
 
     jadx_dir.mkdir(parents=True, exist_ok=True)
     result = subprocess.run(
@@ -510,13 +510,11 @@ def check_against_repo(
             elif apk_key and not found.verified and not allow_unresolved:
                 errors.append(f"{svc.const_key} not tied to a call site ({detail})")
             elif apk_key and repo_key != apk_key:
-                errors.append(
-                    f"{svc.const_key} mismatch — repo={repo_key} apk={apk_key} ({detail})"
-                )
+                errors.append(f"{svc.const_key} mismatch, repo={repo_key} apk={apk_key} ({detail})")
             continue
 
         if repo_key and apk_key and repo_key != apk_key:
-            errors.append(f"{svc.const_key} mismatch — repo={repo_key} apk={apk_key} ({detail})")
+            errors.append(f"{svc.const_key} mismatch, repo={repo_key} apk={apk_key} ({detail})")
 
     return errors
 

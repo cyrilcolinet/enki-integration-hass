@@ -126,7 +126,7 @@ def test_capability_routing_hints_flags_wired_service() -> None:
     assert len(services) == 1
     assert services[0]["service"] == "api-enki-presence-detector-prod"
     assert services[0]["wired"] is True
-    assert entry["effort"] == "service wired — add a CapabilityRead + entity"
+    assert entry["effort"] == "service wired: add a CapabilityRead + entity"
 
 
 def test_capability_routing_hints_flags_unwired_service() -> None:

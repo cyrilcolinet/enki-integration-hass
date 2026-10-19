@@ -35,5 +35,5 @@ actions:
     data:
       title: 🔧 Firmware update available
       message: >
-        {{ trigger.to_state.attributes.friendly_name }} has an update — install
+        {{ trigger.to_state.attributes.friendly_name }} has an update, install
         it from the Enki app.

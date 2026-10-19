@@ -5,7 +5,7 @@ Technical documentation for contributing, testing, and releasing the integration
 ## Prerequisites
 
 - Python 3.12+
-- Home Assistant 2025.1+ (for testing on a real instance — same floor as `hacs.json`)
+- Home Assistant 2025.1+ (for testing on a real instance, same floor as `hacs.json`)
 
 ```bash
 git clone https://github.com/cyrilcolinet/enki-integration-hass.git
@@ -23,7 +23,7 @@ Without an Enki account or hardware:
 pytest tests/unit -v
 ```
 
-`tests/unit/` mirrors the source layout of `custom_components/enki/` — each file lives in the subfolder matching the module it primarily covers:
+`tests/unit/` mirrors the source layout of `custom_components/enki/`, each file lives in the subfolder matching the module it primarily covers:
 
 ```
 tests/unit/
@@ -36,7 +36,7 @@ tests/unit/
 └── scripts/     # tests for repo scripts/ (not custom_components)
 ```
 
-`tests/conftest.py` applies to every subfolder — imports stay absolute (`from enki.… import …`) and work from any folder.
+`tests/conftest.py` applies to every subfolder, imports stay absolute (`from enki.… import …`) and work from any folder.
 
 ## Lint and format
 
@@ -47,7 +47,7 @@ ruff format --check .   # or ruff format . to fix
 
 ## Local scripts (outside Home Assistant)
 
-Scripts in `scripts/` run **on your dev machine**, not inside the HA container. They take an email and a password; an account that signs in with Google or Apple has neither, so `scripts/sso_token.py` trades a provider sign-in for a refresh token the probes accept with `--refresh-token` ([#325](https://github.com/cyrilcolinet/enki-integration-hass/issues/325)). They talk directly to the Enki cloud API (or parse an APK). Home Assistant is not required — only Python 3 and `pip install -r requirements-dev.txt`.
+Scripts in `scripts/` run **on your dev machine**, not inside the HA container. They take an email and a password; an account that signs in with Google or Apple has neither, so `scripts/sso_token.py` trades a provider sign-in for a refresh token the probes accept with `--refresh-token` ([#325](https://github.com/cyrilcolinet/enki-integration-hass/issues/325)). They talk directly to the Enki cloud API (or parse an APK). Home Assistant is not required, only Python 3 and `pip install -r requirements-dev.txt`.
 
 | Script | Usage |
 |--------|--------|
@@ -72,7 +72,7 @@ Gateway keys are embedded in the APK (one per micro-service). Run `extract_gatew
 
 #### Why the keys are proved, not guessed
 
-Mapping keys by their position in the APK shipped a neighbouring service's key five times (#45, #256, #268, #270). The symptom is indistinguishable from the gateway closing an API product — `403 You cannot consume this service` — so three services were documented as dead for months while we simply held the wrong key.
+Mapping keys by their position in the APK shipped a neighbouring service's key five times (#45, #256, #268, #270). The symptom is indistinguishable from the gateway closing an API product, `403 You cannot consume this service`, so three services were documented as dead for months while we simply held the wrong key.
 
 The app never leaves the link to chance, so the extractor follows it instead:
 
@@ -83,26 +83,26 @@ bp1.java   Object O(String str, …) { nn5 nn5Var = (nn5) this.c; nn5Var.d(str, 
 nn5.java   @qva("consumption/{nodeId}/check-instant-consumption")
 ```
 
-A key it cannot tie to the interface bound to that micro-service is **refused**, not written — `--check` fails and `--apply` skips it, naming the service. The resolved chain (interface, its routes, the key) lands in `scripts/gateway_key_evidence.json`; `scripts/validate_gateway_keys.py` runs in CI and fails when a wired key no longer matches it, which is the one check that catches a silent swap without an APK.
+A key it cannot tie to the interface bound to that micro-service is **refused**, not written, `--check` fails and `--apply` skips it, naming the service. The resolved chain (interface, its routes, the key) lands in `scripts/gateway_key_evidence.json`; `scripts/validate_gateway_keys.py` runs in CI and fails when a wired key no longer matches it, which is the one check that catches a silent swap without an APK.
 
 Working from a dump you already have, without the APK on disk: `--from-jadx --jadx-dir .apk-work/<dir>`.
 
-The route catalogue has the same trap as the keys had, from the other side. Its retrofit verb annotations are obfuscated and **renamed every build** — `@msa` was GET in August, `@qva` is GET in 2.26.3 — so the old hardcoded map silently matched nothing on a newer APK and the catalogue stayed frozen, still advertising `change-water-heater-mode` months after Adeo removed it ([#285](https://github.com/cyrilcolinet/enki-integration-hass/issues/285)). The verbs are now read out of retrofit's own dispatch in the dump, which names each annotation next to the verb it carries, so the extractor follows the app instead of a snapshot of it.
+The route catalogue has the same trap as the keys had, from the other side. Its retrofit verb annotations are obfuscated and **renamed every build**: `@msa` was GET in August, `@qva` is GET in 2.26.3, so the old hardcoded map silently matched nothing on a newer APK and the catalogue stayed frozen, still advertising `change-water-heater-mode` months after Adeo removed it ([#285](https://github.com/cyrilcolinet/enki-integration-hass/issues/285)). The verbs are now read out of retrofit's own dispatch in the dump, which names each annotation next to the verb it carries, so the extractor follows the app instead of a snapshot of it.
 
-Two things follow. Regenerate the catalogue after every app update, with `--from-jadx` if you already have a dump. And read an entry as "the app called this once", not as "this endpoint exists" — `--check` lists the wired routes the current app no longer calls, which is the signal worth acting on.
+Two things follow. Regenerate the catalogue after every app update, with `--from-jadx` if you already have a dump. And read an entry as "the app called this once", not as "this endpoint exists", `--check` lists the wired routes the current app no longer calls, which is the signal worth acting on.
 
 ### Ground rules
 
 Everything in this section is reverse engineering for **interoperability**, which is what makes it
-lawful in the EU — see the [disclaimer](DISCLAIMER.md#legal-basis) for the footing and its
+lawful in the EU, see the [disclaimer](DISCLAIMER.md#legal-basis) for the footing and its
 conditions. Three of those conditions bind what you do here:
 
 - Work from an app you installed yourself, against your own account and your own devices.
 - **Never commit a dump.** `*.apk`, `scripts/apk/` and `.apk-work/` are gitignored; keep it that
   way, and do not attach decompiled sources to an issue or a PR.
-- Defeat no protection measure. A route that refuses our key is our bug until proven otherwise —
+- Defeat no protection measure. A route that refuses our key is our bug until proven otherwise
   verify the key *and the path* against the app, as [#178](https://github.com/cyrilcolinet/enki-integration-hass/issues/178)
-  showed — not something to work around.
+  showed, not something to work around.
 
 ### Capturing a gateway key with mitmproxy (fallback)
 
@@ -125,7 +125,7 @@ The key is an Adeo/Leroy Merlin app key (reusable, not a personal secret), but *
 
 ## Repository language
 
-- **Python code** (comments, docstrings): English — see [CONTRIBUTING.md](../CONTRIBUTING.md#language)
+- **Python code** (comments, docstrings): English, see [CONTRIBUTING.md](../CONTRIBUTING.md#language)
 - **Markdown** (`docs/`, `README.md`, …): English
 - **Home Assistant UI** (`strings.json`, translations): French and English via translation files
 
@@ -187,7 +187,7 @@ Workflow triage labels (`next release`, `beta`, `stale`, …) and telemetry labe
 | `regression` | Worked before, broken recently |
 | `breaking change` | Intentional breaking change for users |
 
-Telemetry-specific labels (`device telemetry`, `unsupported`, `motorization`, …) are pre-filled on opt-in device profile issues — see [TELEMETRY.md](TELEMETRY.md).
+Telemetry-specific labels (`device telemetry`, `unsupported`, `motorization`, …) are pre-filled on opt-in device profile issues: see [TELEMETRY.md](TELEMETRY.md).
 
 ## Publishing a release
 
@@ -195,10 +195,10 @@ Releases are driven by [release-please](https://github.com/googleapis/release-pl
 
 1. Merge `feat`/`fix` PRs to `main` with [Conventional Commits](https://www.conventionalcommits.org/) titles.
 2. **Release please** opens or updates a PR `chore: release X.Y.Z` (`CHANGELOG.md` + `manifest.json`).
-3. Review the release PR, then merge — release-please creates tag `vX.Y.Z` and the GitHub Release.
+3. Review the release PR, then merge, release-please creates tag `vX.Y.Z` and the GitHub Release.
 4. [`release-please.yml`](../.github/workflows/release-please.yml) uploads `enki.zip` in the same workflow when the release is created.
 
-No extra repository secrets required — uses `GITHUB_TOKEN`.
+No extra repository secrets required, uses `GITHUB_TOKEN`.
 
 CI cannot decompile an APK, so it enforces `scripts/gateway_key_evidence.json` instead (`validate_gateway_keys.py`). Locally, after an Enki app update: `python3 scripts/extract_gateway_keys.py path/to/enki.apk --check`, then `--apply --update-known --write-evidence` if needed.
 
@@ -253,7 +253,7 @@ custom_components/enki/
 
 Platforms registered in `__init__.py` → `PLATFORMS`: `alarm_control_panel`, `binary_sensor`, `button`, `camera`, `climate`, `cover`, `fan`, `light`, `number`, `select`, `sensor`, `switch`, `update`.
 
-`tests/unit/` mirrors this layout (`api/`, `domain/`, `lib/`, `telemetry/`, plus `entities/`, `core/`, and `scripts/` for the root platform loaders, integration glue, and repo scripts) — see [Unit tests](#unit-tests).
+`tests/unit/` mirrors this layout (`api/`, `domain/`, `lib/`, `telemetry/`, plus `entities/`, `core/`, and `scripts/` for the root platform loaders, integration glue, and repo scripts), see [Unit tests](#unit-tests).
 
 ### Import conventions
 

@@ -41,7 +41,7 @@ class EnkiDeviceState:
 
     @property
     def raw(self) -> dict[str, Any]:
-        """Underlying dict (same object as on the device — updates are live)."""
+        """Underlying dict (same object as on the device, updates are live)."""
         return self._data
 
     @property
@@ -59,7 +59,7 @@ class EnkiDeviceState:
 
     @property
     def light_power(self) -> str | None:
-        """Fan kit on/off — reported by lighting-prod, not power-prod."""
+        """Fan kit on/off, reported by lighting-prod, not power-prod."""
         value = self._data.get("light_power")
         if isinstance(value, str):
             return value

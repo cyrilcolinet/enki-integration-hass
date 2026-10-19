@@ -264,7 +264,7 @@ def format_github_issue_body(export_dict: dict[str, Any], fingerprint: str) -> s
 
     body = (
         "## Enki device profile (opt-in share)\n\n"
-        "Anonymized data — no account or home identifiers. "
+        "Anonymized data, no account or home identifiers. "
         "Issue opened manually from Home Assistant.\n\n"
         f"- **Referentiel type:** `{resolve_display_value(export_dict.get('device_type'))}`\n"
         f"- **BFF type:** `{resolve_display_value(export_dict.get('bff_device_type'))}`\n"
@@ -327,7 +327,7 @@ def format_github_issue_body(export_dict: dict[str, Any], fingerprint: str) -> s
         body += (
             "\n### API read errors (last poll)\n"
             f"{error_lines}\n\n"
-            "_No node or home identifiers — attach HA diagnostics if more context is needed._\n"
+            "_No node or home identifiers, attach HA diagnostics if more context is needed._\n"
         )
 
     return body
@@ -363,5 +363,5 @@ def build_github_new_issue_url(export_dict: dict[str, Any], fingerprint: str) ->
             payload = {**payload, "possible_values": {"_truncated": "see HA diagnostics export"}}
             body = format_github_issue_body(payload, fingerprint)
             continue
-        body = body[:4000] + "\n\n_(body truncated — use HA diagnostics export)_\n"
+        body = body[:4000] + "\n\n_(body truncated, use HA diagnostics export)_\n"
         return f"{base}?title={quote(title)}&body={quote(body)}&labels={quote(labels)}"

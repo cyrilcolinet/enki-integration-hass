@@ -11,12 +11,12 @@ For each camera found on the dashboard it:
      endpoint up in the APK route catalog and calls the *exact* route on the
      *exact* micro-service, with that service's shipped gateway key;
   3. prints the HTTP status and an anonymized body (including the gateway's
-     rejection reason on 4xx/5xx), then a per-camera summary of which service —
-     if any — authorized the reads.
+     rejection reason on 4xx/5xx), then a per-camera summary of which service
+     if any, authorized the reads.
 
 It never touches write / delete / pairing / stream (connect-wss) endpoints.
 ``--show-media-urls`` keeps the event media links readable, to check whether a
-snapshot opens without being signed in — they point at your own recordings, so
+snapshot opens without being signed in, they point at your own recordings, so
 strip them before pasting the output anywhere.
 
 Output is anonymized: urls, ids, tokens, serials and long/opaque values are
@@ -60,7 +60,7 @@ SLUG_TO_CONST_KEY = registry_mod.SLUG_TO_CONST_KEY
 anonymize = report_mod.anonymize
 mask_ids = report_mod.mask_ids
 
-# Stream/session endpoints hand back signed URLs or tokens — never probe them.
+# Stream/session endpoints hand back signed URLs or tokens, never probe them.
 _SKIP_CAPABILITIES = {"check_camera_connect_wss"}
 
 # Capabilities whose APK Retrofit signature declares a required @Query("day").
@@ -70,7 +70,7 @@ _DAY_QUERY_CAPS = frozenset({"check_camera_events"})
 
 
 # The second (non-meari) camera service exposes GET /v1/events?nodeId=… with no
-# day param — a code path the capability catalog doesn't map to a check_* name.
+# day param, a code path the capability catalog doesn't map to a check_* name.
 # Try it directly in case the events actually live there.
 _EXTRA_GETS = [
     (
@@ -218,7 +218,7 @@ async def _probe_camera(
                 except Exception as err:  # noqa: BLE001 - report, never crash the sweep
                     print(f"    {cap} [{slug}]{label}: ERROR {type(err).__name__}: {err}")
                     continue
-                # Show the body for any status — a 4xx reason is the whole point.
+                # Show the body for any status, a 4xx reason is the whole point.
                 suffix = f"  {json.dumps(parsed)}" if parsed is not None else ""
                 print(f"    {cap} [{slug}]{label}: HTTP {status}{suffix}")
                 (authorized if status == 200 else rejected).add(slug)
@@ -287,7 +287,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--show-media-urls",
         action="store_true",
-        help="Keep the event media links readable (your own recordings — strip before sharing)",
+        help="Keep the event media links readable (your own recordings, strip before sharing)",
     )
     parser.add_argument(
         "--device-type",

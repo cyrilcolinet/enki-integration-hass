@@ -25,7 +25,7 @@
       },
       "telemetry": {
         "title": "Aidez à étendre le support Enki",
-        "description": "Option facultative : lorsqu’un appareil nouveau ou non supporté est détecté sur votre compte, Home Assistant peut vous avertir avec un **lien GitHub pré-rempli** (profil anonymisé : type, modèle, capabilities).\n\nRien n’est envoyé automatiquement — vous choisissez d’ouvrir le lien ou non. Cela aide à prioriser radiateurs, volets, prises et autres matériels.\n\nModifiable à tout moment via **Enki → Configurer**.",
+        "description": "Option facultative : lorsqu’un appareil nouveau ou non supporté est détecté sur votre compte, Home Assistant peut vous avertir avec un **lien GitHub pré-rempli** (profil anonymisé : type, modèle, capabilities).\n\nRien n’est envoyé automatiquement : vous choisissez d’ouvrir le lien ou non. Cela aide à prioriser radiateurs, volets, prises et autres matériels.\n\nModifiable à tout moment via **Enki → Configurer**.",
         "data": {
           "telemetry": "M’avertir des nouveaux appareils (recommandé)"
         }
@@ -78,7 +78,7 @@
         "title": "Options Enki",
         "data": {
           "scan_interval": "Intervalle de rafraîchissement (secondes)",
-          "telemetry": "M’avertir des appareils nouveaux ou non supportés (anonymisé ; lien GitHub pré-rempli — rien n’est envoyé sans votre clic)"
+          "telemetry": "M’avertir des appareils nouveaux ou non supportés (anonymisé ; lien GitHub pré-rempli, rien n’est envoyé sans votre clic)"
         }
       }
     }
@@ -428,28 +428,28 @@
   },
   "issues": {
     "gateway_key_rejected": {
-      "title": "Enki — clé gateway refusée",
+      "title": "Enki : clé gateway refusée",
       "description": "L'API Enki a répondu HTTP 403 pour `{service}` : une clé gateway (micro-service) est probablement obsolète suite à une mise à jour de l'app Enki. Les lectures et commandes de ce service échoueront tant que la clé n'est pas mise à jour. Voir le guide lié."
     },
     "cloud_unreachable": {
-      "title": "Enki — cloud inaccessible",
+      "title": "Enki : cloud inaccessible",
       "description": "Home Assistant ne parvient pas à joindre le cloud Enki (réseau, timeout ou erreur serveur). Les entités ne seront pas mises à jour tant que la connexion n'est pas rétablie. Vérifiez votre connexion internet et les logs Home Assistant."
     },
     "maintenance": {
-      "title": "Enki — maintenance en cours",
+      "title": "Enki : maintenance en cours",
       "description": "Le cloud Enki signale une maintenance en cours. Certaines fonctions peuvent être temporairement indisponibles."
     },
     "new_device_profile": {
-      "title": "Enki — nouveau profil d'appareil",
-      "description": "Un nouveau profil d'appareil a été détecté : {summary}. Données anonymisées uniquement — rien n'est envoyé sans votre action. Utilisez le lien En savoir plus pour ouvrir une issue GitHub pré-remplie."
+      "title": "Enki : nouveau profil d'appareil",
+      "description": "Un nouveau profil d'appareil a été détecté : {summary}. Données anonymisées uniquement, rien n'est envoyé sans votre action. Utilisez le lien En savoir plus pour ouvrir une issue GitHub pré-remplie."
     },
     "unsupported_device": {
-      "title": "Enki — appareil non supporté",
+      "title": "Enki : appareil non supporté",
       "description": "Le profil d'appareil {summary} n'est pas encore pris en charge par l'intégration. Utilisez le lien En savoir plus pour demander le support sur GitHub."
     },
     "unknown_brand_devices": {
-      "title": "Enki — marques d'appareils non reconnues",
-      "description": "Votre compte Enki contient des appareils que l'intégration ignore car leur marque lui est inconnue : {summary}. Certains sont des produits partenaires Enki qu'il suffirait d'ajouter à la liste des marques gérées. Utilisez le lien « En savoir plus » pour les signaler sur GitHub — rien n'est envoyé sans un clic."
+      "title": "Enki : marques d'appareils non reconnues",
+      "description": "Votre compte Enki contient des appareils que l'intégration ignore car leur marque lui est inconnue : {summary}. Certains sont des produits partenaires Enki qu'il suffirait d'ajouter à la liste des marques gérées. Utilisez le lien « En savoir plus » pour les signaler sur GitHub. Rien n'est envoyé sans un clic."
     }
   },
   "device_automation": {

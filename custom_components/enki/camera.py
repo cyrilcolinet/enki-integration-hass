@@ -3,7 +3,7 @@
 Every camera shows the snapshot of its latest motion event. The meari generation
 (the solar camera, #216) and the video doorbell (#259) also stream live: Home
 Assistant's frontend is the WebRTC peer, and these entities only relay signaling
-to the device — no media ever goes through the integration. Their signaling has
+to the device, no media ever goes through the integration. Their signaling has
 nothing in common: the camera has a WebSocket, the doorbell a pair of REST routes
 used as a mailbox. The pre-meari IPC1xxKF cameras stream over a proprietary P2P
 tunnel instead, out of reach here (#165).

@@ -99,7 +99,7 @@ def parse_videophone_captures(items: list[dict[str, Any]]) -> list[dict[str, Any
 
     ``stamp`` identifies a capture in a media source identifier: the event list
     has no id of its own, and ``eventDate`` is unique to the millisecond, so its
-    digits make a stable URL-safe key. Openings are dropped — they carry no media
+    digits make a stable URL-safe key. Openings are dropped, they carry no media
     and would show up in Media as entries that cannot be opened.
     """
     captures: list[dict[str, Any]] = []
@@ -179,8 +179,8 @@ def parse_sdp_answer(
     """The doorbell's answer, or None while the mailbox holds nothing of ours (#259).
 
     ``check-sdp-candidates-info`` is one slot per node: a poll can read back the
-    very offer that was just deposited there. An offer is not an answer — it
-    carries ``a=setup:actpass``, where an answer commits to a role — and it is
+    very offer that was just deposited there. An offer is not an answer, it
+    carries ``a=setup:actpass``, where an answer commits to a role, and it is
     the string we sent, so either tell is enough to keep polling.
     """
     if not isinstance(payload, dict):

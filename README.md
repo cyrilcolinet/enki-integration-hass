@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Cloud integration for the Enki / Leroy Merlin smart home ecosystem</strong><br>
-  Fans, lights, switches, sensors, covers, heating, cameras, scenarios, and more — from Home Assistant, using the same credentials as the mobile app.
+  Fans, lights, switches, sensors, covers, heating, cameras, scenarios, and more, from Home Assistant, using the same credentials as the mobile app.
 </p>
 
 <p align="center">
@@ -40,30 +40,30 @@ Use your Enki devices in Home Assistant, with the same email and password as the
 
 ## What you get
 
-- **Lights and outlets** — switch, dim, change colour and white temperature
-- **Blinds and shutters** — open, close, stop, set a position
-- **Heating** — radiators and pilot wire, with target temperature and modes
-- **Air conditioning** — heat, cool, dry or fan, with the temperature and fan speed
-- **Ceiling fans** — speed, direction and the light kit
-- **Cameras** — the latest motion snapshot, and a live view on the solar camera
-- **Video doorbell** — know when someone rings, with the caller's picture, and browse past calls in **Media**
-- **Alarm** — arm and disarm, with the modes set up in the app
-- **Sensors** — motion, opening, temperature, humidity, water leak, battery, solar production
-- **Energy** — what a plug or a water heater has used this month, ready for the Energy dashboard
-- **Scenes** — run the scenes you created in the Enki app
+- **Lights and outlets**: switch, dim, change colour and white temperature
+- **Blinds and shutters**: open, close, stop, set a position
+- **Heating**: radiators and pilot wire, with target temperature and modes
+- **Air conditioning**: heat, cool, dry or fan, with the temperature and fan speed
+- **Ceiling fans**: speed, direction and the light kit
+- **Cameras**: the latest motion snapshot, and a live view on the solar camera
+- **Video doorbell**: know when someone rings, with the caller's picture, and browse past calls in **Media**
+- **Alarm**: arm and disarm, with the modes set up in the app
+- **Sensors**: motion, opening, temperature, humidity, water leak, battery, solar production
+- **Energy**: what a plug or a water heater has used this month, ready for the Energy dashboard
+- **Scenes**: run the scenes you created in the Enki app
 
 The full list, device by device, is in [supported devices](docs/SUPPORTED_DEVICES.md).
 
-Home Assistant also gets ready-made automations — notify on camera motion, alert on a water leak, close the blinds at sunset, and [a dozen more](docs/BLUEPRINTS.md).
+Home Assistant also gets ready-made automations: notify on camera motion, alert on a water leak, close the blinds at sunset, and [a dozen more](docs/BLUEPRINTS.md).
 
 ## Before you start
 
-- An **Enki account** — the one you use in the app. Email and password, or **sign in with
+- An **Enki account**: the one you use in the app. Email and password, or **sign in with
   Google or Apple**, which takes a short detour through your browser
   ([#325](https://github.com/cyrilcolinet/enki-integration-hass/issues/325))
 - Your devices **already installed in the Enki app**: this integration reads your Enki home, it does not replace pairing
 
-Devices paired on the hub that are not Enki brands — Sonoff, Tuya, Aqara and the like — are not imported. [Zigbee2MQTT](https://www.zigbee2mqtt.io/) or ZHA handle those.
+Devices paired on the hub that are not Enki brands (Sonoff, Tuya, Aqara and the like) are not imported. [Zigbee2MQTT](https://www.zigbee2mqtt.io/) or ZHA handle those.
 
 ## Installation
 
@@ -103,20 +103,20 @@ Coming from [CyrilP/hass-enki-component](https://github.com/CyrilP/hass-enki-com
 
 **Settings** → **Devices & services** → **Enki** → **Configure**
 
-- **Refresh interval** — how often Home Assistant asks Enki for news, every 30 seconds by default
-- **Telemetry** — off unless you turn it on. It offers a pre-filled GitHub link when an unknown device shows up; nothing leaves your home until you click
-- **Reconfigure** — change the email or password
+- **Refresh interval**: how often Home Assistant asks Enki for news, every 30 seconds by default
+- **Telemetry**: off unless you turn it on. It offers a pre-filled GitHub link when an unknown device shows up; nothing leaves your home until you click
+- **Reconfigure**: change the email or password
 
 ## If something goes wrong
 
-- **Wrong password** — Home Assistant asks you to sign in again, from **Settings → Repairs**
-- **Signing in with Google or Apple** — choose that option rather than typing a password:
+- **Wrong password**: Home Assistant asks you to sign in again, from **Settings → Repairs**
+- **Signing in with Google or Apple**: choose that option rather than typing a password:
   those accounts have none at Enki. Do it from a computer, with the browser's **Network** tab
   (F12) open before you sign in: the code is in the `enki://` address your browser cannot open,
   and that panel is where it is always visible. Paste it within a minute
-- **No device appears** — check the device is visible in the Enki app, in the same home
-- **A device does not react** — open an [issue](https://github.com/cyrilcolinet/enki-integration-hass/issues/new?template=bug.yml); the bug form lists what to attach
-- **A message in Settings → Repairs** — it usually explains what to do; if not, the issue link above works too
+- **No device appears**: check the device is visible in the Enki app, in the same home
+- **A device does not react**: open an [issue](https://github.com/cyrilcolinet/enki-integration-hass/issues/new?template=bug.yml); the bug form lists what to attach
+- **A message in Settings → Repairs**: it usually explains what to do; if not, the issue link above works too
 
 ## Learn more
 
@@ -131,6 +131,6 @@ Coming from [CyrilP/hass-enki-component](https://github.com/CyrilP/hass-enki-com
 
 ## Credits and licence
 
-Community integration, based on [CyrilP/hass-enki-component](https://github.com/CyrilP/hass-enki-component), not affiliated with Leroy Merlin, ADEO or Enki — see the [disclaimer](docs/DISCLAIMER.md).
+Community integration, based on [CyrilP/hass-enki-component](https://github.com/CyrilP/hass-enki-component), not affiliated with Leroy Merlin, ADEO or Enki. See the [disclaimer](docs/DISCLAIMER.md).
 
 [MIT](LICENSE) licence

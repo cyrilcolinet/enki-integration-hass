@@ -1,7 +1,7 @@
 blueprint:
   name: Enki power – high consumption alert
   description: >
-    Notify when an Enki power sensor stays above a threshold for a while — a
+    Notify when an Enki power sensor stays above a threshold for a while, a
     water heater running too long, an outlet drawing more than expected. Uses
     the instant-consumption sensor exposed on Enki outlets and relays.
   domain: automation

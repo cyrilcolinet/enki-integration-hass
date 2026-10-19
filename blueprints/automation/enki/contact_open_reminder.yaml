@@ -2,7 +2,7 @@ blueprint:
   name: Enki contact – open too long reminder
   description: >
     Notify when an Enki door/window contact sensor stays open longer than a set
-    time — a fridge left ajar, a window forgotten before leaving, a garage door
+    time, a fridge left ajar, a window forgotten before leaving, a garage door
     still up. Re-notifies each time it happens.
   domain: automation
   author: cyrilcolinet

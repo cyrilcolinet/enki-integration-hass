@@ -13,11 +13,11 @@ Summary: [ROADMAP.md](ROADMAP.md)
 
 This integration covers **only the Enki / Leroy Merlin ecosystem**: Lexman, Equation, Inspire, Noirot, Edisio, Eglo, Sedea, Evology, Nodon, ACOVA, Envertech, Meari, DIO, EssentielB, etc. (exact list: [`lib/enki_scope.py`](../custom_components/enki/lib/enki_scope.py)).
 
-**In scope:** anything **visible and working in the Enki app** — Wi‑Fi devices (no hub required) and Zigbee devices paired on the Enki hub.
+**In scope:** anything **visible and working in the Enki app**: Wi‑Fi devices (no hub required) and Zigbee devices paired on the Enki hub.
 
 **Setup order:** pair and configure devices in the **Enki app first**, then add this integration in Home Assistant. HA does not replace Enki pairing or device configuration.
 
-**Skipped at discovery:** **third-party Zigbee** on the hub (Sonoff, Tuya, Aqara, IKEA, …) or any node **without a known Enki manufacturer** — integrate them via **Zigbee2MQTT** or **ZHA**, not this repo.
+**Skipped at discovery:** **third-party Zigbee** on the hub (Sonoff, Tuya, Aqara, IKEA, …) or any node **without a known Enki manufacturer**: integrate them via **Zigbee2MQTT** or **ZHA**, not this repo.
 
 ## Inspire ceiling fans (Siroco+, Aruba+, Cadix, Radix, …)
 
@@ -45,20 +45,20 @@ Fan and light kit are **independent**: turning one on does not turn the other on
 
 ## Outlets, relays, and switches (Edisio, Equation, Evology …)
 
-**HA entity:** `switch` (API `switch-electrical-power`, not the lighting API) — one per channel on multi-channel modules.
+**HA entity:** `switch` (API `switch-electrical-power`, not the lighting API), one per channel on multi-channel modules.
 
 | Model / type | Status |
 |---------------|--------|
 | Edisio outlets | ✅ ON/OFF, energy this month (kWh), instant consumption (W) when the plug answers for it |
 | Equation ON/OFF relay | ✅ ON/OFF stable v1.6.8+, energy this month (kWh), instant consumption (W) when the device answers for it |
 | Evology 2-channel in-wall module | ✅ one `switch` per channel (`check_channel1_electrical_power`, `check_channel2_electrical_power`) |
-| DIO outlets (433 MHz RF) | ✅ ON/OFF, ⚠️ **assumed state** — the RF is one-way, so nothing reports back and Home Assistant shows on/off buttons instead of a toggle |
+| DIO outlets (433 MHz RF) | ✅ ON/OFF, ⚠️ **assumed state**: the RF is one-way, so nothing reports back and Home Assistant shows on/off buttons instead of a toggle |
 
 Multi-circuit nodes may create **one entity per circuit** (BFF endpoint). Timers (`switch_electrical_power_in`, …): not exposed yet.
 
 ## Water heater relay (Lexman / Nodon 83424574)
 
-**HA entity:** `switch` — the on/off relay SKU re-typed as `boiler` in the referentiel.
+**HA entity:** `switch`, the on/off relay SKU re-typed as `boiler` in the referentiel.
 
 Same power API as outlets (`ENKI_POWER_API_KEY`). Field-confirmed ([#87](https://github.com/cyrilcolinet/enki-integration-hass/issues/87)).
 
@@ -87,9 +87,9 @@ across writes but have no entity yet
 
 **HA entities:** `climate` (setpoint), `select` (**mode**), `sensor` (instant power, energy this month)
 
-The mode — whatever the heater declares, `AUTO`, `MANUAL`, `BOOST`, `BOOST_PLUS`, `PROG`, `CLEAN` on an AD-HEWH3-1 — is read from the heater's own service `api-enki-equation-water-heater-prod` and written through `api-enki-heating-controller-prod`, where app 2.27.0 sends it ([#285](https://github.com/cyrilcolinet/enki-integration-hass/issues/285)). A heater that declares the read but not the write keeps a read-only `sensor`.
+The mode, whatever the heater declares, `AUTO`, `MANUAL`, `BOOST`, `BOOST_PLUS`, `PROG`, `CLEAN` on an AD-HEWH3-1, is read from the heater's own service `api-enki-equation-water-heater-prod` and written through `api-enki-heating-controller-prod`, where app 2.27.0 sends it ([#285](https://github.com/cyrilcolinet/enki-integration-hass/issues/285)). A heater that declares the read but not the write keeps a read-only `sensor`.
 
-**A mode brings its own setpoint.** Entering one rewrites the target temperature: `CLEAN` took it to 80 °C on an AD-HEWH3-1, above the 75 °C the `climate` entity lets you set, and a temperature set while it runs is overridden. `MANUAL` returns with the setpoint it last held rather than the one you set before — so an automation that changes the mode should set the temperature again afterwards. The heater takes a few minutes to report a new mode; the `select` shows your choice in the meantime.
+**A mode brings its own setpoint.** Entering one rewrites the target temperature: `CLEAN` took it to 80 °C on an AD-HEWH3-1, above the 75 °C the `climate` entity lets you set, and a temperature set while it runs is overridden. `MANUAL` returns with the setpoint it last held rather than the one you set before, so an automation that changes the mode should set the temperature again afterwards. The heater takes a few minutes to report a new mode; the `select` shows your choice in the meantime.
 
 Setting a temperature creates a derogation server-side, which answers `201` ([#269](https://github.com/cyrilcolinet/enki-integration-hass/issues/269)). It does not change the mode (seen on an AD-HEWH3-1 in `MANUAL`, [#285](https://github.com/cyrilcolinet/enki-integration-hass/issues/285)).
 
@@ -134,7 +134,7 @@ Gateway keys in `gateway_keys_data.py`.
 
 | API capability | Entity |
 |----------------|--------|
-| `check_current_temperature` | Temperature (°C) — except thermostats (temperature on `climate`) |
+| `check_current_temperature` | Temperature (°C): except thermostats (temperature on `climate`) |
 | `check_current_humidity` | Humidity (%) |
 | `check_battery_health` | Battery (%, Enki mapping) |
 | `check_illuminance_level` / `check_brightness_level` | Brightness / illuminance (Evology multisensor, Lexman 4-in-1, …) |
@@ -149,7 +149,7 @@ Gateway keys in `gateway_keys_data.py`.
 
 **HA entities:** `switch` (detection enable, occupancy mode), `number` (vibration sensitivity 1–5)
 
-### Water leak (Lexman) — beta
+### Water leak (Lexman), beta
 
 **HA entities:** `binary_sensor` (leak), `sensor` (battery)
 
@@ -158,15 +158,15 @@ Gateway keys in `gateway_keys_data.py`.
 | Capability | Service | Current status |
 |------------|---------|---------------|
 | `check_battery_health` | `battery-health` | ✅ stable |
-| `check_water_sensor_state` | `water-leak-detector` | 🔬 beta — reads OK remotely; on-site wet test pending |
+| `check_water_sensor_state` | `water-leak-detector` | 🔬 beta: reads OK remotely; on-site wet test pending |
 
 ## Cameras (Lexman / Meari)
 
 **HA entities:** `camera` (last-event snapshot), `sensor` (last event type, last motion, last sound on models that report `SOUND_DETECTED`), `binary_sensor` (SD-card removed)
 
-Events come from `api-enki-lexman-camera-prod` (`GET /events?nodeId=…`), snapshots from the last event's image URL. **No live video on the Lexman IPC1xxKF cameras** — the app streams them over a proprietary P2P tunnel (ThroughTek Kalay), a native SDK with no Python path. The solar camera uses another backend whose live view is WebRTC, and it works ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)).
+Events come from `api-enki-lexman-camera-prod` (`GET /events?nodeId=…`), snapshots from the last event's image URL. **No live video on the Lexman IPC1xxKF cameras**: the app streams them over a proprietary P2P tunnel (ThroughTek Kalay), a native SDK with no Python path. The solar camera uses another backend whose live view is WebRTC, and it works ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)).
 
-Config controls (night vision, motion detection, indicator light, …) exist only on the Meari service, for the Meari generation (e.g. the solar camera). The Lexman IPC1xxKF cameras are not in that backend: settings, pan/tilt and live video all go through the Kalay P2P tunnel, with no HTTP route — measured in [#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165), details in [API.md](API.md#lexman-cameras-api-enki-lexman-camera-meari-prod). Field work: [#135](https://github.com/cyrilcolinet/enki-integration-hass/issues/135).
+Config controls (night vision, motion detection, indicator light, …) exist only on the Meari service, for the Meari generation (e.g. the solar camera). The Lexman IPC1xxKF cameras are not in that backend: settings, pan/tilt and live video all go through the Kalay P2P tunnel, with no HTTP route, measured in [#165](https://github.com/cyrilcolinet/enki-integration-hass/issues/165), details in [API.md](API.md#lexman-cameras-api-enki-lexman-camera-meari-prod). Field work: [#135](https://github.com/cyrilcolinet/enki-integration-hass/issues/135).
 
 ### Lexman solar camera (meari)
 
@@ -182,17 +182,17 @@ Config controls (night vision, motion detection, indicator light, …) exist onl
 | Battery, Wi-Fi, charging, SD card | `sensor` (diagnostic) | |
 | Live view | `camera` | WebRTC, with the last event's snapshot as the still image |
 
-Settings are read from `check-camera-status` at most every 5 minutes — the camera runs on a battery — and re-read right after a change.
+Settings are read from `check-camera-status` at most every 5 minutes: the camera runs on a battery, and re-read right after a change.
 
-**Live view:** Home Assistant's frontend is the WebRTC peer; the integration only relays signaling to the camera, no video goes through it. The camera is woken first (it sleeps between events). The browser's offer is trimmed to the codecs the camera speaks, and the stream is requested once the camera reports the connection up — see [API.md](API.md#live-video--meari-webrtc-signaling). The camera's own TURN credentials are not handed to the browser — they only exist after authentication, while the browser is configured before it makes its offer — so the browser relies on Home Assistant's ICE servers and on the camera's relay candidates.
+**Live view:** Home Assistant's frontend is the WebRTC peer; the integration only relays signaling to the camera, no video goes through it. The camera is woken first (it sleeps between events). The browser's offer is trimmed to the codecs the camera speaks, and the stream is requested once the camera reports the connection up, see [API.md](API.md#live-video--meari-webrtc-signaling). The camera's own TURN credentials are not handed to the browser, they only exist after authentication, while the browser is configured before it makes its offer, so the browser relies on Home Assistant's ICE servers and on the camera's relay candidates.
 
 **The live view lasts about two minutes**, then the camera goes back to sleep and the picture stops. The Enki app behaves the same way and offers to reload the video; reopening the camera in Home Assistant starts a new session.
 
 Reads, writes and the live view are confirmed on a real camera ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)).
 
-**Blueprint:** motion → notify with the last snapshot — `blueprints/automation/enki/camera_motion_notification.yaml`.
+**Blueprint:** motion → notify with the last snapshot, `blueprints/automation/enki/camera_motion_notification.yaml`.
 
-## Video doorbell (Lexman visiophone) — beta
+## Video doorbell (Lexman visiophone), beta
 
 **HA entities:** `event` (doorbell), `camera` (live view + last call snapshot), `binary_sensor` (connection, diagnostic)
 **Media:** past calls and captures, under **Media › Enki › \<your doorbell\>**
@@ -207,21 +207,21 @@ The doorbell has its own service, `api-enki-videophone-prod`, and its own event 
 
 The doorbell's own settings decide whether a capture is a picture or a short clip. A clip comes with a thumbnail, which is what the `camera` shows; the clip's own URL stays available as an event attribute.
 
-The `event` entity fires when a newer entry appears, with the snapshot URL as an attribute — good for a notification with the caller's picture, or any automation. **It is not instant:** there is no push channel, so a ring shows up within a polling cycle, and the Enki app itself rings after the indoor handset.
+The `event` entity fires when a newer entry appears, with the snapshot URL as an attribute, good for a notification with the caller's picture, or any automation. **It is not instant:** there is no push channel, so a ring shows up within a polling cycle, and the Enki app itself rings after the indoor handset.
 
-**Browsing past calls.** The doorbell also shows up in **Media**, listing every call and capture it still holds, newest first — each one opens its picture or plays its clip. The list is fetched when you open it, not kept in an entity attribute, so the recorder stays out of it. How far back it goes is the API's decision, not ours — the one unit we have seen held about two weeks — and an entry that has dropped out stops opening. Openings are left out of Media — they carry no media at all, and would only be entries that cannot be opened ([#267](https://github.com/cyrilcolinet/enki-integration-hass/issues/267)).
+**Browsing past calls.** The doorbell also shows up in **Media**, listing every call and capture it still holds, newest first, each one opens its picture or plays its clip. The list is fetched when you open it, not kept in an entity attribute, so the recorder stays out of it. How far back it goes is the API's decision, not ours, the one unit we have seen held about two weeks, and an entry that has dropped out stops opening. Openings are left out of Media, they carry no media at all, and would only be entries that cannot be opened ([#267](https://github.com/cyrilcolinet/enki-integration-hass/issues/267)).
 
-**Live view.** The `camera` entity streams through Home Assistant's native WebRTC: open it and the browser talks to the doorbell directly, no media passes through the integration. A ring is not needed — the doorbell answers an offer with nobody at the door. Negotiation is a mailbox on the Enki side rather than a signaling socket, so opening the stream takes a few seconds, and the doorbell is given ten of them to answer before the view gives up. One viewer at a time per doorbell: the mailbox has a single slot, and two streams opening at once would overwrite each other's offer.
+**Live view.** The `camera` entity streams through Home Assistant's native WebRTC: open it and the browser talks to the doorbell directly, no media passes through the integration. A ring is not needed, the doorbell answers an offer with nobody at the door. Negotiation is a mailbox on the Enki side rather than a signaling socket, so opening the stream takes a few seconds, and the doorbell is given ten of them to answer before the view gives up. One viewer at a time per doorbell: the mailbox has a single slot, and two streams opening at once would overwrite each other's offer.
 
-The peer is the browser you are watching from, not Home Assistant, so what matters is whether *that* device can reach the doorbell: on the same network it connects directly. From outside, it falls back to the relay the doorbell offers, and the integration does not yet hand the doorbell's own TURN credentials to the browser — so a phone on mobile data may fail to connect. Say so on [#259](https://github.com/cyrilcolinet/enki-integration-hass/issues/259) if that is your case.
+The peer is the browser you are watching from, not Home Assistant, so what matters is whether *that* device can reach the doorbell: on the same network it connects directly. From outside, it falls back to the relay the doorbell offers, and the integration does not yet hand the doorbell's own TURN credentials to the browser, so a phone on mobile data may fail to connect. Say so on [#259](https://github.com/cyrilcolinet/enki-integration-hass/issues/259) if that is your case.
 
 Gate and door opening (`change-portal-state`) and the doorbell's settings are left out until someone has one wired: the reporter's unit drives nothing yet, and it reports `connectors: none` ([#233](https://github.com/cyrilcolinet/enki-integration-hass/issues/233)).
 
 Reads are confirmed on a real doorbell, snapshots included; the pictures open without signing in. The live view follows the app's own sequence, read out of the Android app, and is waiting on a first report from real hardware.
 
-**Blueprint:** someone rings → notify with the caller's picture — `blueprints/automation/enki/videophone_call_notification.yaml`.
+**Blueprint:** someone rings → notify with the caller's picture, `blueprints/automation/enki/videophone_call_notification.yaml`.
 
-## Heating — stable (v1.6.8+)
+## Heating, stable (v1.6.8+)
 
 Validated on real hardware (Noirot radiator, Equation pilot wire, Equation relay) since v1.6.8.
 
@@ -240,7 +240,7 @@ Extra referentiel controls, exposed when the thermostat advertises them. Routes 
 | Child lock | `switch` | `change/check-child-lock`, `LOCK` / `UNLOCK` |
 | Preheating | `switch` | `change/check-preheating-status`, `ENABLED` / `DISABLED` |
 
-**API routing:** `api-enki-thermostat-prod` for setpoint / pilot wire / window detection / config knobs; `api-enki-presence-detector-prod` for occupancy. Keys in `gateway_keys_data.py` — update: [DEVELOPMENT.md](DEVELOPMENT.md) · API detail: [API.md](API.md#heating-and-water-sensors-manifest--150).
+**API routing:** `api-enki-thermostat-prod` for setpoint / pilot wire / window detection / config knobs; `api-enki-presence-detector-prod` for occupancy. Keys in `gateway_keys_data.py`: update: [DEVELOPMENT.md](DEVELOPMENT.md) · API detail: [API.md](API.md#heating-and-water-sensors-manifest--150).
 
 ## Roller shutters (Evology, Nodon, Lexman RTS, …)
 
@@ -251,8 +251,8 @@ Extra referentiel controls, exposed when the thermostat advertises them. Routes 
 | Open / close | HA cover commands |
 | Position | 0–100 % via `change-shutter-position` when advertised |
 | Stop | Mid-travel stop via `stop-change-shutter-position` (Lexman, …) |
-| RTS (no position) | Open / close / stop only — position-less motors are handled without a percentage |
-| Wiring direction | `select` entity — `NORMAL` / `INVERTED` |
+| RTS (no position) | Open / close / stop only: position-less motors are handled without a percentage |
+| Wiring direction | `select` entity: `NORMAL` / `INVERTED` |
 | Presets | `button` per referentiel preset when `execute_preset` lists values |
 
 **Current state:** `ENKI_ACCESS_MOTORIZATION_API_KEY` included. Micro-service: `api-enki-rolling-prod` (not `access-and-motorizations`). **“Shutter”** entity if the shutter is active in the Enki app.
@@ -273,19 +273,19 @@ Validating the gateway key with mitmproxy: [DEVELOPMENT.md](DEVELOPMENT.md#captu
 | Product | Notes |
 |---------|--------|
 | [Lexman 83424576](https://www.leroymerlin.fr/produits/module-connecte-portail-porte-de-garage-lexman-83424576.html) | Rebaged Nodon SIN-4-1-20; referentiel type `access_and_motorizations` |
-| Capability | `power_on_with_timer` only (no position/opening — **not** a `cover`) |
-| Enki app mode | **Mpulse** — contact closes for a few seconds then reopens (timed impulse) |
+| Capability | `power_on_with_timer` only (no position/opening: **not** a `cover`) |
+| Enki app mode | **Mpulse**: contact closes for a few seconds then reopens (timed impulse) |
 
-**API:** `POST api-enki-power-prod/v1/power/{nodeId}/power-on-with-timer` — no body. Same gateway key as outlets (`ENKI_POWER_API_KEY`). Detail: [API.md](API.md#dry-contact-gate--garage-receiver-lexman-83424576-nodon-sin-4-1-20).
+**API:** `POST api-enki-power-prod/v1/power/{nodeId}/power-on-with-timer`: no body. Same gateway key as outlets (`ENKI_POWER_API_KEY`). Detail: [API.md](API.md#dry-contact-gate--garage-receiver-lexman-83424576-nodon-sin-4-1-20).
 
-**Stable since v1.6.17** — field-confirmed ([#56](https://github.com/cyrilcolinet/enki-integration-hass/issues/56)).
+**Stable since v1.6.17**: field-confirmed ([#56](https://github.com/cyrilcolinet/enki-integration-hass/issues/56)).
 
 ## Cross-cutting features
 
-- **OAuth auth** — Keycloak refresh token; invalid credentials open Home Assistant's **reauthentication** flow
-- **Opt-in telemetry** — a repair card for unsupported profiles, and one aggregated card for unrecognized brands, each with a pre-filled GitHub link (nothing sent without a click) — [TELEMETRY.md](TELEMETRY.md)
-- **Operational alerts** — gateway key rejected, cloud unreachable, Enki maintenance, as **repair issues** ([API.md](API.md#operational-notifications))
-- **Diagnostics** — anonymized JSON export from Enki UI, with an anonymized request report attached on API failures
+- **OAuth auth**: Keycloak refresh token; invalid credentials open Home Assistant's **reauthentication** flow
+- **Opt-in telemetry**: a repair card for unsupported profiles, and one aggregated card for unrecognized brands, each with a pre-filled GitHub link (nothing sent without a click), [TELEMETRY.md](TELEMETRY.md)
+- **Operational alerts**: gateway key rejected, cloud unreachable, Enki maintenance, as **repair issues** ([API.md](API.md#operational-notifications))
+- **Diagnostics**: anonymized JSON export from Enki UI, with an anonymized request report attached on API failures
 
 ## Device info (firmware, connectivity)
 
@@ -307,11 +307,11 @@ Reads are best-effort (404 skipped) and driven by referentiel capabilities, not 
 | ✅ Stable | Dry-contact gate / garage receiver (Lexman 83424576) since v1.6.17 |
 | ✅ Stable | Water-heater relay, Evology 2-channel module, Evology multisensor |
 | ✅ Stable | Cameras (event snapshot; live video on the solar camera only) and covers |
-| ✅ Stable | Enki alarm — arm away / home / night and disarm, only the modes configured in the app |
-| 🔬 Beta | Lexman water leak, scenarios and the video doorbell — feedback welcome |
-| 🔬 Beta | Thermostat config knobs (offset, child-lock, preheating) — decoded, real-hardware validation welcome |
-| 🔬 Beta | ACOVA radiators — discovered and driven through the shared heating API (towel rail reported in [#190](https://github.com/cyrilcolinet/enki-integration-hass/issues/190)) |
-| ✅ Stable | Lexman solar camera: settings, diagnostics and live view — confirmed on hardware ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)) |
+| ✅ Stable | Enki alarm: arm away / home / night and disarm, only the modes configured in the app |
+| 🔬 Beta | Lexman water leak, scenarios and the video doorbell: feedback welcome |
+| 🔬 Beta | Thermostat config knobs (offset, child-lock, preheating): decoded, real-hardware validation welcome |
+| 🔬 Beta | ACOVA radiators: discovered and driven through the shared heating API (towel rail reported in [#190](https://github.com/cyrilcolinet/enki-integration-hass/issues/190)) |
+| ✅ Stable | Lexman solar camera: settings, diagnostics and live view: confirmed on hardware ([#216](https://github.com/cyrilcolinet/enki-integration-hass/issues/216)) |
 | Not planned | Camera live video and pan/tilt on Lexman IPC1xxKF cameras (Kalay P2P only, no HTTP route) |
 | Out of scope | Enki pairing and device setup, Leroy Merlin account management → [Enki support](https://support.enki-home.com/) (configure devices in the app before HA) |
 

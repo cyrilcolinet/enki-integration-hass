@@ -332,7 +332,7 @@ class EnkiConfigFlow(ConfigFlow, domain=DOMAIN):
         """Send a federated account back through its provider (#325).
 
         Its refresh token is the only credential it has, so when that stops
-        working there is nothing to re-enter — only the sign-in to redo.
+        working there is nothing to re-enter, only the sign-in to redo.
         """
         entry = self._signed_in_entry()
         provider = entry.data[CONF_AUTH_PROVIDER]

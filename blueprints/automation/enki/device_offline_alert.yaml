@@ -1,7 +1,7 @@
 blueprint:
   name: Enki device – offline alert
   description: >
-    Notify when an Enki device goes offline — a ceiling fan's connectivity
+    Notify when an Enki device goes offline, a ceiling fan's connectivity
     sensor dropping, or any Enki entity that becomes unavailable for a while
     (hub down, Wi-Fi lost, cloud unreachable).
   domain: automation

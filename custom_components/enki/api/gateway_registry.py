@@ -84,7 +84,7 @@ ENKI_MICRO_SERVICES: tuple[EnkiMicroService, ...] = (
         "command_override",
         "/api-enki-command-override-prod/v1",
         wired=True,
-        notes="Thermostat setpoint derogations — POST override-commands (APK c7i / zgg.java)",
+        notes="Thermostat setpoint derogations: POST override-commands (APK c7i / zgg.java)",
     ),
     EnkiMicroService(
         "api-enki-consent-prod",
@@ -241,7 +241,7 @@ ENKI_MICRO_SERVICES: tuple[EnkiMicroService, ...] = (
         "heating",
         "/api-enki-heating-prod/v1/heating",
         wired=True,
-        notes="schedules / modes / wizard only (APK xdd) — not per-node thermostat reads",
+        notes="schedules / modes / wizard only (APK xdd), not per-node thermostat reads",
     ),
     EnkiMicroService(
         "api-enki-home-prod",
@@ -281,7 +281,7 @@ ENKI_MICRO_SERVICES: tuple[EnkiMicroService, ...] = (
         "camera",
         "/api-enki-lexman-camera-prod/v1",
         wired=True,
-        notes="Event list (motion / SD) for Lexman cameras — GET /events?nodeId=.",
+        notes="Event list (motion / SD) for Lexman cameras: GET /events?nodeId=.",
     ),
     EnkiMicroService(
         "api-enki-lexman-chargepoint-prod",
@@ -620,7 +620,7 @@ ENKI_MICRO_SERVICES: tuple[EnkiMicroService, ...] = (
         "water_sensor",
         "/api-enki-water-leak-detector-prod/v1/detectors",
         wired=True,
-        notes="leak sensors — legacy: water-sensor-prod",
+        notes="leak sensors, legacy: water-sensor-prod",
     ),
     EnkiMicroService(
         "api-enki-wiz-prod",

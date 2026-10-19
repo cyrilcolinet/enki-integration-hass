@@ -1,7 +1,7 @@
 blueprint:
   name: Enki pilot wire – day / night schedule
   description: >
-    Switch an Enki pilot-wire heater between two modes at two times of day —
+    Switch an Enki pilot-wire heater between two modes at two times of day
     e.g. Comfort in the morning, Eco at night. Works with the pilot-wire select
     entity (Equation, …).
   domain: automation

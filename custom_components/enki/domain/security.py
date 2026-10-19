@@ -2,7 +2,7 @@
 
 The alarm is not a physical node: the dashboard shows it as a tile with
 ``template == "SECURITY"`` whose metadata carries a ``securityId`` instead of a
-device id — which is why node discovery never saw it. State and arming go
+device id, which is why node discovery never saw it. State and arming go
 through the home-security service:
 
 - ``GET security?homeId=`` → current mode, threat level, delay, notifications
@@ -26,8 +26,8 @@ MODE_PRESENCE = "PRESENCE"
 # Listed by the app but never offered as a choice (no label): not a user mode.
 MODE_INACTIVE = "INACTIVE"
 
-# A mode is only selectable once configured in the app — the app refuses to save
-# one without at least a detector and a siren — so GET modes decides what to offer.
+# A mode is only selectable once configured in the app, the app refuses to save
+# one without at least a detector and a siren, so GET modes decides what to offer.
 ARMING_MODES = frozenset({MODE_FULL, MODE_PARTIAL, MODE_PRESENCE})
 
 # Threat levels that mean the alarm went off. DETERRENCE (pre-alarm warning),

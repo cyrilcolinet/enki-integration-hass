@@ -87,6 +87,6 @@ actions:
       title: !input title
       message: >
         {{ trigger.to_state.attributes.event_type | replace('_', ' ') | capitalize }}
-        — {{ now().strftime('%d/%m %H:%M') }}
+        · {{ now().strftime('%d/%m %H:%M') }}
       data:
         image: "/api/camera_proxy/{{ snapshot_camera }}"

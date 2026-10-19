@@ -40,7 +40,7 @@ def _http_error_message(method: str, path: str, status: int, body: str) -> str:
     Enki's gateway returns the actual cause (e.g. a validation message) in the
     body; surfacing a trimmed snippet turns an opaque "HTTP 400" into something
     actionable in the Home Assistant logbook. The snippet stays in the exception
-    message only — read-error telemetry keeps just the status code.
+    message only, read-error telemetry keeps just the status code.
     """
     message = f"{method} {path} failed: HTTP {status}"
     detail = " ".join(body.split())
@@ -57,7 +57,7 @@ class EnkiHttpClient:
     """Authenticated requests against Enki cloud micro-services.
 
     Each Enki domain (lighting, airflow, power, …) uses a separate API key
-    and sometimes a ``homeId`` header — this class centralises that wiring.
+    and sometimes a ``homeId`` header, this class centralises that wiring.
     """
 
     _ROLLING_PATH_PREFIX = WIRED_PATH_PREFIXES["motorization"]
@@ -93,7 +93,7 @@ class EnkiHttpClient:
         """Remember a gateway-level refusal so we stop polling that service.
 
         A 403 carrying the gateway's own wording means the API key is not
-        authorized for the whole micro-service. Retrying is pointless — these
+        authorized for the whole micro-service. Retrying is pointless, these
         reads run every polling cycle, so without this they flood the log until
         the next restart. The first one still raises, so diagnostics keep a trace.
         """
@@ -114,7 +114,7 @@ class EnkiHttpClient:
     def _note_forbidden_route(self, service: str, path: str) -> None:
         """Remember a route-level refusal: the service works, that endpoint does not.
 
-        One shutter's refused mode read is every shutter's, on every poll — so
+        One shutter's refused mode read is every shutter's, on every poll, so
         without this it is a handful of log lines per cycle, forever.
         """
         route = (service, self._endpoint(path))
@@ -255,7 +255,7 @@ class EnkiHttpClient:
         """Send a command (POST by default); accepts HTTP 202/204 as success.
 
         ``ok_statuses`` widens that for the rare endpoint that answers 200 with a
-        body — the home alarm replies to an arming PATCH with its new state.
+        body, the home alarm replies to an arming PATCH with its new state.
         """
         url = f"{ENKI_BASE_URL}{path}"
 
@@ -444,7 +444,7 @@ class EnkiHttpClient:
         if not self._service_api_key("motorization"):
             raise EnkiConnectionError(
                 "Motorization API key is not configured (beta shutters). "
-                "Capture X-Gateway-APIKey from the Enki app — see docs/API.md.",
+                "Capture X-Gateway-APIKey from the Enki app, see docs/API.md.",
                 service="motorization",
             )
         return await self.get_json(
@@ -466,7 +466,7 @@ class EnkiHttpClient:
         if not self._service_api_key("motorization"):
             raise EnkiConnectionError(
                 "Motorization API key is not configured (beta shutters). "
-                "Capture X-Gateway-APIKey from the Enki app — see docs/API.md.",
+                "Capture X-Gateway-APIKey from the Enki app, see docs/API.md.",
                 service="motorization",
             )
         payload = {"value": value} if with_value else None
@@ -487,7 +487,7 @@ class EnkiHttpClient:
         """GET a check_* capability on a sensor or heating micro-service."""
         if not self._service_api_key(service):
             LOGGER.debug(
-                "Skipping %s read for node %s — API key not configured (see docs/API.md)",
+                "Skipping %s read for node %s: API key not configured (see docs/API.md)",
                 capability,
                 node_id,
             )
@@ -568,7 +568,7 @@ class EnkiHttpClient:
         if not self._service_api_key(service):
             raise EnkiConnectionError(
                 f"Heating/water API key is not configured for {capability}. "
-                "Capture X-Gateway-APIKey from the Enki app — see docs/API.md.",
+                "Capture X-Gateway-APIKey from the Enki app, see docs/API.md.",
                 service=service,
             )
         prefix = WIRED_PATH_PREFIXES[service]
@@ -750,7 +750,7 @@ class EnkiHttpClient:
         if not self._service_api_key("scenario"):
             raise EnkiConnectionError(
                 "Scenario API key is not configured. "
-                "Capture X-Gateway-APIKey from the Enki app — see docs/API.md.",
+                "Capture X-Gateway-APIKey from the Enki app, see docs/API.md.",
                 service="scenario",
             )
         prefix = WIRED_PATH_PREFIXES["scenario"]

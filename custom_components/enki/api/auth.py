@@ -53,7 +53,7 @@ def sso_code_from_callback(pasted: str) -> str:
     """The code out of whatever the user pasted back.
 
     The redirect lands on the app's own deep link, which a desktop browser cannot
-    open — so what the user has in front of them is the address bar. They may
+    open, so what the user has in front of them is the address bar. They may
     paste the whole thing, or just the code. Keycloak reports a refusal on that
     same redirect, as ``error=``, and that is worth saying rather than sending an
     empty code to the token endpoint.
@@ -76,7 +76,7 @@ def claims_from_token(access_token: str) -> dict[str, Any]:
     """The claims an access token carries, read without verifying it.
 
     Only used to label the entry with the account it belongs to. The token's
-    signature is Keycloak's business — it is the gateway that checks it, and
+    signature is Keycloak's business, it is the gateway that checks it, and
     nothing here trusts these claims for access.
     """
     try:
@@ -231,7 +231,7 @@ async def request_token(
     """POST the token endpoint; None when the realm refused the grant.
 
     Keycloak answers 401 for a password it does not accept and 400 for a code it
-    will not take — expired, already used, or issued for another redirect. Both
+    will not take: expired, already used, or issued for another redirect. Both
     are refusals rather than faults, so both read as "no token"; the body goes to
     the debug log, which is the only place the distinction is visible.
     """
@@ -263,7 +263,7 @@ async def exchange_sso_code(
 ) -> dict[str, Any]:
     """Trade a Keycloak authorization code for tokens (#325).
 
-    The code is single-use and short-lived — a minute, on a default realm — so a
+    The code is single-use and short-lived (a minute, on a default realm), so a
     refusal here is nearly always one that was pasted too late or twice.
     """
     payload = await request_token(

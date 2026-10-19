@@ -2,7 +2,7 @@
 
 ``equation-airco/{nodeId}/check-airconditioner-state`` answers the usual
 ``{nodeId, homeId, lastReportedDate, lastReportedValue}``, except
-``lastReportedValue`` is an object rather than a scalar — the app calls it
+``lastReportedValue`` is an object rather than a scalar, the app calls it
 ``LastReportedStateApiModel`` and it mirrors, field for field, the body of
 ``change-airconditioner-state``::
 

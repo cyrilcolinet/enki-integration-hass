@@ -9,7 +9,7 @@ message. Media is relayed by the coturn server the signaling server hands back.
 
 This script replays that handshake to find out, per camera:
 
-  1. which identifier — if any — the meari backend knows the camera by:
+  1. which identifier, if any, the meari backend knows the camera by:
      ``check-camera-status`` is retried with every id the node payload carries
      (nodeId, deviceId, externalId, eui64, p2pId, mac), because a 404 on the
      dashboard nodeId can mean "not a meari camera" *or* "wrong key". That is the
@@ -17,7 +17,7 @@ This script replays that handshake to find out, per camera:
   2. whether ``check-camera-connect-wss`` hands back signaling credentials;
   3. (``--handshake``) whether the signaling server authenticates us and returns
      the coturn relay parameters;
-  4. (``--offer``) whether the camera answers an SDP offer — i.e. whether a live
+  4. (``--offer``) whether the camera answers an SDP offer, i.e. whether a live
      stream is reachable without the app.
 
 Steps 1 and 2 are read-only. ``--handshake`` and ``--offer`` open a signaling
@@ -27,7 +27,7 @@ additionally POSTs ``wake-up`` first, which is what the app relies on for
 dormant cameras.
 
 Output is anonymized: urls, ids, tokens, SDP bodies and ICE candidates are
-summarized or redacted — only shapes, statuses and error reasons are printed.
+summarized or redacted, only shapes, statuses and error reasons are printed.
 
 Usage:
     python3 scripts/probe_camera_stream.py '<email>' '<password>'
@@ -128,7 +128,7 @@ def _synthetic_offer() -> str:
     """A syntactically valid offer shaped like the app's (audio sendrecv + video recvonly).
 
     The app offers with ``OfferToReceiveAudio``/``OfferToReceiveVideo`` plus a
-    sendrecv audio transceiver (two-way talk). We never complete DTLS here — the
+    sendrecv audio transceiver (two-way talk). We never complete DTLS here, the
     point is only to see whether the camera answers.
     """
     ufrag = secrets.token_hex(4)
@@ -315,7 +315,7 @@ async def _signaling(http: Any, connect: dict[str, Any], send_offer: bool, timeo
                 answered = False
 
         if not authenticated:
-            print("    signaling: no 'option' response — authentication refused or timed out")
+            print("    signaling: no 'option' response, authentication refused or timed out")
         elif send_offer and not offered:
             print("    signaling: authenticated but never reached the offer")
 
@@ -330,7 +330,7 @@ async def _node(http: Any, home_id: str, node_id: str) -> dict[str, Any]:
 
 
 async def _identity(http: Any, node: dict[str, Any], device_id: str) -> str:
-    """Brand / model / referentiel type — a camera that is in neither backend is
+    """Brand / model / referentiel type, a camera that is in neither backend is
     usually simply not a Lexman one."""
     device: dict[str, Any] = {}
     with contextlib.suppress(Exception):
@@ -347,14 +347,14 @@ def _generation(node: dict[str, Any]) -> str:
     """Tell the two camera generations apart from the node payload.
 
     A node carrying ``p2pId`` / ``p2pAuthKey`` / ``p2pPassword`` is driven by the
-    native TUTK Kalay SDK — no meari signaling, so no live stream reachable from
+    native TUTK Kalay SDK, no meari signaling, so no live stream reachable from
     here. Only the presence of the keys is printed, never their values.
     """
     if not node:
         return "unknown"
     present = [key for key in ("p2pId", "p2pAuthKey", "p2pPassword") if node.get(key)]
     if present:
-        return f"TUTK Kalay P2P — node carries {present} (native SDK only)"
+        return f"TUTK Kalay P2P, node carries {present} (native SDK only)"
     return "no TUTK credentials on the node (meari candidate)"
 
 
@@ -362,7 +362,7 @@ def _id_candidates(node: dict[str, Any], node_id: str, device_id: str) -> list[t
     """Every id the meari routes could be keyed on, dashboard nodeId first.
 
     A 404 on every meari route can mean "not a meari camera" *or* "right camera,
-    wrong identifier" — the app builds its paths from its own node model, and the
+    wrong identifier", the app builds its paths from its own node model, and the
     ids in the node payload (externalId, eui64, p2pId…) are all plausible keys.
     """
     seen = {""}
@@ -387,14 +387,14 @@ def _id_candidates(node: dict[str, Any], node_id: str, device_id: str) -> list[t
 async def _meari_id(
     http: Any, home_id: str, candidates: list[tuple[str, str]]
 ) -> tuple[str, Any] | None:
-    """Find which identifier — if any — the meari backend knows this camera by."""
+    """Find which identifier, if any, the meari backend knows this camera by."""
     for label, value in candidates:
         status, body = await _get(http, home_id, f"{_MEARI_PREFIX}/{value}/check-camera-status")
         print(f"    GET check-camera-status [{label}]: HTTP {status} {json.dumps(anonymize(body))}")
         if status == 200:
             return value, body
         if status not in (400, 404):
-            # 401/403 is an auth problem, not an unknown camera — stop guessing.
+            # 401/403 is an auth problem, not an unknown camera, stop guessing.
             return None
     return None
 

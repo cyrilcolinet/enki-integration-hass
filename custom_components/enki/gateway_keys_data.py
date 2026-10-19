@@ -1,6 +1,6 @@
 """Gateway API keys extracted from the Enki mobile APK.
 
-Do not edit manually — refresh with:
+Do not edit manually, refresh with:
     python scripts/extract_gateway_keys.py path/to/enki.apk --apply --update-known
 
 Source APK: Enki 2.26.3. Every wired key is followed from its literal in the APK
@@ -12,7 +12,7 @@ can follow and keep whatever an older run left; none of them is used today.
 The extractor used to map keys by position, which silently shipped a neighbouring
 service's key: POWER and AIRFLOW (#45), then LUMINOSITY_SENSOR (#256),
 CONSUMPTION, OTA and ESDK (#268, #270). The 403s they caused were read for months
-as services Adeo had closed. Nothing here is a guess any more — an unverified key
+as services Adeo had closed. Nothing here is a guess any more, an unverified key
 is refused rather than written.
 """
 

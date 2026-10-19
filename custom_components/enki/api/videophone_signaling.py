@@ -9,7 +9,7 @@ one mailbox per node::
 The app is always the offering side (APK ``yde``/``ude``): it waits for its own
 ICE gathering to finish, posts the offer with the entire candidate list in one
 body, then polls for the answer under a ten second budget. Home Assistant's
-frontend takes the app's part here, so the sequence is the same — except that it
+frontend takes the app's part here, so the sequence is the same, except that it
 trickles its candidates after sending the offer, which is why the offer is held
 back for a moment to let them in.
 
@@ -34,7 +34,7 @@ if TYPE_CHECKING:
     from .transport import EnkiHttpClient
 
 # How long the offer waits for the browser's candidates. They go in a single
-# body, so one that arrives after the post is lost — hence the wait.
+# body, so one that arrives after the post is lost, hence the wait.
 _GATHER_SECONDS = 2.5
 # The app's own budget for the doorbell to answer, and how often it looks.
 _ANSWER_SECONDS = 10.0
@@ -89,6 +89,6 @@ class VideophoneLiveSession:
             if answer is not None:
                 sdp, candidates = answer
                 # The app opens no data channel, so the doorbell drops the one the
-                # browser offers — and a browser refuses a shorter answer.
+                # browser offers, and a browser refuses a shorter answer.
                 return reject_unanswered(self._offer_sdp, sdp), candidates
         raise EnkiConnectionError("the doorbell did not answer the live view offer")

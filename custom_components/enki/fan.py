@@ -107,7 +107,7 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
             return speed is not None and speed > 0
         # Power-controlled fans (no writable speed range, e.g. Inspire Cadix,
         # #157) toggle via electrical power, while the cloud keeps fan_speed at
-        # 0 — trusting fan_speed here reverted a just-started fan to OFF. Prefer
+        # 0, trusting fan_speed here reverted a just-started fan to OFF. Prefer
         # the power signal, which turn-on marks optimistically.
         if profile.supports_electrical_power:
             if reported.global_power is not None:
@@ -212,7 +212,7 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
             self._apply_cadix_light_coupling(starting=True)
         elif was_running and not now_running:
             self._apply_cadix_light_coupling(starting=False)
-        # Fan start/stop couples other kits in firmware (Cadix ring/main) — reconcile.
+        # Fan start/stop couples other kits in firmware (Cadix ring/main), reconcile.
         self.coordinator.request_reconcile()
 
     def _cadix_light_endpoints(self) -> tuple[int, int] | None:
@@ -259,7 +259,7 @@ class EnkiFanEntity(EnkiEntity, FanEntity):
                 self.coordinator.update_endpoint_power(node_id, endpoint, power)
 
     async def _set_motor_power(self, power: str) -> None:
-        """ON/OFF fans without speed range — per-endpoint or global power API."""
+        """ON/OFF fans without speed range, per-endpoint or global power API."""
         node_id = self._device.node_id
         motor_endpoint = self._device.profile.fan_motor_endpoint
         with self.coordinator.optimistic(node_id):

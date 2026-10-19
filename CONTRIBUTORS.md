@@ -8,7 +8,7 @@ This integration continues the original work on
 Contributors to the CyrilP project (excluding bots):
 
 - [CyrilP](https://github.com/CyrilP)
-- [McGiverGim](https://github.com/McGiverGim) — Míguel Ángel Mulero Martínez
+- [McGiverGim](https://github.com/McGiverGim). Míguel Ángel Mulero Martínez
 - [katnion](https://github.com/katnion)
 - [bbird81](https://github.com/bbird81)
 - [kitenoob](https://github.com/kitenoob)

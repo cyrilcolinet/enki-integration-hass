@@ -96,7 +96,7 @@ async def test_root_lists_the_doorbells() -> None:
 
     assert [child.title for child in root.children] == ["Interphone"]
     assert root.children[0].identifier == "entry-1/node-vp"
-    # Listing devices must not call the cloud — only opening one does.
+    # Listing devices must not call the cloud, only opening one does.
     get_events.assert_not_awaited()
 
 
@@ -107,9 +107,9 @@ async def test_a_doorbell_lists_its_captures_newest_first() -> None:
     listing = await source.async_browse_media(MediaSourceItem(identifier="entry-1/node-vp"))
 
     assert [child.title for child in listing.children] == [
-        "Captured media — 26/09 08:12",
-        "Missed call — 25/09 17:57",
-        "Accepted call — 25/09 17:56",
+        "Captured media, 26/09 08:12",
+        "Missed call, 25/09 17:57",
+        "Accepted call, 25/09 17:56",
     ]
     clip, picture = listing.children[0], listing.children[1]
     assert (clip.media_class, clip.media_content_type) == ("video", "video/mp4")

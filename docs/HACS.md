@@ -3,7 +3,7 @@
 Checklist aligned with the [official HACS documentation](https://www.hacs.xyz/docs/publish/).
 
 **Status: published in the default HACS store.** Users install Enki straight from
-HACS (search **Enki**) — no custom repository needed. The custom-repository flow
+HACS (search **Enki**), no custom repository needed. The custom-repository flow
 below is only a fallback while a HACS instance catches up with the default-store
 sync.
 
@@ -36,7 +36,7 @@ Configure on the repository **Settings** page:
 
 | Field | Example |
 |-------|---------|
-| **Description** | Home Assistant integration for the Enki / Leroy Merlin smart home cloud — lights, fans, switches, sensors, covers, climate, scenarios, and more. |
+| **Description** | Home Assistant integration for the Enki / Leroy Merlin smart home cloud: lights, fans, switches, sensors, covers, climate, scenarios, and more. |
 | **Topics** | `home-assistant`, `hacs`, `hacs-integration`, `enki`, `leroy-merlin`, `smart-home`, `home-automation`, `iot`, `lexman`, `edisio`, `equation` |
 | **Issues** | Enabled |
 
@@ -44,9 +44,9 @@ Configure on the repository **Settings** page:
 
 HACS shows the last 5 releases when they exist.
 
-Releases are automated via [release-please](../docs/RELEASE.md): merge the `chore: release X.Y.Z` PR on `main` — the workflow creates the GitHub Release and uploads `enki.zip`.
+Releases are automated via [release-please](../docs/RELEASE.md): merge the `chore: release X.Y.Z` PR on `main`, the workflow creates the GitHub Release and uploads `enki.zip`.
 
-## Default HACS store — done ✅
+## Default HACS store, done ✅
 
 Procedure: [Include default repositories](https://www.hacs.xyz/docs/publish/include/)
 
@@ -61,7 +61,7 @@ kept green by CI on every push/PR:
 | **Hassfest** action | ✅ same |
 | `hacs.json` + `country: FR` | ✅ [`hacs.json`](../hacs.json) |
 | At least **one** GitHub release | ✅ [releases](https://github.com/cyrilcolinet/enki-integration-hass/releases) |
-| Brand `custom_components/enki/brand/` | ✅ `icon.png` (256) + `icon@2x.png` (512) — served locally by HA **2026.3+** ([Brands Proxy API](https://developers.home-assistant.io/blog/2026/02/24/brands-proxy-api)); **no longer need** a PR on [home-assistant/brands](https://github.com/home-assistant/brands) (new custom integrations rejected since Feb 2026) |
+| Brand `custom_components/enki/brand/` | ✅ `icon.png` (256) + `icon@2x.png` (512): served locally by HA **2026.3+** ([Brands Proxy API](https://developers.home-assistant.io/blog/2026/02/24/brands-proxy-api)); **no longer need** a PR on [home-assistant/brands](https://github.com/home-assistant/brands) (new custom integrations rejected since Feb 2026) |
 
 The `integration` entry is alphabetical: `cyrilcolinet/enki-integration-hass`. If the repo is ever renamed or moved, update that entry (and open a new PR) to keep the default-store listing valid.
 

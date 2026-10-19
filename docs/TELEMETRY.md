@@ -20,7 +20,7 @@ When a **new** profile is detected (unique fingerprint) **and support is missing
 
 1. A **repair issue** appears in Home Assistant (**Settings → Repairs**)
 2. The link opens GitHub with a **pre-filled** title and body
-3. You **confirm** issue creation — nothing is sent without that click
+3. You **confirm** issue creation, nothing is sent without that click
 
 **Never included:** email, password, homeId, nodeId, room names.
 
@@ -30,14 +30,14 @@ When a **new** profile is detected (unique fingerprint) **and support is missing
 
 ### Unrecognized brands (one aggregated card)
 
-Devices are skipped at discovery when their **brand** is unknown to the integration, so per-profile notifications never see them — that is how DIO outlets stayed invisible until a user happened to mention them ([#203](https://github.com/cyrilcolinet/enki-integration-hass/issues/203)), when supporting them only meant adding the brand.
+Devices are skipped at discovery when their **brand** is unknown to the integration, so per-profile notifications never see them, that is how DIO outlets stayed invisible until a user happened to mention them ([#203](https://github.com/cyrilcolinet/enki-integration-hass/issues/203)), when supporting them only meant adding the brand.
 
 One **aggregated** repair card therefore lists those brands, with the same pre-filled GitHub link. Deliberately quiet:
 
-- **one card per brand set, per installation** — seven plugs of one unknown brand raise one card, not seven; buying an eighth raises none, since counts are excluded from the fingerprint;
+- **one card per brand set, per installation**: seven plugs of one unknown brand raise one card, not seven; buying an eighth raises none, since counts are excluded from the fingerprint;
 - **a new brand appearing** later does raise a new card, which is the point;
 - **third-party Zigbee brands stay silent**, as above;
-- brands Enki drives through their own micro-service (DIO, Wiz, Tapo, Somfy, Netatmo, …) are **flagged as partners** in the issue body — those are the ones usually worth supporting.
+- brands Enki drives through their own micro-service (DIO, Wiz, Tapo, Somfy, Netatmo, …) are **flagged as partners** in the issue body, those are the ones usually worth supporting.
 
 ### Enriched export
 
@@ -47,7 +47,7 @@ Diagnostics and GitHub prefill now include extra **English** context when availa
 |-------|---------|
 | `ha_platforms` | HA platforms that would be created (`climate`, `select`, …) |
 | `uncovered_capabilities` | Referentiel capabilities not implemented yet |
-| `api_read_errors` | Cloud read failures from the **last poll** (`heating/check_pilot_wire_state → HTTP 500`) — no node/home ids |
+| `api_read_errors` | Cloud read failures from the **last poll** (`heating/check_pilot_wire_state → HTTP 500`): no node/home ids |
 | `telemetry_reason` | Why a notification was suggested |
 
 This helps reproduce cases like “entities exist but stay unavailable” without uploading full logs.

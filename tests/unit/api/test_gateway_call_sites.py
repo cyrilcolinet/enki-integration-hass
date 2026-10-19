@@ -92,7 +92,7 @@ def test_a_service_resolves_to_exactly_one_key() -> None:
 
 
 def test_an_interface_cast_at_the_call_site_is_enough() -> None:
-    """`((rt9) pz7Var.c).d("key", …)` — no holder to walk through."""
+    """`((rt9) pz7Var.c).d("key", …)`, no holder to walk through."""
     sources = {
         "rt9": 'interface rt9 {\n    @qva("states/{nodeId}")\n    Object d(String str);\n}',
         "u39": f'class u39 {{\n  void a() {{ ((rt9) pz7Var.c).d("{OTHER_KEY}", strG); }}\n}}',

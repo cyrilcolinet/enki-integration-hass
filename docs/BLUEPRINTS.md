@@ -36,4 +36,4 @@ Blueprints live in `blueprints/automation/enki/`. Import one from **Settings →
 
 ## Device triggers
 
-Enki sensors also offer native triggers in the automation editor — "motion detected", "leak detected", "window opened", "vibration detected" — under **Settings → Automations → Create → Device**, with nothing to write by hand.
+Enki sensors also offer native triggers in the automation editor, "motion detected", "leak detected", "window opened", "vibration detected", under **Settings → Automations → Create → Device**, with nothing to write by hand.

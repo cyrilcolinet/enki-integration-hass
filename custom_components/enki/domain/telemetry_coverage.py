@@ -11,7 +11,7 @@ from .capabilities import EnkiCapabilityProfile
 from .models import EnkiDiscoveryRecord
 
 # Device lifecycle / admin / SDK plumbing, plus composite/aggregate states with no
-# separate HA entity — not exposed as Home Assistant entities.
+# separate HA entity, not exposed as Home Assistant entities.
 # Firmware *check* uses check_current_firmware_version + ota_inventory (binary_sensor).
 # SDK inventory / upgrade commands (update_sdk_firmware, …) are not planned as HA actions.
 # check_multisensor_state is a bundled read; its temperature / humidity / motion /
@@ -152,7 +152,7 @@ NOT_PLANNED_CAPABILITIES = frozenset(
     }
 )
 
-# Hub / infrastructure — never actionable as HA entity support requests.
+# Hub / infrastructure, never actionable as HA entity support requests.
 _GATEWAY_DEVICE_TYPES = frozenset({"gateways", "gateway"})
 _GATEWAY_CAPABILITY_MARKERS = frozenset(
     {
@@ -164,7 +164,7 @@ _GATEWAY_CAPABILITY_MARKERS = frozenset(
     }
 )
 
-# Poll keys for optional sensors — API read failures alone should not nag the user.
+# Poll keys for optional sensors. API read failures alone should not nag the user.
 _OPTIONAL_POLL_STATE_KEYS = frozenset(
     {
         "electrical_consumption",

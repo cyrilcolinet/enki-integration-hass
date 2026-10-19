@@ -25,7 +25,7 @@
       },
       "telemetry": {
         "title": "Help extend Enki support",
-        "description": "Optional opt-in: when a new or unsupported device is detected on your account, Home Assistant can notify you with a **pre-filled GitHub link** (anonymized profile: type, model, capabilities).\n\nNothing is sent automatically — you decide whether to open the link. This helps prioritize heaters, shutters, sockets, and other hardware.\n\nYou can change this anytime under **Enki → Configure**.",
+        "description": "Optional opt-in: when a new or unsupported device is detected on your account, Home Assistant can notify you with a **pre-filled GitHub link** (anonymized profile: type, model, capabilities).\n\nNothing is sent automatically: you decide whether to open the link. This helps prioritize heaters, shutters, sockets, and other hardware.\n\nYou can change this anytime under **Enki → Configure**.",
         "data": {
           "telemetry": "Notify me about new devices (recommended)"
         }
@@ -47,14 +47,14 @@
       },
       "sso_code": {
         "title": "Finish signing in",
-        "description": "**[Open this link to sign in]({authorize_url})**, on a computer.\n\nKeycloak then sends you to an address starting with `enki://`, which no browser can open. That address holds the code, and the surest way to read it is to have the network panel open before you sign in:\n\n1. press **F12**, open the **Network** tab, leave it open;\n2. sign in;\n3. the last line is the `enki://` address — right-click it and copy it.\n\nSometimes it is simply left in the address bar, in which case copy it from there. The code lasts about a minute, so paste it straight away; if it is refused, open the link again.",
+        "description": "**[Open this link to sign in]({authorize_url})**, on a computer.\n\nKeycloak then sends you to an address starting with `enki://`, which no browser can open. That address holds the code, and the surest way to read it is to have the network panel open before you sign in:\n\n1. press **F12**, open the **Network** tab, leave it open;\n2. sign in;\n3. the last line is the `enki://` address, right-click it and copy it.\n\nSometimes it is simply left in the address bar, in which case copy it from there. The code lasts about a minute, so paste it straight away; if it is refused, open the link again.",
         "data": {
           "sso_code": "The enki:// address, or just the code"
         }
       },
       "reauth_sso": {
         "title": "Sign in to Enki again",
-        "description": "The sign-in for {username} stopped working, and there is no password to re-enter: **[sign in with your provider again]({authorize_url})**, with the same account.\n\nAs before, the code is in the `enki://` address your browser cannot open — easiest to catch with the **Network** tab (F12) open before you sign in. Paste it within a minute.",
+        "description": "The sign-in for {username} stopped working, and there is no password to re-enter: **[sign in with your provider again]({authorize_url})**, with the same account.\n\nAs before, the code is in the `enki://` address your browser cannot open. It is easiest to catch with the **Network** tab (F12) open before you sign in. Paste it within a minute.",
         "data": {
           "sso_code": "The enki:// address, or just the code"
         }
@@ -78,7 +78,7 @@
         "title": "Enki options",
         "data": {
           "scan_interval": "Polling interval (seconds)",
-          "telemetry": "Notify me about new or unsupported devices (anonymized; pre-filled GitHub link only — nothing sent without your click)"
+          "telemetry": "Notify me about new or unsupported devices (anonymized; pre-filled GitHub link only, nothing sent without your click)"
         }
       }
     }
@@ -440,16 +440,16 @@
       "description": "The Enki cloud reports maintenance in progress. Some features may be temporarily unavailable."
     },
     "new_device_profile": {
-      "title": "Enki — new device profile",
-      "description": "A new device profile was detected: {summary}. Anonymized data only — nothing is sent without your action. Use the Learn more link to open a pre-filled GitHub issue."
+      "title": "Enki: new device profile",
+      "description": "A new device profile was detected: {summary}. Anonymized data only, nothing is sent without your action. Use the Learn more link to open a pre-filled GitHub issue."
     },
     "unsupported_device": {
-      "title": "Enki — unsupported device",
+      "title": "Enki: unsupported device",
       "description": "The device profile {summary} is not supported by the integration yet. Use the Learn more link to request support on GitHub."
     },
     "unknown_brand_devices": {
-      "title": "Enki — unrecognized device brands",
-      "description": "Your Enki account has devices the integration skips because their brand is unknown to it: {summary}. Some of these are Enki partner products that would only need to be added to the supported list. Use the Learn more link to report them on GitHub — nothing is sent without a click."
+      "title": "Enki: unrecognized device brands",
+      "description": "Your Enki account has devices the integration skips because their brand is unknown to it: {summary}. Some of these are Enki partner products that would only need to be added to the supported list. Use the Learn more link to report them on GitHub. Nothing is sent without a click."
     }
   },
   "device_automation": {

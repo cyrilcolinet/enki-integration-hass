@@ -2,7 +2,7 @@ blueprint:
   name: Enki solar – switch a load on surplus
   description: >
     Turn a switch on when your Envertech-Lexman solar production rises above a
-    threshold, and off when it falls back — e.g. run a water heater or a pump on
+    threshold, and off when it falls back, e.g. run a water heater or a pump on
     solar surplus. Two thresholds give a hysteresis band.
   domain: automation
   author: cyrilcolinet

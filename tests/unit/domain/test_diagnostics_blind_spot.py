@@ -117,7 +117,7 @@ def test_whenDroppedByScope_thenDiagnosticsCarryTheReason() -> None:
 
 
 def test_whenBoilerRelayHasNoManufacturer_thenItStaysInEnkiScope() -> None:
-    # Given — the re-skinned water-heater relay: type `boiler`, no manufacturer (#87).
+    # Given: the re-skinned water-heater relay: type `boiler`, no manufacturer (#87).
     record = build_discovery_record(
         device_type="boiler",
         bff_device_type="boiler",
@@ -130,7 +130,7 @@ def test_whenBoilerRelayHasNoManufacturer_thenItStaysInEnkiScope() -> None:
         referentiel_device_id="6226fd906ceb9ce2aafcf715",
     )
 
-    # When / Then — no longer silently dropped as third-party Zigbee.
+    # When / Then: no longer silently dropped as third-party Zigbee.
     assert discovery_record_telemetry_exclusion(record) is None
     assert discovery_record_eligible_for_telemetry(record) is True
 
@@ -143,7 +143,7 @@ def test_whenReferentielHasNoCapabilities_thenControlHintsAreExported() -> None:
     export = _export(record)
     body = format_github_issue_body(export, "f" * 64)
 
-    # Then — capability says what to send, endpoints where, i18n names the product.
+    # Then: capability says what to send, endpoints where, i18n names the product.
     assert export["capabilities"] == []
     assert export["main_change_capability_id"] == "switch_electrical_power"
     assert export["main_change_capability_endpoints"] == [1, 3]
@@ -177,13 +177,13 @@ def test_whenEndpointEntriesAreMissingOrMalformed_thenExportStaysEmpty() -> None
 
 
 def test_whenFirmwareIsPatchedLate_thenControlHintsSurvive() -> None:
-    # Given — discovery patches firmware once metadata reads land.
+    # Given: discovery patches firmware once metadata reads land.
     record = _boiler_record()
 
     # When
     patched = replace(record, firmware_version="2.0.0")
 
-    # Then — a rebuild here used to drop every field the builder gained since.
+    # Then: a rebuild here used to drop every field the builder gained since.
     assert patched.firmware_version == "2.0.0"
     assert patched.main_change_capability_id == "switch_electrical_power"
     assert patched.main_change_capability_endpoints == [1, 3]
@@ -210,5 +210,5 @@ def test_whenControlHintsAreAdded_thenFingerprintStaysStable() -> None:
     # When
     with_hint = _export(_boiler_record())
 
-    # Then — adding the hint must not re-notify users about already reported devices.
+    # Then: adding the hint must not re-notify users about already reported devices.
     assert profile_fingerprint(without) == profile_fingerprint(with_hint)

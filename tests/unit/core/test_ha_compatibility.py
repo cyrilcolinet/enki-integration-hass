@@ -10,7 +10,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 COMPONENT = REPO_ROOT / "custom_components" / "enki"
 HACS_MANIFEST = REPO_ROOT / "hacs.json"
 
-# Removed from homeassistant.const — use UnitOf* StrEnum members instead.
+# Removed from homeassistant.const, use UnitOf* StrEnum members instead.
 BANNED_CONST_SYMBOLS = frozenset(
     {
         "ENERGY_KILO_WATT_HOUR",

@@ -2,7 +2,7 @@
 
 A poll re-runs full discovery every 30 s. Readers hitting that window, or a poll
 raising midway, used to see an empty discovery_records while the coordinator kept
-serving its cached devices — diagnostics then reported devices but zero profiles.
+serving its cached devices, diagnostics then reported devices but zero profiles.
 """
 
 from __future__ import annotations

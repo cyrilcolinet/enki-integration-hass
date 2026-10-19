@@ -1,7 +1,7 @@
 """Meari live-view signaling against a fake signaling server.
 
 The fake replays what the reporter's solar camera did (#216): accept the option,
-answer the offer, send candidates — or fail the way a sleeping camera does.
+answer the offer, send candidates, or fail the way a sleeping camera does.
 """
 
 from __future__ import annotations

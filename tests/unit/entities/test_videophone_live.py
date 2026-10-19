@@ -235,7 +235,7 @@ async def test_a_session_closed_before_it_posted_posts_nothing() -> None:
 
 @pytest.mark.asyncio
 async def test_the_data_channel_the_doorbell_drops_comes_back_rejected() -> None:
-    """The app opens none, so the firmware answers none — and a browser refuses that."""
+    """The app opens none, so the firmware answers none, and a browser refuses that."""
     offer_with_data = OFFER + "\r\n".join(
         ["m=application 9 UDP/DTLS/SCTP webrtc-datachannel", "a=mid:2", "a=setup:actpass", ""]
     )

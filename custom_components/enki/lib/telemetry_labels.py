@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-_MISSING = "—"
+_MISSING = "-"
 
 _REASON_GITHUB_LABELS: dict[str, str] = {
     "api_read_errors": "api error",
@@ -165,7 +165,7 @@ def format_telemetry_issue_title(export: dict[str, Any]) -> str:
     else:
         headline = f"{manufacturer} {device_kind} · {detail}"
 
-    return f"[telemetry] {headline} — {reason}"
+    return f"[telemetry] {headline}: {reason}"
 
 
 def format_telemetry_notification_summary(export: dict[str, Any]) -> str:

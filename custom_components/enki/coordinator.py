@@ -90,7 +90,7 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
             refresh_token=config_entry.data.get(CONF_REFRESH_TOKEN),
         )
         # What the entry's options looked like when this coordinator was built, so
-        # a data-only rewrite — a rotated refresh token — is not read as a settings
+        # a data-only rewrite, a rotated refresh token, is not read as a settings
         # change that needs the integration reloaded (#325).
         self._known_options = dict(config_entry.options)
         self._notifier = EnkiNotifier(hass, config_entry)
@@ -117,7 +117,7 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
         Keycloak may hand back a new refresh token every time one is used, and
         for an account signed in with Google or Apple that token is the only
         credential there is: lose the current one and the next Home Assistant
-        restart has nothing to start from. A password entry is left alone — its
+        restart has nothing to start from. A password entry is left alone, its
         password is the credential of record, and a token written beside it would
         outlive a password change.
         """
@@ -147,7 +147,7 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
             self._notifier.dismiss_operational_errors()
             try:
                 await self._telemetry.async_report(self.api.discovery_records)
-            except Exception as err:  # noqa: BLE001 — telemetry must never break polling
+            except Exception as err:  # noqa: BLE001 - telemetry must never break polling
                 LOGGER.warning(
                     "Enki telemetry skipped after discovery error: %s",
                     err,
@@ -155,7 +155,7 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
                 )
             try:
                 await self.api.async_refresh_scenarios()
-            except Exception as err:  # noqa: BLE001 — scenarios must never break device poll
+            except Exception as err:  # noqa: BLE001 - scenarios must never break device poll
                 LOGGER.debug(
                     "Scenario refresh skipped: %s",
                     err,
@@ -163,7 +163,7 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
                 )
             try:
                 await self.api.async_refresh_security()
-            except Exception as err:  # noqa: BLE001 — the alarm must never break device poll
+            except Exception as err:  # noqa: BLE001 - the alarm must never break device poll
                 LOGGER.debug(
                     "Alarm refresh skipped: %s",
                     err,
@@ -175,7 +175,7 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
         """Re-check Enki maintenance flag each poll; dismiss when it clears."""
         try:
             settings = await self.api.async_fetch_mobile_settings()
-        except Exception as err:  # noqa: BLE001 — must not break polling
+        except Exception as err:  # noqa: BLE001 - must not break polling
             LOGGER.debug(
                 "Maintenance status check skipped: %s",
                 err,
@@ -193,7 +193,7 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
         """Schedule a debounced re-poll to reconcile firmware-driven side effects.
 
         Optimistic caching reflects the commanded change instantly, but some
-        devices apply coupled changes in firmware that HA cannot predict — e.g.
+        devices apply coupled changes in firmware that HA cannot predict, e.g.
         the Inspire Cadix forces the ambient ring OFF and the main light ON when
         the fan starts, and restores the ring when it stops (issue #106). This
         pulls the real state shortly after a command instead of waiting for the
@@ -361,8 +361,8 @@ class EnkiCoordinator(DataUpdateCoordinator[list[EnkiDevice]]):
                     del paths[path]
                     continue
                 # A held-forever value belongs to a device that never reports
-                # back. The moment the cloud does report something — the plug
-                # was switched by its remote, say — it knows better than we do.
+                # back. The moment the cloud does report something, the plug
+                # was switched by its remote, say, it knows better than we do.
                 if math.isinf(expires_at) and current is not None:
                     del paths[path]
                     continue

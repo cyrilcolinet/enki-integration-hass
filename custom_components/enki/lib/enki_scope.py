@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 # Enki / Leroy Merlin ecosystem brands (official catalogue).
-# Many use Zigbee radio — that is not an exclusion criterion.
+# Many use Zigbee radio, that is not an exclusion criterion.
 _ENKI_ECOSYSTEM_MANUFACTURERS = frozenset(
     {
         "adeo",
@@ -32,7 +32,7 @@ _ENKI_ECOSYSTEM_MANUFACTURERS = frozenset(
 # `boiler` is the Enki "chauffe-eau piloté" module: the app re-types a plain Enki relay to
 # this profile when it is wired to a water heater, and the referentiel then serves it with an
 # empty manufacturer. It is native Enki (dedicated api-enki-boiler-system-prod service), not
-# third-party Zigbee — see EnkiCapabilityProfile.is_boiler_switch.
+# third-party Zigbee, see EnkiCapabilityProfile.is_boiler_switch.
 _ENKI_NATIVE_DEVICE_TYPES = frozenset(
     {
         "access_and_motorizations",

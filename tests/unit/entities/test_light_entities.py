@@ -130,7 +130,7 @@ def _single_fan_light(**overrides) -> EnkiDevice:
 
 
 def _outlet(**overrides) -> EnkiDevice:
-    """Power-only outlet — not a controllable light."""
+    """Power-only outlet, not a controllable light."""
     defaults = {
         "home_id": "home-1",
         "device_id": "dev-outlet",

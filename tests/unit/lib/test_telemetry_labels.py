@@ -45,7 +45,7 @@ def test_issue_title_uses_manufacturer_and_ref_instead_of_unknown() -> None:
     assert "unknown" not in title.lower()
     assert "[telemetry] Lexman remote control" in title
     assert "ref f5fe071f734e" in title
-    assert title.endswith("— unsupported")
+    assert title.endswith(": unsupported")
 
 
 def test_issue_title_capability_gap_when_supported() -> None:

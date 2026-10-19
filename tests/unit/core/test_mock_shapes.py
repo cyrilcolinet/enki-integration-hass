@@ -6,7 +6,7 @@ plain `MagicMock`, which invented it: the whole path was green against a client
 that does not exist. A mock will answer to any name, so nothing fails until a
 user opens the page.
 
-Where a stand-in can be built with `spec_set`, that is the real guard — it also
+Where a stand-in can be built with `spec_set`, that is the real guard, it also
 catches production calling a method the test never configured. The coordinator
 cannot: its Home Assistant base class is stubbed down to almost nothing here, so
 `spec_set` would reject `last_update_success` and the rest. This test covers
@@ -90,7 +90,7 @@ def _owner(target: ast.Attribute) -> str | None:
 
 
 def _specced_names(tree: ast.AST) -> set[str]:
-    """Stand-ins already built with spec/spec_set — the mock library guards those."""
+    """Stand-ins already built with spec/spec_set, the mock library guards those."""
     names: set[str] = set()
     for node in ast.walk(tree):
         if not (isinstance(node, ast.Assign) and isinstance(node.value, ast.Call)):

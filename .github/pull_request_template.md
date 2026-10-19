@@ -23,4 +23,4 @@ Fixes #
 
 ## Test plan
 
-<!-- How to verify — hardware, HA steps, etc. -->
+<!-- How to verify, hardware, HA steps, etc. -->
