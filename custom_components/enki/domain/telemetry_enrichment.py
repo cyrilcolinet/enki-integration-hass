@@ -90,7 +90,7 @@ def capability_routing_hints(capabilities: list[str]) -> dict[str, dict[str, Any
         if not routes:
             hints[capability] = {
                 "services": [],
-                "effort": "no direct route found — derived server-side or renamed endpoint",
+                "effort": "no direct route found: derived server-side or renamed endpoint",
             }
             continue
         services = [
@@ -98,9 +98,9 @@ def capability_routing_hints(capabilities: list[str]) -> dict[str, dict[str, Any
             for slug, path in sorted(routes.items())
         ]
         if any(service["wired"] for service in services):
-            effort = "service wired — add a CapabilityRead + entity"
+            effort = "service wired: add a CapabilityRead + entity"
         else:
-            effort = "service not wired — wire the gateway service, then add a CapabilityRead"
+            effort = "service not wired: wire the gateway service, then add a CapabilityRead"
         hints[capability] = {"services": services, "effort": effort}
     return hints
 

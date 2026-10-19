@@ -29,7 +29,7 @@ ENKI_OIDC_CLIENT_ID = "enki-front"
 # Where Keycloak sends the authorization code back. It is the mobile app's own
 # deep link, registered in its manifest, and the only redirect the client takes.
 ENKI_SSO_REDIRECT_URI = "enki://oauth/callback"
-# `kc_idp_hint` on the authorize call, `provider_type` on the token exchange —
+# `kc_idp_hint` on the authorize call, `provider_type` on the token exchange
 # the app sends the lowercase name to one and the uppercase to the other (APK sfn).
 SSO_PROVIDERS = {"google": "GOOGLE", "apple": "APPLE"}
 ENKI_BASE_URL = "https://enki.api.devportal.adeo.cloud"
@@ -65,7 +65,7 @@ DEVICE_TYPE_VIDEOPHONES = "videophones"
 DEVICE_TYPE_BOILER = "boiler"
 
 # Sent as ?version= on the referentiel endpoint. A stale value returns an older,
-# thinner capability set — keep it in step with the Enki app (2.26.3 sends 2.26.0).
+# thinner capability set, keep it in step with the Enki app (2.26.3 sends 2.26.0).
 REFERENTIEL_VERSION = "2.26.0"
 
 FAN_SPEED_MIN = 1

@@ -2,7 +2,7 @@
 
 Two entity keys once lived only in translations/*.json: the entities were named
 for users, but the source file the Home Assistant tooling reads had no trace of
-them. Nothing failed loudly — which is why this is checked here.
+them. Nothing failed loudly, which is why this is checked here.
 """
 
 from __future__ import annotations

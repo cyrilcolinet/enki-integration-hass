@@ -33,7 +33,7 @@ blueprint:
             - domain: switch
     cutoff_switch:
       name: Power cut-off (optional)
-      description: A switch to turn OFF on a leak — e.g. a valve actuator or the appliance outlet.
+      description: A switch to turn OFF on a leak, e.g. a valve actuator or the appliance outlet.
       default: []
       selector:
         entity:

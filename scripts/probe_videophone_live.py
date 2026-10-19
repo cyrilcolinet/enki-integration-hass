@@ -9,7 +9,7 @@ The doorbell service carries the three reads a WebRTC session needs::
 What they hold at rest says nothing. What they hold *while the Enki app has the
 live view open* is the whole sequence: who offers, when the answer lands, how the
 candidates trickle in. The app can open the stream at any time, with nobody at
-the door, so this needs no choreography — start the script, open the live view,
+the door, so this needs no choreography, start the script, open the live view,
 watch the lines appear.
 
 **Read-only.** It never posts an offer, never answers, never touches
@@ -18,7 +18,7 @@ content changes.
 
 Output is anonymized the same way ``probe_camera.py`` does it: ids, tokens and
 opaque values are masked, so the *shape* and the order survive and the secrets do
-not. TURN credentials and the SDP's host addresses are redacted — the sequence is
+not. TURN credentials and the SDP's host addresses are redacted, the sequence is
 what matters here, not the values.
 
 Usage:
@@ -64,7 +64,7 @@ SDP_KEYS = ("sdp", "offer", "answer", "candidate", "candidates")
 
 
 def _summarize_sdp(value: Any) -> Any:
-    """Keep what an SDP says it is — its lines' types — and drop its contents."""
+    """Keep what an SDP says it is, its lines' types, and drop its contents."""
     if not isinstance(value, str) or "=" not in value:
         return mask_ids(value) if isinstance(value, str) else value
     kinds: list[str] = []
@@ -136,7 +136,7 @@ async def watch(username: str, password: str, seconds: float, interval: float) -
 
         home_id, node_id = doorbells[0]
         print(f"Watching 1 of {len(doorbells)} doorbell(s) for {seconds:.0f}s.")
-        print("Open the live view in the Enki app now — a ring is not needed.\n")
+        print("Open the live view in the Enki app now, a ring is not needed.\n")
 
         last: dict[str, Any] = {}
         started = time.monotonic()

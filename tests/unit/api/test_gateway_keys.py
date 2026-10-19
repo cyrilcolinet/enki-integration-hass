@@ -49,7 +49,7 @@ def test_the_ota_reads_sit_where_the_app_asks_for_them() -> None:
     """Both carry `ota/` themselves, so the prefix must not add a second one (#329).
 
     `/v1/ota` + `/ota/version/{node}` asked for `/v1/ota/ota/version/{node}`, and
-    the gateway answered 403 — read for months as a closed service, on a key that
+    the gateway answered 403, read for months as a closed service, on a key that
     was right all along.
     """
     from enki.api.gateway_registry import WIRED_PATH_PREFIXES

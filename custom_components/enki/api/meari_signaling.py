@@ -2,22 +2,22 @@
 
 The app reaches the camera through a signaling WebSocket whose address and
 credentials come from ``check-camera-connect-wss``. Every frame shares one
-envelope — ``{"sid", "method", "action": "req", "cmd": "mts", "params"}`` — and
+envelope, ``{"sid", "method", "action": "req", "cmd": "mts", "params"}``, and
 the exchange is plain WebRTC:
 
-1. ``option`` — authenticate; the reply carries the camera's TURN relay;
-2. ``offer`` — our SDP; the camera replies ``answer``;
-3. ``candidate`` — ICE candidates, both ways;
-4. ``settings`` / ``preview`` — start the stream once the camera reports the
+1. ``option``: authenticate; the reply carries the camera's TURN relay;
+2. ``offer``: our SDP; the camera replies ``answer``;
+3. ``candidate``: ICE candidates, both ways;
+4. ``settings`` / ``preview``: start the stream once the camera reports the
    connection up (``errid`` 0, "Connect Success"), like the app.
 
 Errors arrive as ``{"errid", "errstr", "desc"}``; the reason can be in either
-string — a dead session is ``errstr`` "Bad Request" with ``desc`` "session not
-found" — so both are matched.
+string, a dead session is ``errstr`` "Bad Request" with ``desc`` "session not
+found", so both are matched.
 
 Confirmed end to end on a real solar camera (#216). The media itself never goes
 through here: Home Assistant's frontend is the WebRTC peer, this only relays
-signaling — trimming the browser's offer to what the camera takes, and padding
+signaling, trimming the browser's offer to what the camera takes, and padding
 its answer back to the offer's shape.
 """
 
@@ -47,7 +47,7 @@ DORMANT_ERRORS = frozenset(
         "session not found",
     }
 )
-# The camera ends its live view about two minutes in — the Enki app hits the same
+# The camera ends its live view about two minutes in, the Enki app hits the same
 # wall and offers to reload the video (#216).
 _LIVE_ENDED = "the camera ended the live view; open it again to resume"
 _LIVE_SECONDS = 110.0
@@ -148,7 +148,7 @@ class MeariSignalingError(Exception):
 class MeariSignalingSession:
     """One live-view negotiation with one camera, relayed for a WebRTC peer.
 
-    Callbacks are plain functions — Home Assistant's ``send_message`` is one.
+    Callbacks are plain functions. Home Assistant's ``send_message`` is one.
     Errors are fatal only until the camera answers: afterwards the peer's own ICE
     decides, and a late error is just logged.
     """

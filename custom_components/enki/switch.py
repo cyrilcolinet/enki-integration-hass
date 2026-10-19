@@ -248,7 +248,7 @@ class EnkiOutletSwitch(EnkiEntity, SwitchEntity):
                 self.coordinator.update_endpoint_power(node_id, self._endpoint_id, power)
             else:
                 # A one-way outlet is never read back, so the command is the only
-                # state there will ever be — holding it for 45 s just turns the
+                # state there will ever be, holding it for 45 s just turns the
                 # entity unknown in between (#203).
                 hold = math.inf if self._attr_assumed_state else None
                 self.coordinator.update_cached_value(node_id, "electrical_power", power, hold)

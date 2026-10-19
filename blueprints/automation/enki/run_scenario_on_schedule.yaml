@@ -1,7 +1,7 @@
 blueprint:
   name: Enki scenario – run on a schedule
   description: >
-    Run an Enki scenario (exposed as a button) at a set time on chosen days —
+    Run an Enki scenario (exposed as a button) at a set time on chosen days
     e.g. "Wake up" every weekday morning, "Movie" at night.
   domain: automation
   author: cyrilcolinet

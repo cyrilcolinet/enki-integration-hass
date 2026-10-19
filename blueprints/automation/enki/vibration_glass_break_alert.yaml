@@ -2,7 +2,7 @@ blueprint:
   name: Enki vibration – glass-break / tamper alert
   description: >
     Notify (and optionally sound a siren) when an Enki vibration sensor
-    triggers — a forced window, a knocked door, glass breaking.
+    triggers, a forced window, a knocked door, glass breaking.
   domain: automation
   author: cyrilcolinet
   source_url: https://github.com/cyrilcolinet/enki-integration-hass/blob/main/blueprints/automation/enki/vibration_glass_break_alert.yaml

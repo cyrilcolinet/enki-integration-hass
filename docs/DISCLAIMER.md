@@ -6,7 +6,7 @@ This Home Assistant integration is a **community project**. It is **not** an off
 
 - **Not affiliated** with Leroy Merlin, ADEO, or the Enki brand
 - **Not endorsed or sponsored** by Leroy Merlin, ADEO, or Enki
-- **Not maintained by Enki** — support for this integration comes from the open-source community via GitHub issues, not from Enki / Leroy Merlin customer support
+- **Not maintained by Enki**: support for this integration comes from the open-source community via GitHub issues, not from Enki / Leroy Merlin customer support
 
 For official product support, use [Enki support](https://support.enki-home.com/) and the Enki mobile app.
 
@@ -16,7 +16,7 @@ The integration was created and is maintained by independent contributors ([@cyr
 
 ## How it works
 
-The integration talks to the **Enki cloud API** — the same Adeo / Leroy Merlin cloud the mobile app uses — authenticating with **your own Enki account** (email + password, via Keycloak). It is **not** an official SDK: the endpoints and per-service gateway keys were documented by observing the mobile app, and Enki has neither published nor certified this integration. No credentials or data are sent anywhere other than the Enki cloud your app already talks to.
+The integration talks to the **Enki cloud API**: the same Adeo / Leroy Merlin cloud the mobile app uses, authenticating with **your own Enki account** (email + password, via Keycloak). It is **not** an official SDK: the endpoints and per-service gateway keys were documented by observing the mobile app, and Enki has neither published nor certified this integration. No credentials or data are sent anywhere other than the Enki cloud your app already talks to.
 
 ## Legal basis
 
@@ -27,11 +27,11 @@ The integration exists to make Enki devices work with Home Assistant. Nothing in
 redistributes or re-implements the Enki app: it speaks to the same cloud, with the user's own
 account, from an independently written program.
 
-The endpoints and per-service gateway keys are documented by **observing the mobile app** — its
+The endpoints and per-service gateway keys are documented by **observing the mobile app**: its
 network traffic, and its code where that was the only way to see which address a device's commands
 go to. In the European Union, [Directive 2009/24/EC](https://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ%3AL%3A2009%3A111%3A0016%3A0022%3AEN%3APDF)
 permits exactly that, without the rightsholder's authorisation, where it is indispensable to obtain
-the information needed for the **interoperability** of an independently created program — in France,
+the information needed for the **interoperability** of an independently created program, in France,
 through article L122-6-1 of the *code de la propriété intellectuelle*. The directive also makes
 contractual provisions to the contrary null and void.
 
@@ -61,7 +61,7 @@ hear it than be guessed at. Open an issue titled **"Rightsholder contact"** on
 **cyril@syntax-labs.fr** for anything you would rather keep off a public tracker.
 
 Say which file or behaviour you mean and we will look at it on its merits and answer. That offer is
-not an admission that anything here is unlawful, and a request is not a court order — but a concrete
+not an admission that anything here is unlawful, and a request is not a court order. But a concrete
 objection is worth acting on, and we would rather fix it than argue about it.
 
 ## Trademarks

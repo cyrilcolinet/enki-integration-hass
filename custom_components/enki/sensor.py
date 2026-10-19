@@ -351,7 +351,7 @@ class EnkiEnergySensor(EnkiEntity, SensorEntity):
     """Energy consumed so far this month (api-enki-consumption-prod, #270).
 
     The service bills by period, not as a running meter, so this resets when the
-    month turns — on the API's UTC boundary, which is an hour or two off local
+    month turns, on the API's UTC boundary, which is an hour or two off local
     midnight. `TOTAL_INCREASING` is what makes that harmless: Home Assistant
     reads the drop as a meter reset and keeps the long-term total it has built.
     """

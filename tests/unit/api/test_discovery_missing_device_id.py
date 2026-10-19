@@ -12,7 +12,7 @@ from enki.api.transport import EnkiHttpClient
 @pytest.mark.asyncio
 async def test_dashboard_item_without_device_id_is_skipped() -> None:
     api = EnkiAPI("user", "pass")
-    # metadata has nodeId but no deviceId — used to raise KeyError and break the poll.
+    # metadata has nodeId but no deviceId, used to raise KeyError and break the poll.
     result = await api._discover_dashboard_item(MagicMock(), "home", {"metadata": {"nodeId": "n1"}})
     assert result == (None, None)
 

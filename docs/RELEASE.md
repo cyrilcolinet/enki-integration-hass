@@ -1,4 +1,4 @@
-# Release — trunk + release-please
+# Release, trunk + release-please
 
 ## Flow
 
@@ -16,9 +16,9 @@ feat/fix/* ──PR──► main ──► CI (ruff, pytest, HACS, Hassfest)
 | Version | Merge release-please PR | Tag + GitHub Release + `CHANGELOG.md` + `manifest.json` bump |
 | HACS asset | Same workflow (`publish-release` job) | `enki.zip` uploaded; thanks + install note appended via `append_body` |
 
-Uses the default `GITHUB_TOKEN` only — no CI App secrets. release-please creates the GitHub Release; `softprops/action-gh-release` uploads the zip and appends the footer in one step.
+Uses the default `GITHUB_TOKEN` only: no CI App secrets. release-please creates the GitHub Release; `softprops/action-gh-release` uploads the zip and appends the footer in one step.
 
-The footer opens with a **Thanks** section naming first-time contributors. release-please builds the changelog from commit messages, which say nothing about who sent them, so the names come from GitHub's own `generateReleaseNotes`, which works them out from pull request authors. Someone who helped through an issue — a capture, a device profile, a log — will not appear there, and is worth thanking by hand.
+The footer opens with a **Thanks** section naming first-time contributors. release-please builds the changelog from commit messages, which say nothing about who sent them, so the names come from GitHub's own `generateReleaseNotes`, which works them out from pull request authors. Someone who helped through an issue, a capture, a device profile, a log, will not appear there, and is worth thanking by hand.
 
 ## Workflows
 
@@ -46,7 +46,7 @@ Files: `release-please-config.json`, `.release-please-manifest.json`.
 
 | Option | Role |
 |--------|------|
-| `bootstrap-sha` | Start point for the changelog — only commits **after** this SHA are included |
+| `bootstrap-sha` | Start point for the changelog: only commits **after** this SHA are included |
 | `exclude-paths` | Commits touching only `.github/`, `docs/`, `scripts/`, or `tests/` do not bump the version |
 | `extra-files` | Bumps `custom_components/enki/manifest.json` → `version` |
 | `label` / `release-label` | `pending release` → `released` after merge |

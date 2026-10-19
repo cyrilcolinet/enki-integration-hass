@@ -3,7 +3,7 @@
 ``check-videophone-events`` returns the whole history in one call, so the list is
 fetched on demand rather than kept in the coordinator: a browse is a user action,
 and the freshest list is the one worth showing. Media is also the only place in
-Home Assistant built for browsing recordings — an attribute holding a history
+Home Assistant built for browsing recordings, an attribute holding a history
 would end up in the recorder on every poll.
 """
 
@@ -43,14 +43,14 @@ async def async_get_media_source(hass: HomeAssistant) -> MediaSource:
 
 
 def _title(capture: dict[str, Any]) -> str:
-    """ "Missed call — 25/09 17:57", from the event type and its date."""
+    """ "Missed call, 25/09 17:57", from the event type and its date."""
     label = str(capture.get("event_type") or "capture").replace("_", " ").capitalize()
     happened_at = capture.get("happened_at")
     try:
         when = datetime.fromisoformat(happened_at).strftime("%d/%m %H:%M")
     except (TypeError, ValueError):
         return label
-    return f"{label} — {when}"
+    return f"{label}, {when}"
 
 
 def _mime_type(capture: dict[str, Any]) -> str:

@@ -3,7 +3,7 @@
 Per-profile telemetry only ever covers devices the integration already claims:
 anything outside :func:`device_in_enki_scope` is dropped before the nudge, so a
 supportable product can sit on hundreds of accounts without ever being heard of.
-That is exactly what happened with DIO outlets (#203) — a plain
+That is exactly what happened with DIO outlets (#203), a plain
 ``switch_electrical_power`` device, missing only from the brand list.
 
 The fix must not turn into noise for people running third-party Zigbee on the
@@ -47,7 +47,7 @@ _THIRD_PARTY_BRANDS = frozenset(
 )
 
 # Brands Enki drives through a dedicated micro-service: seeing one skipped is a
-# strong signal, not noise — DIO was one of these.
+# strong signal, not noise. DIO was one of these.
 _ENKI_PARTNER_BRANDS = frozenset(
     {
         "avidsen",
@@ -92,8 +92,8 @@ def _is_partner(manufacturer: str) -> bool:
 def unknown_brand_census(records: list[EnkiDiscoveryRecord]) -> list[UnknownBrandEntry]:
     """Group the skipped-by-brand devices worth telling the maintainer about.
 
-    Devices already covered by per-profile telemetry are left out — they nudge on
-    their own — and so are hubs and third-party Zigbee.
+    Devices already covered by per-profile telemetry are left out, they nudge on
+    their own, and so are hubs and third-party Zigbee.
     """
     counter: Counter[tuple[str, str]] = Counter()
     for record in records:

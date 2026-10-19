@@ -12,7 +12,7 @@ from capability_routing.py and gateway_registry.py.
 
 The retrofit verb annotations are obfuscated and renamed per build (@msa was GET
 in August, @qva is GET in 2.26.3), so hardcoding them silently yields an empty
-catalogue on the next app release — which is how the shipped one went stale and
+catalogue on the next app release, which is how the shipped one went stale and
 kept advertising a route Adeo had removed (#285). They are read out of the APK
 instead: retrofit's own dispatch names them next to the verb it gives them.
 """
@@ -78,7 +78,7 @@ def http_verbs(sources_dir: Path) -> dict[str, str]:
             break
     if not verbs:
         raise RuntimeError(
-            "Could not read retrofit's verb annotations from the dump — the catalogue "
+            "Could not read retrofit's verb annotations from the dump, the catalogue "
             "would come out empty. Check that this is a full jadx decompile."
         )
     return verbs

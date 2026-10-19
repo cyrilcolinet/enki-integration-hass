@@ -37,7 +37,7 @@ class EnkiNotifier:
         self._entry = entry
 
     def notify_gateway_rejected(self, *, service: str | None = None) -> None:
-        """HTTP 403 — a gateway API key is likely outdated after an app update."""
+        """HTTP 403, a gateway API key is likely outdated after an app update."""
         self._delete("connection")
         self._create(
             "gateway",

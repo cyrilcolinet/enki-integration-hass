@@ -16,7 +16,7 @@ from .coordinator import EnkiCoordinator
 from .domain.models import EnkiDevice
 from .entity import EnkiEntity
 
-# (state_key, value) pairs already reported as unmapped — keeps the log to one
+# (state_key, value) pairs already reported as unmapped, keeps the log to one
 # line per new enum instead of one per polling cycle.
 _UNMAPPED_SEEN: set[tuple[str, str]] = set()
 

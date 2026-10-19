@@ -10,7 +10,7 @@ from enki.domain.telemetry_coverage import (
     profile_from_record,
 )
 
-# Capabilities from issue #14 — Inspire AD_TCFL_1 ceiling fan (already fully supported).
+# Capabilities from issue #14: Inspire AD_TCFL_1 ceiling fan (already fully supported).
 _CEILING_FAN_CAPABILITIES = [
     "change_airflow_mode",
     "change_brightness",
@@ -161,7 +161,7 @@ def test_module_power_error_needs_telemetry_without_poll_state() -> None:
 
 
 def _lexman_shutter_record():
-    """Issue #55 — Lexman roller shutter with extended motorization capabilities."""
+    """Issue #55: Lexman roller shutter with extended motorization capabilities."""
     return build_discovery_record(
         device_type="access_and_motorizations",
         bff_device_type="access_and_motorizations",
@@ -188,7 +188,7 @@ def test_lexman_shutter_profile_does_not_need_telemetry() -> None:
     assert discovery_record_needs_telemetry(record) is False
 
 
-# Capabilities from issue #73 — Edisio ED-PLUGSP10-1 smart plug (switch only).
+# Capabilities from issue #73: Edisio ED-PLUGSP10-1 smart plug (switch only).
 _EDISIO_PLUG_CAPABILITIES = [
     "ack_sdk_device_inventory_update",
     "cancel_electrical_power_switch_in",
@@ -262,7 +262,7 @@ def test_check_bulb_state_covered_for_cct_bulb() -> None:
 
 def test_check_multisensor_state_covered() -> None:
     # Lexman 4-in-1 multisensor (issue #126): the composite check_multisensor_state
-    # has no dedicated entity — its channels are exposed individually — so it must
+    # has no dedicated entity, its channels are exposed individually, so it must
     # not be flagged as a capability gap.
     record = build_discovery_record(
         device_type="sensors",
@@ -286,7 +286,7 @@ def test_check_multisensor_state_covered() -> None:
 
 
 def test_indoor_camera_orientation_is_not_a_capability_gap() -> None:
-    # Shape reported by #212 (Lexman IPC167KF). Pan/tilt has no HTTP route —
+    # Shape reported by #212 (Lexman IPC167KF). Pan/tilt has no HTTP route
     # nudging every owner of this camera to open the same issue helps nobody.
     record = build_discovery_record(
         device_type="cameras",

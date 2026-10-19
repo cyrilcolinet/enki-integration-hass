@@ -11,7 +11,7 @@ body:
 
         Device working in the Enki app but not here? Attach your diagnostics (Settings → Devices &
         services → Enki → your device → ⋮ → Download diagnostics). If that is not enough we may ask
-        you to [show what the app sends](https://github.com/cyrilcolinet/enki-integration-hass/blob/main/docs/CAPTURE.md) —
+        you to [show what the app sends](https://github.com/cyrilcolinet/enki-integration-hass/blob/main/docs/CAPTURE.md)
         no development experience needed, and the page includes a prompt for an AI assistant to walk
         you through it.
   - type: input

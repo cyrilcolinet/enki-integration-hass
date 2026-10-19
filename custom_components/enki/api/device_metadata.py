@@ -77,7 +77,7 @@ async def refresh_device_metadata(
     """
     try:
         await _refresh_device_metadata_impl(http, device, state, note_error=note_error)
-    except Exception as err:  # noqa: BLE001 — metadata must never break discovery
+    except Exception as err:  # noqa: BLE001 - metadata must never break discovery
         LOGGER.debug(
             "Device metadata skipped for node %s: %s",
             device.node_id,

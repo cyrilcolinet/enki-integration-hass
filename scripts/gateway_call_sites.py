@@ -2,7 +2,7 @@
 
 The extractor used to pick, among the key literals near a wrapper class, the one
 that occurred most often. Wrapper files serve several services and hold several
-keys — ``fdr.java`` holds five, two of them tied — so the winner was luck, and a
+keys, ``fdr.java`` holds five, two of them tied, so the winner was luck, and a
 neighbouring service's key shipped silently. It happened five times (#45, #256,
 #268, #270), and each time the resulting ``403 You cannot consume this service``
 read exactly like Adeo closing an API product.
@@ -18,10 +18,10 @@ holders. Followed, it gives proof instead of a guess::
 
 Three shapes carry the key, and all three appear in the current app:
 
-* the interface is cast at the call site — ``((rt9) pz7Var.c).d("key", …)``;
-* the receiver is a holder whose method reaches the interface — the chain above;
+* the interface is cast at the call site, ``((rt9) pz7Var.c).d("key", …)``;
+* the receiver is a holder whose method reaches the interface, the chain above;
 * the receiver is a holder with no methods at all, just the interface as a field
-  — ``this.a.a.i("key", …)`` for the siren.
+ , ``this.a.a.i("key", …)`` for the siren.
 
 Resolving all 27 wired services this way agrees with every key the integration
 ships and contradicts none, which is what makes it usable as a gate.
@@ -43,7 +43,7 @@ class Sources(Protocol):
 
 
 class JadxSources:
-    """Reads `defpackage/*.java` on demand — the dump is far too big to hold."""
+    """Reads `defpackage/*.java` on demand, the dump is far too big to hold."""
 
     def __init__(self, defpackage: Path) -> None:
         self._dir = defpackage
@@ -68,16 +68,16 @@ class JadxSources:
 
 # A key literal: 32 alphanumerics, as the app writes them.
 KEY_LITERAL = r'"([A-Za-z0-9]{32})"'
-# `var.method("key"` — the receiver may be a local, a field, or a field chain.
+# `var.method("key"`, the receiver may be a local, a field, or a field chain.
 CALL = re.compile(r"\b(\w+)\s*\.\s*(\w+)\(\s*" + KEY_LITERAL)
-# `((iface) something).method("key"` — the interface named at the call site.
+# `((iface) something).method("key"`, the interface named at the call site.
 CAST_CALL = re.compile(r"\(\(\s*(\w+)\s*\)[^;()]*\)\s*\.\s*(\w+)\(\s*" + KEY_LITERAL)
 LOCAL_DECL = re.compile(r"\b(\w+)\s+(\w+)\s*=")
 FIELD_DECL = re.compile(
     r"^\s*(?:public|private|protected|final|static|volatile|transient|\s)+(\w+)\s+(\w+)\s*;",
     re.M,
 )
-# `nn5 nn5Var = (nn5) this.c;` and `uvo uvoVar = this.a;` — reading the held interface.
+# `nn5 nn5Var = (nn5) this.c;` and `uvo uvoVar = this.a;`, reading the held interface.
 FIELD_READ = re.compile(r"\b(\w+)\s+\w+\s*=\s*(?:\(\s*\w+\s*\)\s*)?this\.\w+")
 # A retrofit route: a path, so it has a separator or a placeholder.
 ROUTE_ANNOTATION = re.compile(r'@[a-z0-9]+\("([^"]*[/{][^"]*)"\)')
@@ -126,11 +126,11 @@ def _interfaces_reached(sources: Sources, holder: str, method: str) -> set[str]:
     if not held:
         return set()
     if is_retrofit_interface(held):
-        # The receiver is the interface itself — nothing to walk through.
+        # The receiver is the interface itself, nothing to walk through.
         return {holder}
     body = method_bodies(held, method)
     if body:
-        # A holder method often reads more than one field — the interface plus a
+        # A holder method often reads more than one field, the interface plus a
         # cache or a mapper. Only a class declaring routes can sign a request.
         return {
             field_type
@@ -149,7 +149,7 @@ def _interfaces_reached(sources: Sources, holder: str, method: str) -> set[str]:
 def interfaces_by_key(sources: Sources, names: Iterable[str]) -> dict[str, Counter[str]]:
     """Every key literal in `names`, mapped to the interfaces it is handed to.
 
-    `names` is the subset of classes that hold a key literal — the whole dump is
+    `names` is the subset of classes that hold a key literal, the whole dump is
     half a gigabyte, and only a couple of dozen files carry one.
     """
     found: dict[str, Counter[str]] = defaultdict(Counter)

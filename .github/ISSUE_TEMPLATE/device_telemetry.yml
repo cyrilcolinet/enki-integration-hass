@@ -1,7 +1,7 @@
 ---
 name: Device profile (telemetry)
 description: Anonymized Enki hardware profile for support prioritization
-title: "[telemetry] Manufacturer device kind · detail — reason"
+title: "[telemetry] Manufacturer device kind · detail, reason"
 labels:
   - device telemetry
 body:
@@ -13,7 +13,7 @@ body:
 
         Do **not** include home/node IDs, email, passwords, or room names.
 
-        Prefer the HA notification link — titles, labels, and fields are filled from the
+        Prefer the HA notification link, titles, labels, and fields are filled from the
         anonymized profile (manufacturer, referentiel device ID, device kind, reason).
 
         **Labels:** `device telemetry` + reason (`unsupported`, `capability gap`, or

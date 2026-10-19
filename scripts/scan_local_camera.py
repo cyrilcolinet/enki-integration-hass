@@ -7,14 +7,14 @@ Assistant can use it directly, bypassing Enki entirely. This script must run on
 the same LAN as the camera (e.g. the Home Assistant OS box).
 
 Steps:
-  1. ONVIF WS-Discovery (UDP multicast) — cameras that answer are RTSP-capable.
+  1. ONVIF WS-Discovery (UDP multicast), cameras that answer are RTSP-capable.
   2. TCP scan of the local /24 for open RTSP ports (554, 8554).
   3. RTSP OPTIONS on every open port to confirm a real RTSP server.
 
 No dependencies beyond the standard library.
 
 A capture of the app confirms the cloud path is Kalay P2P (UDP to
-``*.iotcplatform.com``, then straight to the camera on the LAN) — but the very
+``*.iotcplatform.com``, then straight to the camera on the LAN), but the very
 same capture proves the camera is reachable *locally*, so a local RTSP/ONVIF
 service, if any, is the way in.
 
@@ -141,7 +141,7 @@ async def main(host: str | None = None) -> None:
         return
 
     if not ip:
-        print("\nCan't derive the local subnet — skipping RTSP scan.")
+        print("\nCan't derive the local subnet, skipping RTSP scan.")
         return
 
     prefix = ip.rsplit(".", 1)[0]

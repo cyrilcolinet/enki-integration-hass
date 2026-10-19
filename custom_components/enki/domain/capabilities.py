@@ -162,7 +162,7 @@ class EnkiCapabilityProfile:
 
     @property
     def supports_airconditioner_state(self) -> bool:
-        """Equation air conditioner — mode, fan and setpoint behind one read (#286)."""
+        """Equation air conditioner: mode, fan and setpoint behind one read (#286)."""
         return _supports(self.capabilities, self.possible_values, "check_airconditioner_state")
 
     @property
@@ -552,7 +552,7 @@ class EnkiCapabilityProfile:
 
         When a Nodon/Lexman relay is assigned to a water heater, the app re-types
         it to the `boiler` profile and the referentiel serves an empty catalogue
-        entry — no capabilities, no mainChangeCapability. The boiler-system
+        entry, no capabilities, no mainChangeCapability. The boiler-system
         micro-service only reads status and manages node linking (APK ic1/dd1);
         the actual on/off still goes through the generic power API on the node.
         So drive it as a bare on/off switch via switch_electrical_power.
@@ -581,7 +581,7 @@ class EnkiCapabilityProfile:
 
     @property
     def is_camera(self) -> bool:
-        """Lexman cameras — event list (motion / SD) via api-enki-lexman-camera-prod."""
+        """Lexman cameras: event list (motion / SD) via api-enki-lexman-camera-prod."""
         return self.device_type == DEVICE_TYPE_CAMERAS or _supports(
             self.capabilities,
             self.possible_values,
@@ -590,7 +590,7 @@ class EnkiCapabilityProfile:
 
     @property
     def is_videophone(self) -> bool:
-        """Lexman video doorbell — calls and openings via api-enki-videophone-prod (#233)."""
+        """Lexman video doorbell: calls and openings via api-enki-videophone-prod (#233)."""
         return self.device_type == DEVICE_TYPE_VIDEOPHONES or _supports(
             self.capabilities,
             self.possible_values,
@@ -710,7 +710,7 @@ class EnkiCapabilityProfile:
         power toggle when change_light_state has no real schema (see
         light_state_has_schema). On fans, the first power_switch_endpoints
         entry is often the motor circuit rather than the light kit (e.g.
-        Siroco+/Cadix, where endpoint 1 is conventionally the motor) — prefer
+        Siroco+/Cadix, where endpoint 1 is conventionally the motor), prefer
         fan_light_endpoints, which already excludes motor endpoints via
         infer_fan_motor_endpoints, and only fall back to the raw
         power-switch endpoint when no light-kit endpoint can be resolved

@@ -246,7 +246,7 @@ class EnkiAPI:
         try:
             home_ids = await http.get_homes()
         except EnkiConnectionError as err:
-            LOGGER.debug("Scenario list skipped — cannot list homes: %s", err)
+            LOGGER.debug("Scenario list skipped, cannot list homes: %s", err)
             return
 
         if not home_ids:
@@ -260,7 +260,7 @@ class EnkiAPI:
             nonlocal failed
             try:
                 items = await http.list_scenarios(home_id)
-            except Exception as err:  # noqa: BLE001 — one home must not break the poll
+            except Exception as err:  # noqa: BLE001 - one home must not break the poll
                 LOGGER.debug("Scenario list skipped for home %s: %s", home_id, err)
                 failed = True
                 return
@@ -332,7 +332,7 @@ class EnkiAPI:
             async with semaphore:
                 try:
                     return await self._discover_dashboard_item(http, home_id, item)
-                except Exception as err:  # noqa: BLE001 — one item must not break discovery
+                except Exception as err:  # noqa: BLE001 - one item must not break discovery
                     LOGGER.debug("Dashboard item skipped in home %s: %s", home_id, err)
                     return None, None
 
@@ -413,7 +413,7 @@ class EnkiAPI:
 
         if not device_in_enki_scope(manufacturer=manufacturer_str, device_type=device_type):
             LOGGER.debug(
-                "Skipping non-Enki device %s (manufacturer=%s, type=%s) — "
+                "Skipping non-Enki device %s (manufacturer=%s, type=%s), "
                 "third-party Zigbee belongs in Zigbee2MQTT or ZHA",
                 device_name,
                 manufacturer_str or "unknown",
@@ -450,7 +450,7 @@ class EnkiAPI:
                     last_reported,
                     note_error=self._note_read_error,
                 )
-            except Exception as err:  # noqa: BLE001 — metadata must never break discovery
+            except Exception as err:  # noqa: BLE001 - metadata must never break discovery
                 LOGGER.debug(
                     "Device metadata skipped for node %s: %s",
                     node_id,
@@ -1192,7 +1192,7 @@ class EnkiAPI:
         """Set radiator / thermostat target temperature (°C).
 
         Enki APK 2.25.1 uses command-override (DEROGATION) rather than a direct
-        thermostat-prod POST for this capability — see issue #48.
+        thermostat-prod POST for this capability, see issue #48.
         """
         http = await self._get_http()
         try:
@@ -1231,7 +1231,7 @@ class EnkiAPI:
         change-light-state is a read-modify-write: it echoes the full
         lastReportedValue back on every POST. Some devices (e.g. the Lexman
         connected light CCT v2, #143) reject check-light-state with a business
-        error, which must not block the command — fall back to an empty base so
+        error, which must not block the command, fall back to an empty base so
         the write still carries the requested fields instead of raising.
         """
         try:

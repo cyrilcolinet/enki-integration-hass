@@ -82,8 +82,8 @@ def infer_fan_motor_endpoints(
     # the electrical-power service still reports it (an endpoint id outside
     # power_endpoints), that unlisted endpoint is the motor and every switch
     # endpoint is a light kit. Separates the Inspire Cadix (AD_TCFL_1) dual
-    # light layout — switch endpoints [1, 3], motor reported on the unlisted
-    # endpoint 2 — from a Siroco+ motor-on-endpoint-1 layout, where the switch
+    # light layout, switch endpoints [1, 3], motor reported on the unlisted
+    # endpoint 2, from a Siroco+ motor-on-endpoint-1 layout, where the switch
     # list already covers every reported endpoint.
     if supports_fan_speed and reported_endpoint_ids:
         unlisted = reported_endpoint_ids - set(power_endpoints)

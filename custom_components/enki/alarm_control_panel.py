@@ -8,7 +8,7 @@ Enki modes map onto Home Assistant's fixed arm states:
 - ``PRESENCE`` ("Presence") → armed night
 
 Only the modes the user configured in the app are offered. No code is asked:
-the Enki app arms without one, and a code enforced here would only be ours —
+the Enki app arms without one, and a code enforced here would only be ours
 restrict access with Home Assistant permissions or an automation instead.
 """
 

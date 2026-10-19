@@ -5,7 +5,7 @@ Shape is the easy half. The half that has actually bitten is a key quietly
 swapped for a neighbouring micro-service's (#45, #256, #268, #270): it looks
 perfectly valid and fails only against the live gateway, with a 403 that reads
 like Adeo closing the API product. CI has no APK, so it cannot follow a key to
-its call site — but it can hold every wired key to what the last extractor run
+its call site, but it can hold every wired key to what the last extractor run
 proved, recorded in gateway_key_evidence.json (#275).
 """
 
@@ -43,7 +43,7 @@ def read_keys() -> dict[str, str]:
 def evidence_errors(keys: dict[str, str]) -> list[str]:
     """Every wired key must match the APK call site the extractor recorded."""
     if not EVIDENCE_JSON.is_file():
-        return [f"{EVIDENCE_JSON.name} is missing — run extract_gateway_keys.py --write-evidence"]
+        return [f"{EVIDENCE_JSON.name} is missing, run extract_gateway_keys.py --write-evidence"]
 
     recorded = json.loads(EVIDENCE_JSON.read_text(encoding="utf-8")).get("services", {})
     errors: list[str] = []
@@ -53,7 +53,7 @@ def evidence_errors(keys: dict[str, str]) -> list[str]:
         proof = recorded.get(svc.const_key)
         if proof is None:
             errors.append(
-                f"{svc.const_key} has no recorded call site ({svc.slug}) — "
+                f"{svc.const_key} has no recorded call site ({svc.slug}), "
                 "re-run extract_gateway_keys.py --write-evidence against the current APK"
             )
         elif proof.get("key") != keys.get(svc.const_key, ""):
@@ -90,7 +90,7 @@ def main() -> int:
         return 1
 
     wired = sum(1 for svc in ENKI_MICRO_SERVICES if svc.wired)
-    print(f"OK — {wired} wired micro-services match their recorded APK call site")
+    print(f"OK: {wired} wired micro-services match their recorded APK call site")
     return 0
 
 

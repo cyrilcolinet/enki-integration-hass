@@ -89,7 +89,7 @@ jobs:
     steps:
       # Everything merged to main since the last release ships in this tag, so
       # swap "pending release" → "released" and note the version. Issues stay
-      # OPEN on purpose — closing them is left to the maintainer.
+      # OPEN on purpose, closing them is left to the maintainer.
       - uses: actions/github-script@v9
         env:
           TAG: ${{ needs.release-please.outputs.tag_name }}

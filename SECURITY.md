@@ -20,4 +20,4 @@ Out of scope: the Enki cloud API itself, the mobile app, the Enki hub.
 
 - Do not commit `.env` or Enki credentials
 - Use a dedicated Enki test account when possible
-- The integration stores the password in HA config entries — protect your instance
+- The integration stores the password in HA config entries, protect your instance

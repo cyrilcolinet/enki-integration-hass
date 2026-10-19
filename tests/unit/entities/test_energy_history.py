@@ -9,8 +9,8 @@ from enki.domain.models import EnkiDevice
 from enki.sensor import EnkiEnergySensor
 
 # September 2026 on the reporter's water heater: the shape and the numbers he
-# reported — 30 daily buckets, 12 with a reading, 25.255 kWh over the month,
-# 0 kWh on the 19th and a 3.7 kWh peak on the 27th — with the daily values laid
+# reported, 30 daily buckets, 12 with a reading, 25.255 kWh over the month,
+# 0 kWh on the 19th and a 3.7 kWh peak on the 27th, with the daily values laid
 # out to match. The app's own monthly screen showed 25 kWh. Days before the
 # first measurement come back null; a day that drew nothing comes back 0.0.
 SEPTEMBER_DAYS: list[float | None] = [
@@ -70,7 +70,7 @@ def test_the_month_total_is_the_sum_of_its_buckets() -> None:
 
 
 def test_a_real_zero_counts_as_a_reading() -> None:
-    """19 September read 0.0 — a day the heater drew nothing, not a missing day."""
+    """19 September read 0.0, a day the heater drew nothing, not a missing day."""
     state = parse_energy_history(
         {"periodChart": {"series": [{"data": [0.0, None, None], "unit": "kWh"}]}}
     )

@@ -2,7 +2,7 @@
 
 The doorbell has no push channel we can subscribe to: its calls and openings are
 read from the event list on each poll, so the entity fires when a newer event
-appears — a ring shows up within a polling cycle, not instantly.
+appears, a ring shows up within a polling cycle, not instantly.
 """
 
 from __future__ import annotations

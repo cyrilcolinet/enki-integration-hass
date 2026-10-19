@@ -23,12 +23,12 @@ CI runs the same checks plus Hassfest and HACS.
 
 ## Code layout
 
-- **`api/`** — auth, HTTP transport, Enki REST client
-- **`domain/`** — models and capabilities (no Home Assistant imports)
-- **`lib/`** — pure conversion and parsing, testable without HA
-- **`platforms/`** — shared platform logic (not HA loader files)
-- **`telemetry/`** — opt-in device profiles and legacy nudge
-- **Root** — HA platform loaders (`fan.py`, `light.py`, `sensor.py`, `binary_sensor.py`, `button.py`, `camera.py`, `climate.py`, `cover.py`, `number.py`, `select.py`, `switch.py`) + `config_flow.py` — full list in `__init__.py` → `PLATFORMS`
+- **`api/`**: auth, HTTP transport, Enki REST client
+- **`domain/`**: models and capabilities (no Home Assistant imports)
+- **`lib/`**: pure conversion and parsing, testable without HA
+- **`platforms/`**: shared platform logic (not HA loader files)
+- **`telemetry/`**: opt-in device profiles and legacy nudge
+- **Root**: HA platform loaders (`fan.py`, `light.py`, `sensor.py`, `binary_sensor.py`, `button.py`, `camera.py`, `climate.py`, `cover.py`, `number.py`, `select.py`, `switch.py`) + `config_flow.py`, full list in `__init__.py` → `PLATFORMS`
 
 Public imports via each package `__init__.py` (`from enki.api import EnkiAPI`, etc.).
 
@@ -51,7 +51,7 @@ Public imports via each package `__init__.py` (`from enki.api import EnkiAPI`, e
 | A new script, platform loader, or `lib/`/`domain/` module | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) (scripts table, code structure) |
 | Config-flow options, notifications, or UI strings | translations + the relevant doc section |
 
-**Don't hardcode perishable values in docs** (APK version, `manifest.json` version, referentiel version). Reference the source of truth instead — e.g. link to `const.py` or the releases page — so a version bump doesn't silently rot the docs.
+**Don't hardcode perishable values in docs** (APK version, `manifest.json` version, referentiel version). Reference the source of truth instead: e.g. link to `const.py` or the releases page, so a version bump doesn't silently rot the docs.
 
 ## Pull requests
 

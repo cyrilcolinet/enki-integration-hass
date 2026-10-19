@@ -4,7 +4,7 @@
 Cross-references the APK-derived route catalog (every capability the Enki app can
 call) with what the integration actually covers (reads, entity probes, and the
 intentionally-ignored / not-planned lists). Whatever's left is an auto-discovered
-gap — a capability the app supports that we don't, with its service, route, and
+gap, a capability the app supports that we don't, with its service, route, and
 whether that gateway service is already wired.
 
 Usage:
@@ -39,7 +39,7 @@ enrich_mod = load_module("enki.domain.telemetry_enrichment")
 CAPABILITY_ROUTES = routes_mod.CAPABILITY_ROUTES
 capability_routing_hints = enrich_mod.capability_routing_hints
 
-# Lifecycle / admin verbs we will never expose as entities — reported as a count only.
+# Lifecycle / admin verbs we will never expose as entities, reported as a count only.
 _ADMIN_PREFIXES = (
     "pair",
     "finish",
@@ -111,19 +111,19 @@ def main() -> int:
     print(f"APK catalog capabilities: {catalog}")
     print(f"Unhandled by the integration: {total_unhandled}\n")
 
-    print(f"== Unhandled reads (candidate sensors) — {len(buckets['reads'])} ==")
+    print(f"== Unhandled reads (candidate sensors) ({len(buckets['reads'])}) ==")
     for capability in buckets["reads"]:
         print(_describe(capability))
 
-    print(f"\n== Unhandled controls (candidate switches/selects) — {len(buckets['controls'])} ==")
+    print(f"\n== Unhandled controls (candidate switches/selects) ({len(buckets['controls'])}) ==")
     for capability in buckets["controls"]:
         print(_describe(capability))
 
-    print(f"\n== Other unhandled (non-admin) — {len(buckets['other'])} ==")
+    print(f"\n== Other unhandled (non-admin) ({len(buckets['other'])}) ==")
     for capability in buckets["other"]:
         print(_describe(capability))
 
-    print(f"\n== Admin / lifecycle (not planned) — {len(buckets['admin'])} ==")
+    print(f"\n== Admin / lifecycle (not planned) ({len(buckets['admin'])}) ==")
     print("  " + ", ".join(buckets["admin"]) if buckets["admin"] else "  (none)")
     return 0
 

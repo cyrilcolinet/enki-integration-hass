@@ -60,7 +60,7 @@ def test_the_mode_the_device_reports_becomes_the_state() -> None:
     sensor = _sensor(_heater(water_heater_mode="CLEAN"))
 
     assert sensor.native_value == "clean"
-    # `options` is a SensorEntity property, stubbed away here — assert what we set.
+    # `options` is a SensorEntity property, stubbed away here, assert what we set.
     assert sensor._attr_options == ["auto", "manual", "boost", "boost_plus", "prog", "clean"]
 
 
