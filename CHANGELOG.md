@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.34.2](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.34.1...v1.34.2) (2026-10-19)
+
+
+### Bug Fixes
+
+* **climate:** read the setpoint radiators only advertise writing ([6941c9a](https://github.com/cyrilcolinet/enki-integration-hass/commit/6941c9a2db9148f3c1dc86c9b5df04e19526d9fd)), closes [#335](https://github.com/cyrilcolinet/enki-integration-hass/issues/335)
+* **light:** give a bulb whose state read is refused two ways to work ([484ed53](https://github.com/cyrilcolinet/enki-integration-hass/commit/484ed533a1bf2039db5ac0713050c1c2ac418659)), closes [#337](https://github.com/cyrilcolinet/enki-integration-hass/issues/337)
+
 ## [1.34.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.34.0...v1.34.1) (2026-10-19)
 
 
