@@ -15,9 +15,15 @@ use. Whatever comes back is what the integration would see.
 **Read-only.** It only ever issues GETs, and nothing it prints identifies you:
 ids and opaque values are masked the way diagnostics are.
 
+Signing in with Google or Apple? Those accounts have no password (#325): get a
+refresh token with ``scripts/sso_token.py`` and pass it instead of the two.
+
 Usage:
     # a capability the catalogue already routes
     python3 scripts/probe_capability.py '<email>' '<password>' check_child_lock
+
+    # an account that signs in with a provider
+    python3 scripts/probe_capability.py check_child_lock --refresh-token '<token>' 
 
     # a capability the catalogue does not route: name the service yourself
     python3 scripts/probe_capability.py '<email>' '<password>' \
@@ -69,11 +75,12 @@ def services_for(capability: str) -> list[str]:
 
 
 async def probe(
-    username: str,
-    password: str,
+    username: str | None,
+    password: str | None,
     capability: str,
     service: str | None,
     node: str | None,
+    refresh_token: str | None,
 ) -> None:
     candidates = [service] if service else services_for(capability)
     if not candidates:
@@ -82,7 +89,8 @@ async def probe(
         print(f"Known aliases: {', '.join(sorted(WIRED_PATH_PREFIXES))}")
         return
 
-    api = EnkiAPI(username, password)
+    # The username only labels the session; a refresh token carries its own.
+    api = EnkiAPI(username or "", password, refresh_token=refresh_token)
     await api.async_connect()
     http = await api._get_http()
     try:
@@ -116,9 +124,13 @@ async def probe(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("username")
-    parser.add_argument("password")
+    parser.add_argument("username", nargs="?")
+    parser.add_argument("password", nargs="?")
     parser.add_argument("capability", help="e.g. check_thermostat_running_state")
+    parser.add_argument(
+        "--refresh-token",
+        help="For an account that signs in with Google or Apple (scripts/sso_token.py)",
+    )
     parser.add_argument(
         "--service",
         help="Transport alias to ask, when the catalogue routes the capability nowhere",
@@ -129,4 +141,17 @@ def parse_args() -> argparse.Namespace:
 
 if __name__ == "__main__":
     args = parse_args()
-    asyncio.run(probe(args.username, args.password, args.capability, args.service, args.node))
+    if not args.refresh_token and not (args.username and args.password):
+        raise SystemExit(
+            "Give an email and a password, or --refresh-token from scripts/sso_token.py"
+        )
+    asyncio.run(
+        probe(
+            args.username,
+            args.password,
+            args.capability,
+            args.service,
+            args.node,
+            args.refresh_token,
+        )
+    )

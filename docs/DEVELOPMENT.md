@@ -47,7 +47,7 @@ ruff format --check .   # or ruff format . to fix
 
 ## Local scripts (outside Home Assistant)
 
-Scripts in `scripts/` run **on your dev machine**, not inside the HA container. They talk directly to the Enki cloud API (or parse an APK). Home Assistant is not required — only Python 3 and `pip install -r requirements-dev.txt`.
+Scripts in `scripts/` run **on your dev machine**, not inside the HA container. They take an email and a password; an account that signs in with Google or Apple has neither, so `scripts/sso_token.py` trades a provider sign-in for a refresh token the probes accept with `--refresh-token` ([#325](https://github.com/cyrilcolinet/enki-integration-hass/issues/325)). They talk directly to the Enki cloud API (or parse an APK). Home Assistant is not required — only Python 3 and `pip install -r requirements-dev.txt`.
 
 | Script | Usage |
 |--------|--------|
@@ -57,6 +57,7 @@ Scripts in `scripts/` run **on your dev machine**, not inside the HA container. 
 | `scripts/probe_videophone_live.py` | Watch a doorbell's WebRTC reads while the Enki app has the live view open (read-only) |
 | `scripts/capability_coverage.py` | Report capabilities the app exposes but the integration doesn't handle yet |
 | `scripts/probe_capability.py` | Ask one capability route whether it answers on a real device (read-only) |
+| `scripts/sso_token.py` | Sign in with Google or Apple and print a refresh token the probes accept |
 | `scripts/discover_devices.py` | Export anonymized device profiles from the account |
 
 ```bash
