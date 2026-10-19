@@ -18,6 +18,12 @@ class CapabilityRead:
     capability: str
     state_key: str
     skip: Callable[[EnkiCapabilityProfile], bool] | None = None
+    # Read it even when the referentiel does not advertise the capability. The
+    # route and the capability do not always carry the same name on this API,
+    # and a device that can be written to but not read leaves an entity with no
+    # value at all (#335). 404-tolerant, so a device that has no such route
+    # simply keeps nothing.
+    also_when: Callable[[EnkiCapabilityProfile], bool] | None = None
 
 
 CAPABILITY_READS: tuple[CapabilityRead, ...] = (
@@ -64,6 +70,10 @@ CAPABILITY_READS: tuple[CapabilityRead, ...] = (
         "thermostat",
         "check_thermostat_target_temperature",
         "thermostat_target_temperature",
+        # Equation radiators advertise only the write. Without the setpoint the
+        # climate entity has no target, and Home Assistant hides the +/- (#335).
+        # The route answers for them anyway, on 3 of 4 units measured.
+        also_when=lambda profile: profile.supports_thermostat,
     ),
     CapabilityRead("thermostat", "check_thermostat_running_state", "thermostat_running_state"),
     CapabilityRead("thermostat", "check_window_open_detection", "window_open_detection"),

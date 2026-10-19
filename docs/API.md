@@ -173,7 +173,7 @@ field (`hs` vs `ct`) indicates which mode is active.
 | Capability | Platform | Notes |
 |------------|----------|-------|
 | `check_pilot_wire_state` / `switch_pilot_wire_mode` | `select` | COMFORT, ECO, OFF, … |
-| `check_thermostat_target_temperature` / `change_thermostat_target_temperature` | `climate` | °C setpoint |
+| `check_thermostat_target_temperature` / `change_thermostat_target_temperature` | `climate` | °C setpoint. Read even when only the write is advertised: Equation radiators list no `check_` counterpart and the route answers anyway, and without a setpoint Home Assistant hides the +/- controls ([#335](https://github.com/cyrilcolinet/enki-integration-hass/issues/335)) |
 | `check_thermostat_running_state` | `climate` | HEAT / IDLE → `hvac_action` |
 | `check_window_open_detection` | `binary_sensor` | WINDOW_OPEN / NO_WINDOW_OPEN |
 | `check_occupancy` | `binary_sensor` | OCCUPIED / UNOCCUPIED |
