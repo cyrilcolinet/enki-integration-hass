@@ -72,6 +72,10 @@ _CAPABILITY_PROBES: dict[str, str] = {
     "check_presence_detection": "supports_presence_detection",
     "check_electrical_power": "supports_electrical_power",
     "check_electrical_consumption": "supports_electrical_consumption",
+    # Covered since #285, and missing here, so every Equation water heater owner
+    # was invited to report a gap that is not one (#344).
+    "check_water_heater_mode": "supports_water_heater_mode",
+    "change_water_heater_mode": "supports_water_heater_mode_change",
     "check_fan_rotation_direction": "supports_fan_rotation",
     "check_fan_speed": "supports_fan_speed",
     "check_bulb_state": "supports_light_state",
