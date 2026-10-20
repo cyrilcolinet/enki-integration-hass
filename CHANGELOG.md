@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.34.3](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.34.2...v1.34.3) (2026-10-20)
+
+
+### Bug Fixes
+
+* **telemetry:** stop inviting reports on a covered capability ([0dfb13f](https://github.com/cyrilcolinet/enki-integration-hass/commit/0dfb13f92849885c09c7589523483c9ac5f034a4)), closes [#344](https://github.com/cyrilcolinet/enki-integration-hass/issues/344)
+
 ## [1.34.2](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.34.1...v1.34.2) (2026-10-19)
 
 
