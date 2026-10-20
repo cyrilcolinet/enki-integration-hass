@@ -75,6 +75,11 @@ Devices paired on the hub that are not Enki brands (Sonoff, Tuya, Aqara and the 
 
 Enki is in the default HACS store, so there is nothing to add by hand.
 
+> From **Home Assistant 2026.11**, HACS ships inside Home Assistant as the
+> **Marketplace** integration. Nothing changes here: same repository, same
+> `hacs.json`, same install. The Enki icon also starts showing on the update
+> card, which HACS could not do ([#346](https://github.com/cyrilcolinet/enki-integration-hass/issues/346)).
+
 <p align="center">
   <a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=cyrilcolinet&repository=enki-integration-hass&category=integration">
     <img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open in HACS">

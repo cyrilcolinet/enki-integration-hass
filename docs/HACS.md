@@ -2,6 +2,36 @@
 
 Checklist aligned with the [official HACS documentation](https://www.hacs.xyz/docs/publish/).
 
+## Marketplace, from Home Assistant 2026.11
+
+HACS moves into Home Assistant as the **Marketplace** integration
+([hacs/integration#5590](https://github.com/hacs/integration/issues/5590)). Read
+from its source on `dev`, nothing here has to change:
+
+- it still reads **`hacs.json`** at the root, and `manifest.json` for the domain,
+  the name, `codeowners` and `config_flow`;
+- it refuses an install whose `manifest.json` carries no version the loader
+  accepts, CALVER, SEMVER, SIMPLEVER, BUILDVER or PEP440. Ours is release-please's
+  semver, so it qualifies;
+- its update entity points at **`/api/brands/integration/{domain}/icon.png`**,
+  the local proxy, which prefers the icon an integration ships. That is
+  `custom_components/enki/brand/`, already in place, and it is what HACS could
+  not do: it hardcoded the brands CDN, which answers 200 with an "icon not
+  available" placeholder for anything unregistered
+  ([#346](https://github.com/cyrilcolinet/enki-integration-hass/issues/346)).
+
+Two keys of our `hacs.json` are **ignored** by Marketplace, which accepts only
+`content_in_root`, `filename`, `hacs`, `hide_default_branch`, `homeassistant`,
+`name`, `persistent_directory` and `zip_release`:
+
+| Key | Marketplace |
+|-----|-------------|
+| `country` | ignored |
+| `render_readme` | ignored |
+
+They stay for now because the HACS everyone is running today still uses them.
+Drop them once 2026.11 is the floor.
+
 **Status: published in the default HACS store.** Users install Enki straight from
 HACS (search **Enki**), no custom repository needed. The custom-repository flow
 below is only a fallback while a HACS instance catches up with the default-store
