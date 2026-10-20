@@ -1,9 +1,9 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended",
-    ":dependencyDashboard"
+    "config:recommended"
   ],
+  "dependencyDashboard": false,
   "packageRules": [
     {
       "matchManagers": ["github-actions"],
@@ -12,18 +12,6 @@
     {
       "matchManagers": ["pip_requirements", "pep621"],
       "groupName": "Python dev dependencies"
-    }
-  ],
-  "customManagers": [
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^requirements-dev\\.txt$/"
-      ],
-      "matchStrings": [
-        "(?<depName>[^=\\s]+)==(?<currentValue>[^\\s]+)"
-      ],
-      "datasourceTemplate": "pypi"
     }
   ]
 }
