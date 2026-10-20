@@ -308,3 +308,33 @@ def test_indoor_camera_orientation_is_not_a_capability_gap() -> None:
         supported_by_integration=True,
     )
     assert discovery_record_needs_telemetry(record) is False
+
+
+def test_the_water_heater_mode_is_not_reported_as_a_gap() -> None:
+    """It has been covered since #285, and the card invited reports anyway (#344)."""
+    from enki.domain.capabilities import EnkiCapabilityProfile
+    from enki.domain.telemetry_coverage import capability_is_covered
+
+    heater = EnkiCapabilityProfile(
+        device_type="water_heaters",
+        capabilities=("check_water_heater_mode", "change_water_heater_mode"),
+        possible_values={"change_water_heater_mode": {"values": ["AUTO", "BOOST", "PROG"]}},
+    )
+
+    assert capability_is_covered("check_water_heater_mode", heater)
+    assert capability_is_covered("change_water_heater_mode", heater)
+
+
+def test_the_error_and_state_reads_are_still_gaps() -> None:
+    """Nothing reads them, so a report about them is worth having (#344)."""
+    from enki.domain.capabilities import EnkiCapabilityProfile
+    from enki.domain.telemetry_coverage import capability_is_covered
+
+    heater = EnkiCapabilityProfile(
+        device_type="water_heaters",
+        capabilities=("check_water_heater_error", "check_water_heater_state"),
+        possible_values={},
+    )
+
+    assert not capability_is_covered("check_water_heater_error", heater)
+    assert not capability_is_covered("check_water_heater_state", heater)
