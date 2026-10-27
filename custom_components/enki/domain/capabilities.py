@@ -178,6 +178,11 @@ class EnkiCapabilityProfile:
         )
 
     @property
+    def supports_water_heater_error(self) -> bool:
+        """Equation water heater fault code, read from the heater's own service (#352)."""
+        return _supports(self.capabilities, self.possible_values, "check_water_heater_error")
+
+    @property
     def supports_electrical_consumption(self) -> bool:
         return _supports(
             self.capabilities,

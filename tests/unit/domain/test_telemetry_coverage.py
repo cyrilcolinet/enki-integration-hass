@@ -325,8 +325,8 @@ def test_the_water_heater_mode_is_not_reported_as_a_gap() -> None:
     assert capability_is_covered("change_water_heater_mode", heater)
 
 
-def test_the_error_and_state_reads_are_still_gaps() -> None:
-    """Nothing reads them, so a report about them is worth having (#344)."""
+def test_the_error_read_is_covered_but_state_is_still_a_gap() -> None:
+    """The fault code is read now (#352); state still answers on no route (#344)."""
     from enki.domain.capabilities import EnkiCapabilityProfile
     from enki.domain.telemetry_coverage import capability_is_covered
 
@@ -336,5 +336,5 @@ def test_the_error_and_state_reads_are_still_gaps() -> None:
         possible_values={},
     )
 
-    assert not capability_is_covered("check_water_heater_error", heater)
+    assert capability_is_covered("check_water_heater_error", heater)
     assert not capability_is_covered("check_water_heater_state", heater)

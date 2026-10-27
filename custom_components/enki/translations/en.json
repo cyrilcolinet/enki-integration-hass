@@ -165,6 +165,15 @@
           "clean": "Self-clean"
         }
       },
+      "water_heater_error": {
+        "name": "Fault",
+        "state": {
+          "no_error": "No fault",
+          "no_water": "No water",
+          "left_tank_sensor_malfunction": "Left tank sensor fault",
+          "right_tank_sensor_malfunction": "Right tank sensor fault"
+        }
+      },
       "camera_last_motion": {
         "name": "Last motion"
       },

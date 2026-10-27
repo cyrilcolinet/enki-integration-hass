@@ -91,6 +91,12 @@ CAPABILITY_READS: tuple[CapabilityRead, ...] = (
         "water_heater_mode",
         skip=lambda profile: not profile.supports_water_heater_mode,
     ),
+    CapabilityRead(
+        "equation_water_heater",
+        "check_water_heater_error",
+        "water_heater_error",
+        skip=lambda profile: not profile.supports_water_heater_error,
+    ),
     CapabilityRead("presence_detector", "check_occupancy", "occupancy"),
     CapabilityRead("presence_detector", "check_occupancy_mode", "occupancy_mode"),
     CapabilityRead(

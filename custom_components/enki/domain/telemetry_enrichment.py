@@ -49,7 +49,7 @@ def ha_platforms_for_profile(profile: EnkiCapabilityProfile) -> list[str]:
     # sensors, which made a diagnostics export read as "no sensor at all" (#268).
     if profile.supports_electrical_consumption:
         platforms.append("sensor")
-    if profile.supports_water_heater_mode:
+    if profile.supports_water_heater_mode or profile.supports_water_heater_error:
         platforms.append("sensor")
     if profile.supports_airconditioner_state:
         platforms.append("climate")

@@ -63,6 +63,7 @@ _POLL_STATE_EXPORT_KEYS = frozenset(
         "energy_first_measurement_at",
         "energy_last_measurement_at",
         "water_heater_mode",
+        "water_heater_error",
         # The air conditioner's own state, so a reporter's diagnostics can say
         # which modes and fan speeds it accepts before anything is built (#286).
         *AIRCO_STATE_KEYS,

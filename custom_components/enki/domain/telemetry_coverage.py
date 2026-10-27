@@ -76,6 +76,10 @@ _CAPABILITY_PROBES: dict[str, str] = {
     # was invited to report a gap that is not one (#344).
     "check_water_heater_mode": "supports_water_heater_mode",
     "change_water_heater_mode": "supports_water_heater_mode_change",
+    "check_water_heater_error": "supports_water_heater_error",
+    # Same instant-consumption datum as check_electrical_consumption, already read
+    # via the consumption service; surfaced by the power consumption sensor (#352).
+    "check_instant_power_consumption": "supports_electrical_consumption",
     "check_fan_rotation_direction": "supports_fan_rotation",
     "check_fan_speed": "supports_fan_speed",
     "check_bulb_state": "supports_light_state",
