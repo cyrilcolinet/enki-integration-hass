@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from enki.api.capability_routing import CAPABILITY_READS
 from enki.domain.models import EnkiDevice
+from enki.domain.telemetry_enrichment import ha_platforms_for_profile
 from enki.switch import EnkiChannelSwitch, _build_switch_entities
 
 
@@ -41,6 +42,10 @@ def test_profile_detects_two_channels_and_not_an_outlet() -> None:
     assert profile.channel_power_indices == [1, 2]
     assert profile.supports_channel_power is True
     assert profile.is_outlet is False  # no switch_electrical_power → no outlet entity
+    # The gate that actually loads the switch platform: without it the channels
+    # build but the device is filtered out as unsupported before setup (#355).
+    assert profile.is_supported is True
+    assert "switch" in ha_platforms_for_profile(profile)
 
 
 def test_channel_reads_route_via_power_service() -> None:
