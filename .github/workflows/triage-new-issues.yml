@@ -1,0 +1,45 @@
+name: Triage new issues
+
+# Assign the repo owner to every new issue (so it hits their notifications) and
+# apply the telemetry body's "Suggested labels" line. Both are needed because
+# issues opened from the pre-filled telemetry URL carry no template labels, and
+# the URL's &labels=/&assignees= params are dropped for users without triage
+# rights — exactly the people who report.
+
+on:
+  issues:
+    types:
+      - opened
+
+permissions:
+  issues: write
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/github-script@v9
+        with:
+          script: |
+            const issue = context.payload.issue;
+
+            await github.rest.issues.addAssignees({
+              ...context.repo,
+              issue_number: issue.number,
+              assignees: [context.repo.owner],
+            });
+
+            const line = (issue.body || '')
+              .split('\n')
+              .find((l) => /suggested labels/i.test(l));
+            if (line) {
+              const labels = [...line.matchAll(/`([^`]+)`/g)].map((m) => m[1]);
+              if (labels.length) {
+                await github.rest.issues.addLabels({
+                  ...context.repo,
+                  issue_number: issue.number,
+                  labels,
+                });
+              }
+            }
