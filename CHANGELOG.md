@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.35.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.34.3...v1.35.0) (2026-10-27)
+
+
+### Features
+
+* **sensor:** read the Equation water heater fault code ([c422496](https://github.com/cyrilcolinet/enki-integration-hass/commit/c422496580e5f28c748fe18967700c1cc4a12f96)), closes [#352](https://github.com/cyrilcolinet/enki-integration-hass/issues/352)
+
+
+### Bug Fixes
+
+* **switch:** gate Evology channel module as supported ([5643d0b](https://github.com/cyrilcolinet/enki-integration-hass/commit/5643d0b239c583c6707dee1d8ef23f8dfa012308)), closes [#355](https://github.com/cyrilcolinet/enki-integration-hass/issues/355)
+
 ## [1.34.3](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.34.2...v1.34.3) (2026-10-20)
 
 
