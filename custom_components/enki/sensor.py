@@ -27,7 +27,11 @@ from .coordinator import EnkiCoordinator
 from .domain.models import EnkiDevice
 from .entity import EnkiEntity
 from .lib.battery import battery_health_to_percent
-from .lib.heating import water_heater_mode_option, water_heater_mode_options
+from .lib.heating import (
+    water_heater_error_options,
+    water_heater_mode_option,
+    water_heater_mode_options,
+)
 
 
 async def async_setup_entry(
@@ -72,6 +76,8 @@ def _build_sensor_entities(
         entities.append(EnkiEnergySensor(coordinator, device))
     if profile.supports_water_heater_mode and not profile.supports_water_heater_mode_change:
         entities.append(EnkiWaterHeaterModeSensor(coordinator, device))
+    if profile.supports_water_heater_error:
+        entities.append(EnkiWaterHeaterErrorSensor(coordinator, device))
     if profile.is_camera:
         entities.append(EnkiCameraLastMotionSensor(coordinator, device))
         if profile.supports_camera_sound_events:
@@ -345,6 +351,25 @@ class EnkiWaterHeaterModeSensor(EnkiEntity, SensorEntity):
     @property
     def native_value(self) -> str | None:
         return water_heater_mode_option(self._device.reported.water_heater_mode, self._attr_options)
+
+
+class EnkiWaterHeaterErrorSensor(EnkiEntity, SensorEntity):
+    """Fault code of an Equation water heater (#352)."""
+
+    _attr_translation_key = "water_heater_error"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator: EnkiCoordinator, device: EnkiDevice) -> None:
+        super().__init__(coordinator, device)
+        self._attr_unique_id = f"{DOMAIN}-{device.node_id}-water-heater-error"
+        self._attr_options = water_heater_error_options(device.profile.possible_values)
+
+    @property
+    def native_value(self) -> str | None:
+        return water_heater_mode_option(
+            self._device.reported.water_heater_error, self._attr_options
+        )
 
 
 class EnkiEnergySensor(EnkiEntity, SensorEntity):

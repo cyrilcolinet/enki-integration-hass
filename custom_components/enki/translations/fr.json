@@ -165,6 +165,15 @@
           "clean": "Auto-nettoyage"
         }
       },
+      "water_heater_error": {
+        "name": "Défaut",
+        "state": {
+          "no_error": "Aucun défaut",
+          "no_water": "Absence d'eau",
+          "left_tank_sensor_malfunction": "Défaut sonde cuve gauche",
+          "right_tank_sensor_malfunction": "Défaut sonde cuve droite"
+        }
+      },
       "camera_last_motion": {
         "name": "Dernier mouvement"
       },

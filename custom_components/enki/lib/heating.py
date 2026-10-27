@@ -8,6 +8,15 @@ from typing import Any
 # fallback: a heater that publishes its own list is taken at its word.
 WATER_HEATER_MODES = ("AUTO", "MANUAL", "BOOST", "BOOST_PLUS", "PROG", "CLEAN")
 
+# Fallback error codes for check_water_heater_error (#352); overridden by a heater
+# that publishes its own list.
+WATER_HEATER_ERRORS = (
+    "NO_ERROR",
+    "NO_WATER",
+    "LEFT_TANK_SENSOR_MALFUNCTION",
+    "RIGHT_TANK_SENSOR_MALFUNCTION",
+)
+
 
 def pilot_wire_api_value(option: str) -> str:
     """Map HA select option slug to Enki API wire value (uppercase)."""
@@ -98,6 +107,15 @@ def water_heater_mode_options(possible_values: dict[str, Any]) -> list[str]:
     values = values if isinstance(values, list) else []
     options = [value.lower() for value in values if isinstance(value, str)]
     return options or [mode.lower() for mode in WATER_HEATER_MODES]
+
+
+def water_heater_error_options(possible_values: dict[str, Any]) -> list[str]:
+    """Error codes a heater declares, as lowercase options; the AD-HEWH3-1's four otherwise."""
+    meta = possible_values.get("check_water_heater_error")
+    values = meta.get("values") if isinstance(meta, dict) else None
+    values = values if isinstance(values, list) else []
+    options = [value.lower() for value in values if isinstance(value, str)]
+    return options or [code.lower() for code in WATER_HEATER_ERRORS]
 
 
 def water_heater_mode_api_value(option: str) -> str:

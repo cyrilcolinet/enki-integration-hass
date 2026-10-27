@@ -85,13 +85,15 @@ across writes but have no entity yet
 
 ## Equation connected water heater (AD-HEWH3-1 and kin)
 
-**HA entities:** `climate` (setpoint), `select` (**mode**), `sensor` (instant power, energy this month)
+**HA entities:** `climate` (setpoint), `select` (**mode**), `sensor` (instant power, energy this month, **fault**)
 
 The mode, whatever the heater declares, `AUTO`, `MANUAL`, `BOOST`, `BOOST_PLUS`, `PROG`, `CLEAN` on an AD-HEWH3-1, is read from the heater's own service `api-enki-equation-water-heater-prod` and written through `api-enki-heating-controller-prod`, where app 2.27.0 sends it ([#285](https://github.com/cyrilcolinet/enki-integration-hass/issues/285)). A heater that declares the read but not the write keeps a read-only `sensor`.
 
 **A mode brings its own setpoint.** Entering one rewrites the target temperature: `CLEAN` took it to 80 °C on an AD-HEWH3-1, above the 75 °C the `climate` entity lets you set, and a temperature set while it runs is overridden. `MANUAL` returns with the setpoint it last held rather than the one you set before, so an automation that changes the mode should set the temperature again afterwards. The heater takes a few minutes to report a new mode; the `select` shows your choice in the meantime.
 
 Setting a temperature creates a derogation server-side, which answers `201` ([#269](https://github.com/cyrilcolinet/enki-integration-hass/issues/269)). It does not change the mode (seen on an AD-HEWH3-1 in `MANUAL`, [#285](https://github.com/cyrilcolinet/enki-integration-hass/issues/285)).
+
+A diagnostic `sensor` reports the heater's fault code from the same service, `NO_ERROR`, `NO_WATER`, or a left/right tank sensor malfunction on an AD-HEWH3-1 ([#352](https://github.com/cyrilcolinet/enki-integration-hass/issues/352)).
 
 ## Enki scenarios (v1.6.0+)
 

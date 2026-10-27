@@ -112,6 +112,7 @@ class EnkiDeviceState:
     electrical_consumption_unit = _str_field("electrical_consumption_unit")
     electrical_consumption_at = _str_field("electrical_consumption_at")
     water_heater_mode = _str_field("water_heater_mode")
+    water_heater_error = _str_field("water_heater_error")
 
     # Equation air conditioner (#286).
     airco_operating_mode = _str_field("airco_operating_mode")
