@@ -661,6 +661,7 @@ class EnkiCapabilityProfile:
             self.is_fan
             or self.is_light_controllable
             or self.is_outlet
+            or self.supports_channel_power
             or self.is_inverter
             or self.is_cover
             or self.is_environment_sensor

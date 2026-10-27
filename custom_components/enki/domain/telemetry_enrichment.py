@@ -27,7 +27,7 @@ def ha_platforms_for_profile(profile: EnkiCapabilityProfile) -> list[str]:
         platforms.append("fan")
     if profile.is_light_controllable:
         platforms.append("light")
-    if profile.is_outlet:
+    if profile.is_outlet or profile.supports_channel_power:
         platforms.append("switch")
     if profile.is_inverter:
         platforms.append("sensor")
