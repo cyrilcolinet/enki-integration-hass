@@ -338,3 +338,39 @@ def test_the_error_read_is_covered_but_state_is_still_a_gap() -> None:
 
     assert capability_is_covered("check_water_heater_error", heater)
     assert not capability_is_covered("check_water_heater_state", heater)
+
+
+def test_shutter_calibration_mode_is_not_a_gap() -> None:
+    record = build_discovery_record(
+        device_type="access_and_motorizations",
+        bff_device_type="access_and_motorizations",
+        capabilities=[
+            "change_roller_shutter_mode",
+            "change_shutter_calibration_mode",
+            "change_shutter_position",
+            "check_roller_shutter_mode",
+            "check_roller_shutter_state",
+            "check_shutter_position",
+            "stop_change_shutter_position",
+        ],
+        possible_values={"change_roller_shutter_mode": {"values": ["NORMAL", "INVERTED"]}},
+        manufacturer="Dio",
+        model="in_wall_roller_shutter",
+        firmware_version="2.7.1",
+        supported_by_integration=True,
+    )
+    assert discovery_record_needs_telemetry(record) is False
+
+
+def test_lighting_remote_control_does_not_need_telemetry() -> None:
+    record = build_discovery_record(
+        device_type="remote_controls_and_switches",
+        bff_device_type="remote_controls_and_switches",
+        capabilities=["check_lighting_remote_state"],
+        possible_values={},
+        manufacturer="Essentielb",
+        model="smart_button",
+        firmware_version="2.0.0",
+        supported_by_integration=False,
+    )
+    assert discovery_record_needs_telemetry(record) is False
