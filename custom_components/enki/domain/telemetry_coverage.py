@@ -153,6 +153,13 @@ NOT_PLANNED_CAPABILITIES = frozenset(
         "delete_camera_events",
         "format_sd_card",
         "update_firmware_version",
+        # One-shot end-stop learning (START / STOP / STOP_THEN_START), an
+        # installer action with no Home Assistant concept behind it (#366).
+        "change_shutter_calibration_mode",
+        # api-enki-lighting-remote-control-prod serves three routes only: bind a
+        # remote to a light, unbind it, change-remote-mode. There is no read, so a
+        # button press never reaches the cloud and no entity can carry it (#363).
+        "check_lighting_remote_state",
         "cancel_electrical_power_switch_in",
         "next_electrical_power_switch_in",
         "switch_electrical_power_in",
@@ -311,7 +318,11 @@ def discovery_record_needs_telemetry(
         return False
 
     if not record.supported_by_integration:
-        return True
+        # An unsupported device whose every capability is one we will never wire
+        # has nothing to ask for, so it must not nudge (#363).
+        return any(
+            capability not in NOT_PLANNED_CAPABILITIES for capability in record.capabilities or []
+        )
 
     profile = profile_from_record(record)
     for capability in record.capabilities or []:
