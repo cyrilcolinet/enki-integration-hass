@@ -26,7 +26,7 @@ When a **new** profile is detected (unique fingerprint) **and support is missing
 
 **No notification** if the device is already fully supported (e.g. another Inspire fan variant already covered).
 
-**Also skipped (no notification, no GitHub link):** Enki hub / gateway profiles, and third-party Zigbee (Sonoff, Tuya, Aqara, …) that the integration deliberately ignores at discovery.
+**Also skipped (no notification, no GitHub link):** Enki hub / gateway profiles, third-party Zigbee (Sonoff, Tuya, Aqara, …) that the integration deliberately ignores at discovery, and profiles whose every capability is one that will never get an entity (a shutter's installer calibration, a lighting remote the cloud never reads back).
 
 ### Unrecognized brands (one aggregated card)
 
