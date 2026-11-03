@@ -25,8 +25,8 @@ _ENKI_ECOSYSTEM_MANUFACTURERS = frozenset(
         "nodon",
         "noirot",
         "sedea",
-        # Served by api-enki-temperature-humidity-sensor-prod like any Enki
-        # temperature sensor, missing nothing but this line (#364).
+        # Thermometers declaring the check_current_temperature /
+        # check_current_humidity reads already wired here (#364).
         "trio2sys",
     }
 )
