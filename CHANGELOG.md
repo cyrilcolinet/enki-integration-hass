@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.36.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.35.0...v1.36.0) (2026-11-03)
+
+
+### Features
+
+* **scope:** claim Trio2sys thermometers ([ae67c49](https://github.com/cyrilcolinet/enki-integration-hass/commit/ae67c497f38378682ae444239ff4e52de2fe20fa)), closes [#364](https://github.com/cyrilcolinet/enki-integration-hass/issues/364)
+
+
+### Bug Fixes
+
+* **telemetry:** stop nudging on gaps nobody can close ([570a1d7](https://github.com/cyrilcolinet/enki-integration-hass/commit/570a1d77f9b88185d54ea13f7cb5de385e7ee655))
+
 ## [1.35.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.34.3...v1.35.0) (2026-10-27)
 
 
