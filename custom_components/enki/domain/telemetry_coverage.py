@@ -67,6 +67,10 @@ _CAPABILITY_PROBES: dict[str, str] = {
     "check_dry_contact_for_electric_strike_state": "supports_dry_contact_state",
     "check_current_humidity": "supports_current_humidity",
     "check_current_temperature": "supports_current_temperature",
+    # One of the interchangeable names the app accepts for the temperature read
+    # (yq.java groups it with check_current_temperature); no route of its own, and
+    # the devices declaring it declare check_current_temperature too (#364).
+    "check_thermometer_state": "supports_current_temperature",
     "check_illuminance_level": "supports_illuminance_level",
     "check_brightness_level": "supports_illuminance_level",
     "check_presence_detection": "supports_presence_detection",

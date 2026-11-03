@@ -374,3 +374,26 @@ def test_lighting_remote_control_does_not_need_telemetry() -> None:
         supported_by_integration=False,
     )
     assert discovery_record_needs_telemetry(record) is False
+
+
+def test_trio2sys_thermometer_sensor_is_covered() -> None:
+    record = build_discovery_record(
+        device_type="sensors",
+        bff_device_type="sensors",
+        capabilities=[
+            "check_current_humidity",
+            "check_current_temperature",
+            "check_thermometer_state",
+        ],
+        possible_values={},
+        manufacturer="Trio2sys",
+        model="temperature_humidity",
+        firmware_version="1.0.0",
+        supported_by_integration=True,
+    )
+    profile = profile_from_record(record)
+    assert profile.is_supported is True
+    # Asserted on the capability, not on the nudge: an out-of-scope brand makes
+    # discovery_record_needs_telemetry False for the wrong reason.
+    assert capability_is_covered("check_thermometer_state", profile) is True
+    assert discovery_record_needs_telemetry(record) is False

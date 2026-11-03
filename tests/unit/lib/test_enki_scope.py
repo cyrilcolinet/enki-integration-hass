@@ -31,3 +31,9 @@ def test_essentielb_is_in_the_enki_ecosystem() -> None:
     assert manufacturer_in_enki_ecosystem("EssentielB") is True
     assert manufacturer_in_enki_ecosystem("Essentiel B") is True
     assert device_in_enki_scope(manufacturer="EssentielB", device_type="lights") is True
+
+
+def test_trio2sys_is_in_the_enki_ecosystem() -> None:
+    # Temperature / humidity sensors on the Enki sensor service, reported in #364.
+    assert manufacturer_in_enki_ecosystem("Trio2sys") is True
+    assert device_in_enki_scope(manufacturer="Trio2sys", device_type="sensors") is True
