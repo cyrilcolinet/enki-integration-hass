@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.37.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.37.0...v1.37.1) (2026-11-12)
+
+
+### Bug Fixes
+
+* **light:** never send a null colour mode ([f4be50d](https://github.com/cyrilcolinet/enki-integration-hass/commit/f4be50d24b877f38a228ca13a4304fef62dca7ec))
+
 ## [1.37.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.36.0...v1.37.0) (2026-11-12)
 
 
