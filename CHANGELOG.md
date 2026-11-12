@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.37.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.36.0...v1.37.0) (2026-11-12)
+
+
+### Features
+
+* **sensor:** expose the battery a remote reports ([3d8277a](https://github.com/cyrilcolinet/enki-integration-hass/commit/3d8277abbf441511660ae3950bcd9fff2cca4202)), closes [#377](https://github.com/cyrilcolinet/enki-integration-hass/issues/377)
+
+
+### Bug Fixes
+
+* **telemetry:** stop reporting aliases and scenario-only presses ([df30dc6](https://github.com/cyrilcolinet/enki-integration-hass/commit/df30dc6413fa14779b36932179228c2207f35778))
+
 ## [1.36.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.35.0...v1.36.0) (2026-11-03)
 
 
