@@ -90,7 +90,17 @@ CAPABILITY_READS: tuple[CapabilityRead, ...] = (
         "window_open_detection_mode",
     ),
     CapabilityRead("thermostat", "check_offset_temperature", "offset_temperature"),
-    CapabilityRead("thermostat", "check_child_lock", "child_lock"),
+    CapabilityRead(
+        "thermostat",
+        "check_child_lock",
+        "child_lock",
+        # A valve that spells it childlock may still answer the dashed path, and
+        # the two are the same LOCK / UNLOCK state (#343). 404-tolerant.
+        also_when=lambda profile: profile.supports_child_lock,
+    ),
+    # The one-word spelling, read under its own name: the path comes from the
+    # capability, so this asks what a Sedea valve actually declares (#343).
+    CapabilityRead("thermostat", "check_childlock", "child_lock"),
     CapabilityRead("thermostat", "check_preheating_status", "preheating_status"),
     CapabilityRead(
         "equation_water_heater",
