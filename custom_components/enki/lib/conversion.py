@@ -179,8 +179,22 @@ def merge_light_state_payload(
 
 
 def _with_every_field(payload: dict[str, Any]) -> dict[str, Any]:
-    """The same body, naming every field the app names, nulls included."""
-    return {field: payload.get(field) for field in LIGHT_STATE_FIELDS} | payload
+    """The same body, naming every field the app names, nulls included.
+
+    All but one: ``colorMode`` is the single field the app cannot send as null.
+    Its request model declares the other five nullable and this one a plain
+    String (APK ``js2``), so a padded body still has to name a mode, and the
+    null we were padding it with is a body no app build can produce (#337).
+
+    shortcut: hue or saturation means ``hs`` and everything else ``ct``, which
+    is wrong for a colour-only bulb with no tunable white. Narrow the default
+    with the device's capabilities if one ever refuses ``ct``.
+    """
+    full = {field: payload.get(field) for field in LIGHT_STATE_FIELDS} | payload
+    if full.get("colorMode") is None:
+        colour = full.get("hue") is not None or full.get("saturation") is not None
+        full["colorMode"] = "hs" if colour else "ct"
+    return full
 
 
 def is_command_success_status(status: int) -> bool:

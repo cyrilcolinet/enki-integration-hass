@@ -170,6 +170,14 @@ HA's `ColorMode.HS`. When the bulb also advertises `change_color_temperature`,
 the integration exposes both `hs` and `color_temp`; the reported `colorMode`
 field (`hs` vs `ct`) indicates which mode is active.
 
+`change-light-state` is a read-modify-write: the body carries the whole last
+reported object, all six fields named on every call. Five of them are nullable,
+`colorMode` is not: the app's request model declares it a plain string of `hs`
+or `ct` (APK `js2`). A bulb whose `check-light-state` is refused leaves nothing
+to copy, and the padded body has to name a mode anyway, or the service answers
+`400 BAD_REQUEST`
+([#337](https://github.com/cyrilcolinet/enki-integration-hass/issues/337)).
+
 ## Heating and water sensors (manifest ≥ 1.5.0)
 
 **Heating base URL:** `https://enki.api.devportal.adeo.cloud/api-enki-heating-prod/v1/heating/{nodeId}/`
