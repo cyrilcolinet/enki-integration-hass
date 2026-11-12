@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.38.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.37.1...v1.38.0) (2026-11-12)
+
+
+### Features
+
+* **switch:** accept the one-word child lock spelling ([a7eeac7](https://github.com/cyrilcolinet/enki-integration-hass/commit/a7eeac7a47b07d39fa88d085d5d30c29893de9ee)), closes [#343](https://github.com/cyrilcolinet/enki-integration-hass/issues/343)
+
 ## [1.37.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.37.0...v1.37.1) (2026-11-12)
 
 
