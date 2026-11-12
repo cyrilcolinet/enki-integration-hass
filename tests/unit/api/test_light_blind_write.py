@@ -88,6 +88,26 @@ async def test_a_blind_colour_write_nulls_the_colour_temperature() -> None:
 
 
 @pytest.mark.asyncio
+async def test_a_colour_write_nulls_the_colour_temperature_on_a_working_bulb_too() -> None:
+    """Switching to hs means no colour temperature, and null is how the app says it.
+
+    The app's Json keeps explicitNulls on (APK rse.d), so a nulled field goes out
+    as `null` rather than being dropped, on every bulb and not only a blind one.
+    """
+    api, http = _api(None)
+    http.get_light_state = AsyncMock(
+        return_value={"lastReportedValue": {"power": "ON", "colorTemperature": "T2700K"}}
+    )
+
+    await api.async_change_light_color("home", "node", 120.0, 90.0)
+
+    payload = http.change_light_state.await_args.args[2]
+    assert payload["colorTemperature"] is None
+    assert payload["colorMode"] == "hs"
+    await api.async_close()
+
+
+@pytest.mark.asyncio
 async def test_a_refused_colour_change_is_not_retried() -> None:
     """The power service carries on/off and nothing else."""
     api, http = _api(EnkiConnectionError("refused", status=400))
