@@ -245,7 +245,7 @@ Extra referentiel controls, exposed when the thermostat advertises them. Routes 
 | Function | HA entity | API |
 |----------|-----------|-----|
 | Temperature offset (calibration) | `number` (°C) | `change/check-offset-temperature`, float |
-| Child lock | `switch` | `change/check-child-lock`, `LOCK` / `UNLOCK` |
+| Child lock | `switch` | `change/check-child-lock`, `LOCK` / `UNLOCK`. Sedea valves declare it as one word (`childlock`) and the write follows that spelling; whether their gateway serves the one-word path is unconfirmed ([#343](https://github.com/cyrilcolinet/enki-integration-hass/issues/343)) |
 | Preheating | `switch` | `change/check-preheating-status`, `ENABLED` / `DISABLED` |
 
 **API routing:** `api-enki-thermostat-prod` for setpoint / pilot wire / window detection / config knobs; `api-enki-presence-detector-prod` for occupancy. Keys in `gateway_keys_data.py`: update: [DEVELOPMENT.md](DEVELOPMENT.md) · API detail: [API.md](API.md#heating-and-water-sensors-manifest--150).

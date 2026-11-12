@@ -467,11 +467,18 @@ class EnkiCapabilityProfile:
 
     @property
     def supports_child_lock(self) -> bool:
+        """Child lock, under either spelling the referentiel uses.
+
+        Sedea thermostatic valves write it as one word, with the same LOCK /
+        UNLOCK values as everyone else (#343).
+        """
         return _supports(
             self.capabilities,
             self.possible_values,
             "change_child_lock",
             "check_child_lock",
+            "change_childlock",
+            "check_childlock",
         )
 
     @property

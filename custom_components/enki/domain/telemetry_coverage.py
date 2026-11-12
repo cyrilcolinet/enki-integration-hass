@@ -128,6 +128,9 @@ _CAPABILITY_PROBES: dict[str, str] = {
     "check_offset_temperature": "supports_offset_temperature",
     "change_child_lock": "supports_child_lock",
     "check_child_lock": "supports_child_lock",
+    # One word on Sedea valves, same LOCK / UNLOCK values (#343).
+    "change_childlock": "supports_child_lock",
+    "check_childlock": "supports_child_lock",
     "change_preheating_status": "supports_preheating",
     "check_preheating_status": "supports_preheating",
     "check_preheating": "supports_preheating",

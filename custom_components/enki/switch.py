@@ -78,6 +78,20 @@ _SWITCH_SPECS: tuple[dict[str, str], ...] = (
         "entity_category": EntityCategory.CONFIG,
     },
     {
+        # Sedea valves spell it in one word; the route follows the capability, so
+        # the write goes to change-childlock on those and change-child-lock
+        # everywhere else (#343).
+        "switch_capability": "change_childlock",
+        "check_capability": "check_childlock",
+        "state_key": "child_lock",
+        "suffix": "child_lock",
+        "translation_key": "child_lock",
+        "service": "thermostat",
+        "on_value": "LOCK",
+        "off_value": "UNLOCK",
+        "entity_category": EntityCategory.CONFIG,
+    },
+    {
         "switch_capability": "change_preheating_status",
         "check_capability": "check_preheating_status",
         "state_key": "preheating_status",
@@ -173,10 +187,14 @@ def _build_config_switches(
 
     capabilities = profile.capabilities
     entities: list[EnkiConfigSwitch] = []
+    # Two specs can carry one role under two capability names: one entity per
+    # role, or a device declaring both spellings collides on its unique id.
+    seen: set[str] = set()
     for spec in _SWITCH_SPECS:
         switch_cap = spec["switch_capability"]
-        if switch_cap not in capabilities:
+        if switch_cap not in capabilities or spec["suffix"] in seen:
             continue
+        seen.add(spec["suffix"])
         entities.append(
             EnkiConfigSwitch(
                 coordinator,
