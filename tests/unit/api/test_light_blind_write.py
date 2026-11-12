@@ -26,6 +26,22 @@ def test_a_blind_write_names_every_field_the_app_names() -> None:
     assert payload["brightness"] is None
 
 
+def test_a_blind_write_never_names_a_null_colour_mode() -> None:
+    """The app's request model takes colorMode as a plain String (APK js2)."""
+    assert merge_light_state_payload({}, {"power": "ON"})["colorMode"] == "ct"
+    assert merge_light_state_payload({}, {"brightness": 50.0})["colorMode"] == "ct"
+    assert merge_light_state_payload({}, {"power": "OFF"})["colorMode"] == "ct"
+    colour = merge_light_state_payload({}, {"hue": 120.0, "saturation": 90.0})
+    assert colour["colorMode"] == "hs"
+
+
+def test_a_requested_colour_mode_wins_over_the_default() -> None:
+    payload = merge_light_state_payload({}, {"colorTemperature": "T2700K"})
+
+    assert payload["colorMode"] == "ct"
+    assert merge_light_state_payload({}, {"colorMode": "hs", "hue": 1.0})["colorMode"] == "hs"
+
+
 def test_a_blind_off_is_padded_too() -> None:
     assert set(merge_light_state_payload({}, {"power": "OFF"})) == set(LIGHT_STATE_FIELDS)
 
@@ -54,6 +70,20 @@ async def test_a_refused_on_off_is_retried_on_the_power_service() -> None:
     await api.async_change_light_state("home", "node", {"power": "ON"})
 
     http.switch_electrical_power.assert_awaited_once_with("home", "node", "ON")
+    await api.async_close()
+
+
+@pytest.mark.asyncio
+async def test_a_blind_colour_write_nulls_the_colour_temperature() -> None:
+    """Named, not absent: the app writes all six fields and nulls the unused one."""
+    api, http = _api(None)
+
+    await api.async_change_light_color("home", "node", 120.0, 90.0)
+
+    payload = http.change_light_state.await_args.args[2]
+    assert set(payload) == set(LIGHT_STATE_FIELDS)
+    assert payload["colorMode"] == "hs"
+    assert payload["colorTemperature"] is None
     await api.async_close()
 
 

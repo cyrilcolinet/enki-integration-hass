@@ -1290,7 +1290,9 @@ class EnkiAPI:
             base,
             {"colorMode": "hs", "hue": hue, "saturation": saturation},
         )
-        payload.pop("colorTemperature", None)
+        # Null, not absent: the app's model names all six fields on every write
+        # and nulls the colour temperature it is not using (APK js2, #337).
+        payload["colorTemperature"] = None
         await http.change_light_state(home_id, node_id, payload)
 
     async def async_change_light_state_field(
