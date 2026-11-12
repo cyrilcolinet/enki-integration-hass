@@ -397,3 +397,122 @@ def test_trio2sys_thermometer_sensor_is_covered() -> None:
     # discovery_record_needs_telemetry False for the wrong reason.
     assert capability_is_covered("check_thermometer_state", profile) is True
     assert discovery_record_needs_telemetry(record) is False
+
+
+def test_trio2sys_outdoor_thermometer_is_covered() -> None:
+    """#373: check_thermometer_temperature_state is the third name for that read."""
+    record = build_discovery_record(
+        device_type="sensors",
+        bff_device_type="sensors",
+        capabilities=[
+            "check_current_temperature",
+            "check_thermometer_temperature_state",
+        ],
+        possible_values={},
+        manufacturer="Trio2Sys",
+        model="thermometer_temperature_exterior",
+        firmware_version="2.0.0",
+        supported_by_integration=True,
+    )
+    profile = profile_from_record(record)
+    assert capability_is_covered("check_thermometer_temperature_state", profile) is True
+    assert discovery_record_needs_telemetry(record) is False
+
+
+def test_metering_outlet_initial_consumption_is_covered() -> None:
+    """#374: the app's consumption block reads it as the consumption we surface."""
+    record = build_discovery_record(
+        device_type="outlets",
+        bff_device_type="outlets",
+        capabilities=[
+            "cancel_electrical_power_switch_in",
+            "check_electrical_consumption",
+            "check_electrical_power",
+            "check_initial_electrical_consumption",
+            "next_electrical_power_switch_in",
+            "switch_electrical_power",
+            "switch_electrical_power_in",
+            "total_supply_charge_consumption",
+        ],
+        possible_values={
+            "check_electrical_power": {"values": ["ON", "OFF"]},
+            "switch_electrical_power": {"values": ["ON", "OFF"]},
+        },
+        manufacturer="Nodon",
+        model="outlet_with_metering",
+        firmware_version="2.0.0",
+        supported_by_integration=True,
+    )
+    profile = profile_from_record(record)
+    assert capability_is_covered("check_initial_electrical_consumption", profile) is True
+    assert discovery_record_needs_telemetry(record) is False
+
+
+def test_four_button_remote_reports_only_its_battery() -> None:
+    """#377: the presses are scenario triggers, the battery is a sensor."""
+    record = build_discovery_record(
+        device_type="remote_controls_and_switches",
+        bff_device_type="remote_controls_and_switches",
+        capabilities=[
+            "check_battery_level",
+            "check_first_button_from_left_state",
+            "check_fourth_button_from_left_state",
+            "check_lighting_remote_state",
+            "check_second_button_from_left_state",
+            "check_third_button_from_left_state",
+        ],
+        possible_values={},
+        manufacturer="Lexman",
+        model="lighting_remote_control",
+        firmware_version="2.0.0",
+        supported_by_integration=True,
+    )
+    profile = profile_from_record(record)
+    assert profile.is_supported is True
+    assert capability_is_covered("check_battery_level", profile) is True
+    assert discovery_record_needs_telemetry(record) is False
+
+
+def test_scenario_button_presses_do_not_need_telemetry() -> None:
+    """#372: three press states, RELEASED as their only value, no read route."""
+    record = build_discovery_record(
+        device_type="remote_controls_and_switches",
+        bff_device_type="remote_controls_and_switches",
+        capabilities=[
+            "check_button_double_press_state",
+            "check_button_long_press_state",
+            "check_button_simple_press_state",
+        ],
+        possible_values={},
+        manufacturer="Enki",
+        model="smart_button",
+        firmware_version="2.0.0",
+        supported_by_integration=False,
+    )
+    assert discovery_record_needs_telemetry(record) is False
+
+
+def test_heater_reference_temperature_mode_is_still_reported() -> None:
+    """#375: an open gap, not silenced by the aliases around it."""
+    record = build_discovery_record(
+        device_type="heaters_and_pilot_wires",
+        bff_device_type="heaters_and_pilot_wires",
+        capabilities=[
+            "change_reference_temperature_mode",
+            "change_thermostat_target_temperature",
+            "check_current_temperature",
+            "check_electrical_consumption",
+            "check_heater_state",
+            "check_initial_electrical_consumption",
+            "check_reference_temperature_mode",
+            "total_supply_charge_consumption",
+        ],
+        possible_values={
+            "change_reference_temperature_mode": {"values": ["INTERNAL", "EXTERNAL"]},
+        },
+        manufacturer="Equation",
+        model="heater_alidea_vertical",
+        firmware_version="2.0.0",
+        supported_by_integration=True,
+    )
+    assert discovery_record_needs_telemetry(record) is True

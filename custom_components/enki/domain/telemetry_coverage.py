@@ -60,6 +60,7 @@ _CAPABILITY_PROBES: dict[str, str] = {
     "change_vibration_sensibility_level": "supports_vibration_sensibility",
     "check_airflow_mode": "supports_airflow_mode",
     "check_battery_health": "supports_battery_health",
+    "check_battery_level": "supports_battery_health",
     "check_brightness": "supports_brightness_control",
     "check_color_temperature": "supports_color_temperature",
     "check_contact_detection_activation": "supports_contact_detection_activation",
@@ -71,11 +72,19 @@ _CAPABILITY_PROBES: dict[str, str] = {
     # (yq.java groups it with check_current_temperature); no route of its own, and
     # the devices declaring it declare check_current_temperature too (#364).
     "check_thermometer_state": "supports_current_temperature",
+    # Same alias family, grouped with check_current_temperature in the app's own
+    # temperature block, and declared next to it on Trio2Sys thermometers (#373).
+    "check_thermometer_temperature_state": "supports_current_temperature",
     "check_illuminance_level": "supports_illuminance_level",
     "check_brightness_level": "supports_illuminance_level",
     "check_presence_detection": "supports_presence_detection",
     "check_electrical_power": "supports_electrical_power",
     "check_electrical_consumption": "supports_electrical_consumption",
+    # The app shows its consumption block for any of check_initial_electrical_
+    # consumption, check_electrical_consumption and check_electrical_measurement,
+    # and the devices declaring it declare check_electrical_consumption too, so the
+    # consumption and energy sensors already carry what it feeds (#374, #375).
+    "check_initial_electrical_consumption": "supports_electrical_consumption",
     # Covered since #285, and missing here, so every Equation water heater owner
     # was invited to report a gap that is not one (#344).
     "check_water_heater_mode": "supports_water_heater_mode",
@@ -164,6 +173,16 @@ NOT_PLANNED_CAPABILITIES = frozenset(
         # remote to a light, unbind it, change-remote-mode. There is no read, so a
         # button press never reaches the cloud and no entity can carry it (#363).
         "check_lighting_remote_state",
+        # Remote and wall-switch presses: the app lists them only as scenario
+        # triggers, with RELEASED as their single value, and no route reads one
+        # back. Nothing to poll, so nothing to build an entity on (#372, #377).
+        "check_button_double_press_state",
+        "check_button_long_press_state",
+        "check_button_simple_press_state",
+        "check_first_button_from_left_state",
+        "check_second_button_from_left_state",
+        "check_third_button_from_left_state",
+        "check_fourth_button_from_left_state",
         "cancel_electrical_power_switch_in",
         "next_electrical_power_switch_in",
         "switch_electrical_power_in",
