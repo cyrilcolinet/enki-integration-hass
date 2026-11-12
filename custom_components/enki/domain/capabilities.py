@@ -296,10 +296,18 @@ class EnkiCapabilityProfile:
 
     @property
     def supports_battery_health(self) -> bool:
+        """Battery level, under either of the two names the referentiel uses.
+
+        check_battery_level has no path of its own in the route catalogue, the app
+        labels it common_battery_health, and its node event goes through
+        BatteryHealthChangeEventHandler, so check-battery-health is the only battery
+        read there is. Whether it answers for a remote is unconfirmed (#377).
+        """
         return _supports(
             self.capabilities,
             self.possible_values,
             "check_battery_health",
+            "check_battery_level",
         )
 
     @property

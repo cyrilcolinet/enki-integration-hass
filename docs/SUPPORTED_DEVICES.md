@@ -138,10 +138,16 @@ Gateway keys in `gateway_keys_data.py`.
 |----------------|--------|
 | `check_current_temperature` | Temperature (°C): except thermostats (temperature on `climate`) |
 | `check_current_humidity` | Humidity (%) |
-| `check_battery_health` | Battery (%, Enki mapping) |
+| `check_battery_health` / `check_battery_level` | Battery (%, Enki mapping) |
 | `check_illuminance_level` / `check_brightness_level` | Brightness / illuminance (Evology multisensor, Lexman 4-in-1, …) |
 
 **Sedea** thermometers (display): temperature, humidity, battery.
+
+**Remotes and wall switches**: a battery sensor when the remote declares
+`check_battery_level` or `check_battery_health`, nothing otherwise. The button
+presses are Enki scenario triggers, no route reads one back, so they cannot become
+entities or Home Assistant triggers. Drive something the integration already sees
+from an Enki scenario and automate on that change.
 
 ### Lexman siren
 

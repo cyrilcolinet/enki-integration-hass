@@ -33,7 +33,14 @@ CAPABILITY_READS: tuple[CapabilityRead, ...] = (
         "current_temperature",
     ),
     CapabilityRead("temperature_humidity", "check_current_humidity", "current_humidity"),
-    CapabilityRead("battery_health", "check_battery_health", "battery_health"),
+    CapabilityRead(
+        "battery_health",
+        "check_battery_health",
+        "battery_health",
+        # Remotes declare check_battery_level instead, which has no path of its
+        # own: check-battery-health is the only battery read there is (#377).
+        also_when=lambda profile: profile.supports_battery_health,
+    ),
     CapabilityRead("luminosity_sensor", "check_illuminance_level", "illuminance_level"),
     CapabilityRead("luminosity_sensor", "check_brightness_level", "illuminance_level"),
     CapabilityRead("presence_detector", "check_motion_detection", "motion_detection"),
