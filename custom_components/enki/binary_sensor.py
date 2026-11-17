@@ -42,6 +42,10 @@ _ENUM_TO_BOOL = {
     "UNOCCUPIED": False,
     "PRESENCE_DETECTED": True,
     "NO_PRESENCE": False,
+    # Smoke alarm: the app maps ACTIVE to "smoke detected" and INACTIVE to
+    # "no alert" (APK check_smoke_alarm_status), #371.
+    "ACTIVE": True,
+    "INACTIVE": False,
 }
 
 _BINARY_SENSOR_SPECS: tuple[dict[str, str | BinarySensorDeviceClass], ...] = (
@@ -107,6 +111,13 @@ _BINARY_SENSOR_SPECS: tuple[dict[str, str | BinarySensorDeviceClass], ...] = (
         "suffix": "presence",
         "translation_key": "presence",
         "device_class": BinarySensorDeviceClass.OCCUPANCY,
+    },
+    {
+        "capability": "check_smoke_alarm_status",
+        "state_key": "smoke_alarm_status",
+        "suffix": "smoke",
+        "translation_key": "smoke",
+        "device_class": BinarySensorDeviceClass.SMOKE,
     },
     {
         "capability": "check_videophone_state",

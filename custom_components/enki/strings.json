@@ -246,6 +246,9 @@
       "water_leak": {
         "name": "Water leak"
       },
+      "smoke": {
+        "name": "Smoke"
+      },
       "window": {
         "name": "Window"
       },

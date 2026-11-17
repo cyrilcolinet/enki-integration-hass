@@ -72,6 +72,7 @@ CAPABILITY_READS: tuple[CapabilityRead, ...] = (
     CapabilityRead("power", "check_channel2_electrical_power", "channel2_electrical_power"),
     CapabilityRead("siren", "check_siren_global_state", "siren_global_state"),
     CapabilityRead("water_sensor", "check_water_sensor_state", "water_sensor_state"),
+    CapabilityRead("smoke_detector", "check_smoke_alarm_status", "smoke_alarm_status"),
     CapabilityRead("thermostat", "check_pilot_wire_state", "pilot_wire_state"),
     CapabilityRead(
         "thermostat",

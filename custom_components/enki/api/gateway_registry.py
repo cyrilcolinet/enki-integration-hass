@@ -505,9 +505,9 @@ ENKI_MICRO_SERVICES: tuple[EnkiMicroService, ...] = (
     EnkiMicroService(
         "api-enki-smoke-detector-prod",
         "ENKI_SMOKE_DETECTOR_API_KEY",
-        "",
+        "smoke_detector",
         "/api-enki-smoke-detector-prod/v1/sensors",
-        wired=False,
+        wired=True,
         notes="",
     ),
     EnkiMicroService(
