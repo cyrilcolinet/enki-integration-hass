@@ -24,6 +24,17 @@ _TELEMETRY_IGNORED_CAPABILITIES = frozenset(
         "check_current_firmware_version",
         "check_esdk_certificate_renewal",
         "check_in_wall_plug_2_channels_state",
+        # Netsecur smoke detector: server-derived analyses and maintenance reads
+        # with no gateway route of their own, nothing to build an entity from
+        # (#371). The smoke alarm and the temperature / humidity / battery reads
+        # are covered separately.
+        "check_condition_humidity_analysis",
+        "check_condition_maintenance_analysis",
+        "check_condition_temperature_analysis",
+        "check_indoor_air_temperature_humidity_analysis",
+        "check_maintenance_status",
+        "check_remaining_product_life_time",
+        "check_sensor_fault_mode_status",
         "check_multisensor_state",
         "remove_camera_events",
         "check_sdk_firmware_upgrade",
@@ -136,6 +147,8 @@ _CAPABILITY_PROBES: dict[str, str] = {
     "check_preheating": "supports_preheating",
     "check_occupancy": "supports_occupancy",
     "check_water_sensor_state": "supports_water_leak",
+    "check_smoke_alarm_status": "supports_smoke_alarm",
+    "check_smoke_detector_state": "supports_smoke_alarm",
     "check_camera_events": "is_camera",
     "check_camera_last_event": "is_camera",
     # Lexman video doorbell (#233): calls, openings and connection.

@@ -11,7 +11,7 @@ Summary: [ROADMAP.md](ROADMAP.md)
 
 ## Scope
 
-This integration covers **only the Enki / Leroy Merlin ecosystem**: Lexman, Equation, Inspire, Noirot, Edisio, Eglo, Sedea, Evology, Nodon, ACOVA, Envertech, Meari, DIO, EssentielB, Trio2sys, Nous, etc. (exact list: [`lib/enki_scope.py`](../custom_components/enki/lib/enki_scope.py)).
+This integration covers **only the Enki / Leroy Merlin ecosystem**: Lexman, Equation, Inspire, Noirot, Edisio, Eglo, Sedea, Evology, Nodon, ACOVA, Envertech, Meari, DIO, EssentielB, Trio2sys, Nous, Netsecur, etc. (exact list: [`lib/enki_scope.py`](../custom_components/enki/lib/enki_scope.py)).
 
 **In scope:** anything **visible and working in the Enki app**: Wi‑Fi devices (no hub required) and Zigbee devices paired on the Enki hub.
 
@@ -129,6 +129,7 @@ Gateway keys in `gateway_keys_data.py`.
 | `check_contact_sensor_state` | Contact (open / closed) |
 | `check_vibration_detection` | Vibration |
 | `check_dry_contact_for_electric_strike_state` | Electric-strike dry contact (**v1.13**) |
+| `check_smoke_alarm_status` | Smoke (Netsecur detector): `ACTIVE` = smoke detected |
 
 ### Temperature / humidity / battery / brightness
 
@@ -142,6 +143,10 @@ Gateway keys in `gateway_keys_data.py`.
 | `check_illuminance_level` / `check_brightness_level` | Brightness / illuminance (Evology multisensor, Lexman 4-in-1, …) |
 
 **Sedea** thermometers (display): temperature, humidity, battery.
+
+**Netsecur** smoke detector: temperature, humidity, battery, plus a `smoke`
+binary sensor from the Enki smoke-detector service. The server-derived air-quality
+and maintenance analyses it also advertises have no gateway route and stay out.
 
 **Remotes and wall switches**: a battery sensor when the remote declares
 `check_battery_level` or `check_battery_health`, nothing otherwise. The button

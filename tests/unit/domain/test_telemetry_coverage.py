@@ -285,6 +285,40 @@ def test_check_multisensor_state_covered() -> None:
     assert capability_is_covered("check_multisensor_state", profile) is True
 
 
+def test_netsecur_smoke_detector_has_no_capability_gap() -> None:
+    # Netsecur smoke detector (#371): the smoke alarm and the temperature /
+    # humidity / battery reads are covered; its server-derived analyses and
+    # maintenance reads have no route and are ignored, so once the brand is in
+    # scope no install should auto-file a capability gap.
+    capabilities = [
+        "check_battery_health",
+        "check_condition_humidity_analysis",
+        "check_condition_maintenance_analysis",
+        "check_condition_temperature_analysis",
+        "check_current_humidity",
+        "check_current_temperature",
+        "check_indoor_air_temperature_humidity_analysis",
+        "check_maintenance_status",
+        "check_remaining_product_life_time",
+        "check_sensor_fault_mode_status",
+        "check_smoke_alarm_status",
+        "check_smoke_detector_state",
+    ]
+    record = build_discovery_record(
+        device_type="sensors",
+        bff_device_type="sensors",
+        capabilities=capabilities,
+        possible_values={"check_smoke_alarm_status": {"values": ["ACTIVE", "INACTIVE"]}},
+        manufacturer="Netsecur",
+        model="ref 5b69b107b024",
+        firmware_version="2.0.0",
+        supported_by_integration=True,
+    )
+    profile = profile_from_record(record)
+    for capability in capabilities:
+        assert capability_is_covered(capability, profile) is True, capability
+
+
 def test_indoor_camera_orientation_is_not_a_capability_gap() -> None:
     # Shape reported by #212 (Lexman IPC167KF). Pan/tilt has no HTTP route
     # nudging every owner of this camera to open the same issue helps nobody.

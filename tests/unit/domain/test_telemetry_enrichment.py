@@ -130,9 +130,9 @@ def test_capability_routing_hints_flags_wired_service() -> None:
 
 
 def test_capability_routing_hints_flags_unwired_service() -> None:
-    hints = capability_routing_hints(["check_smoke_alarm_status"])
-    entry = hints["check_smoke_alarm_status"]
-    assert entry["services"][0]["service"] == "api-enki-smoke-detector-prod"
+    hints = capability_routing_hints(["check_co2"])
+    entry = hints["check_co2"]
+    assert entry["services"][0]["service"] == "api-enki-station-meteo-netatmo-prod"
     assert entry["services"][0]["wired"] is False
     assert entry["effort"].startswith("service not wired")
 

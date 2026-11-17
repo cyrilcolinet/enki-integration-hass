@@ -44,3 +44,9 @@ def test_nous_is_in_the_enki_ecosystem() -> None:
     assert manufacturer_in_enki_ecosystem("Nous") is True
     assert device_in_enki_scope(manufacturer="Nous", device_type="outlets") is True
     assert device_in_enki_scope(manufacturer="Nous", device_type="modules") is True
+
+
+def test_netsecur_is_in_the_enki_ecosystem() -> None:
+    # Smoke detectors on the Enki smoke-detector service, reported in #371.
+    assert manufacturer_in_enki_ecosystem("Netsecur") is True
+    assert device_in_enki_scope(manufacturer="Netsecur", device_type="sensors") is True

@@ -397,6 +397,15 @@ class EnkiCapabilityProfile:
         )
 
     @property
+    def supports_smoke_alarm(self) -> bool:
+        return _supports(
+            self.capabilities,
+            self.possible_values,
+            "check_smoke_alarm_status",
+            "check_smoke_detector_state",
+        )
+
+    @property
     def supports_pilot_wire(self) -> bool:
         return _supports(
             self.capabilities,
@@ -645,6 +654,7 @@ class EnkiCapabilityProfile:
             or self.supports_occupancy
             or self.supports_presence_detection
             or self.supports_dry_contact_state
+            or self.supports_smoke_alarm
         )
 
     @property

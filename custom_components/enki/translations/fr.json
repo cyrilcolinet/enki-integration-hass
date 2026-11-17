@@ -246,6 +246,9 @@
       "water_leak": {
         "name": "Fuite d'eau"
       },
+      "smoke": {
+        "name": "Fumée"
+      },
       "window": {
         "name": "Fenêtre"
       },

@@ -320,6 +320,15 @@
       ],
       "key": "DKHq99GEVf2F3r32QGXefPX0B5cuJ9PV"
     },
+    "ENKI_SMOKE_DETECTOR_API_KEY": {
+      "slug": "api-enki-smoke-detector-prod",
+      "interface": "zdn",
+      "routes": [
+        "sensors/{nodeId}/check-indoor-air-temperature-humidity-analysis",
+        "sensors/{nodeId}/check-smoke-alarm-status"
+      ],
+      "key": "0lMCF6VlYjC1TKsbHLgQkNrbwsfQ69wz"
+    },
     "ENKI_TEMPERATURE_HUMIDITY_API_KEY": {
       "slug": "api-enki-temperature-humidity-sensor-prod",
       "interface": "ono",

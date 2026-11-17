@@ -22,6 +22,9 @@ _ENKI_ECOSYSTEM_MANUFACTURERS = frozenset(
         "evology",
         "inspire",
         "lexman",
+        # Netsecur smoke detectors read on the Enki smoke-detector service, plus
+        # the standard temperature / humidity / battery sensor reads (#371).
+        "netsecur",
         "nodon",
         "noirot",
         # Nous outlets and modules ride the standard switch_electrical_power +
