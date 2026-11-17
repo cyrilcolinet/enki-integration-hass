@@ -24,6 +24,9 @@ _ENKI_ECOSYSTEM_MANUFACTURERS = frozenset(
         "lexman",
         "nodon",
         "noirot",
+        # Nous outlets and modules ride the standard switch_electrical_power +
+        # energy-metering service, same as a Lexman plug (#371).
+        "nous",
         "sedea",
         # Thermometers declaring the check_current_temperature /
         # check_current_humidity reads already wired here (#364).

@@ -37,3 +37,10 @@ def test_trio2sys_is_in_the_enki_ecosystem() -> None:
     # Temperature / humidity sensors on the Enki sensor service, reported in #364.
     assert manufacturer_in_enki_ecosystem("Trio2sys") is True
     assert device_in_enki_scope(manufacturer="Trio2sys", device_type="sensors") is True
+
+
+def test_nous_is_in_the_enki_ecosystem() -> None:
+    # Switchable outlets and modules on the standard power service, reported in #371.
+    assert manufacturer_in_enki_ecosystem("Nous") is True
+    assert device_in_enki_scope(manufacturer="Nous", device_type="outlets") is True
+    assert device_in_enki_scope(manufacturer="Nous", device_type="modules") is True
