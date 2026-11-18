@@ -8,6 +8,9 @@ _ENKI_ECOSYSTEM_MANUFACTURERS = frozenset(
     {
         "adeo",
         "acova",
+        # Avidsen pilot-wire heaters and modules on the standard thermostat /
+        # power services, same as an Equation radiator or a DIO module (#386).
+        "avidsen",
         # DIO is an Enki hub partner (433 MHz RF outlets), not third-party Zigbee.
         "dio",
         "edisio",

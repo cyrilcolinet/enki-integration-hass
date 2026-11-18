@@ -39,6 +39,16 @@ def test_trio2sys_is_in_the_enki_ecosystem() -> None:
     assert device_in_enki_scope(manufacturer="Trio2sys", device_type="sensors") is True
 
 
+def test_avidsen_is_in_the_enki_ecosystem() -> None:
+    # Pilot-wire heaters and modules on the standard thermostat / power services,
+    # reported in #386.
+    assert manufacturer_in_enki_ecosystem("Avidsen") is True
+    assert (
+        device_in_enki_scope(manufacturer="Avidsen", device_type="heaters_and_pilot_wires") is True
+    )
+    assert device_in_enki_scope(manufacturer="Avidsen", device_type="modules") is True
+
+
 def test_nous_is_in_the_enki_ecosystem() -> None:
     # Switchable outlets and modules on the standard power service, reported in #371.
     assert manufacturer_in_enki_ecosystem("Nous") is True
