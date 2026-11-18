@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.38.0](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.37.1...v1.38.0) (2026-11-18)
+
+
+### Features
+
+* **binary-sensor:** surface the Netsecur smoke detector ([e1bd478](https://github.com/cyrilcolinet/enki-integration-hass/commit/e1bd478c2781b316ac5dc690c9bb7a4f9fed2344))
+* **scope:** support Avidsen pilot-wire heaters and modules ([1809ef7](https://github.com/cyrilcolinet/enki-integration-hass/commit/1809ef7fd8df7b4cd76b85abf6c7caf6d77533df))
+* **scope:** support Nous outlets and modules ([44623a1](https://github.com/cyrilcolinet/enki-integration-hass/commit/44623a1a2af4beec05d71ddb71f86410741a3eec))
+* **switch:** accept the one-word child lock spelling ([a7eeac7](https://github.com/cyrilcolinet/enki-integration-hass/commit/a7eeac7a47b07d39fa88d085d5d30c29893de9ee)), closes [#343](https://github.com/cyrilcolinet/enki-integration-hass/issues/343)
+
 ## [1.37.1](https://github.com/cyrilcolinet/enki-integration-hass/compare/v1.37.0...v1.37.1) (2026-11-12)
 
 
